@@ -231,7 +231,7 @@ PCS_API PcsBool pcs_utils_streq(const char *str1, const char *str2, int len)
 
 
 /**
-* å­—ç¬¦ä¸²md5
+* ×Ö·û´®md5
 */
 PCS_API const char *pcs_md5_string(const char *str)
 {
@@ -246,7 +246,7 @@ PCS_API const char *pcs_md5_string(const char *str)
 }
 
 /**
-* å­—ç¬¦ä¸²md5ã€‚è¿”å›16å­—èŠ‚çš„MD5å€¼
+* ×Ö·û´®md5¡£·µ»Ø16×Ö½ÚµÄMD5Öµ
 */
 PCS_API const unsigned char *pcs_md5_string_raw(const char *str)
 {
@@ -276,7 +276,7 @@ PCS_API const char *pcs_md5_bytes(const unsigned char* bytes, int len)
 
 
 ///**
-//* å­—ç¬¦ä¸²md5
+//* ×Ö·û´®md5
 //*/
 //PCS_API const char *md5_string_salt(const char *str, const char *salt)
 //{
@@ -292,7 +292,7 @@ PCS_API const char *pcs_md5_bytes(const unsigned char* bytes, int len)
 //}
 
 /**
-* æ–‡ä»¶ md5
+* ÎÄ¼ş md5
 */
 PCS_API const char *pcs_md5_file_s(const char *file_name)
 {
@@ -318,8 +318,8 @@ PCS_API const char *pcs_md5_file_s(const char *file_name)
 	return tmp;
 }
 
-/*æŠŠ32ä½æ•´æ•°æŒ‰ä»é«˜ä½åˆ°ä½ä½é¡ºåºå¡«å……åˆ°bufçš„4ä¸ªå­—èŠ‚ä¸­ã€‚
-* ä¾‹ï¼š0xF1E2D3C4 å¡«å……å buf[0] = 0xF1, buf[1] = 0xE2, buf[2] = 0xD3, buf[3] = 0xC4.bufä¸­å…¶ä»–é¡¹æ— æ”¹åŠ¨
+/*°Ñ32Î»ÕûÊı°´´Ó¸ßÎ»µ½µÍÎ»Ë³ĞòÌî³äµ½bufµÄ4¸ö×Ö½ÚÖĞ¡£
+* Àı£º0xF1E2D3C4 Ìî³äºó buf[0] = 0xF1, buf[1] = 0xE2, buf[2] = 0xD3, buf[3] = 0xC4.bufÖĞÆäËûÏîÎŞ¸Ä¶¯
 */
 void int2Buffer(int v, char *buf)
 {
@@ -329,7 +329,7 @@ void int2Buffer(int v, char *buf)
 	buf[3] = (unsigned char)(((unsigned int)v) & 0xFF);
 }
 
-/*int2Bufferçš„é€†è¿‡ç¨‹*/
+/*int2BufferµÄÄæ¹ı³Ì*/
 int readInt(const char *buf)
 {
 	unsigned int rc = 0;
@@ -341,7 +341,7 @@ int readInt(const char *buf)
 }
 
 /*
- * æå–å‡ºå­—ç¬¦ callback({...}) ä¸­çš„ {...} éƒ¨åˆ† 
+ * ÌáÈ¡³ö×Ö·û callback({...}) ÖĞµÄ {...} ²¿·Ö 
  */
 char *extract_json_from_callback(char *callback)
 {
@@ -369,7 +369,7 @@ PCS_API int pcs_strlen(const char *s)
 	return strlen(s);
 }
 
-/*æ—¶é—´è½¬æ¢*/
+/*Ê±¼ä×ª»»*/
 PCS_API const char *pcs_time2str(time_t time)
 {
 	struct tm *tm = NULL;
@@ -394,7 +394,7 @@ PCS_API const char *pcs_time2str(time_t time)
 	}
 }
 
-/* ç­‰åŒ javascript ä¸­çš„ '(new Date()).getTime()'ã€‚ */
+/* µÈÍ¬ javascript ÖĞµÄ '(new Date()).getTime()'¡£ */
 PCS_API int64_t pcs_jstime()
 {
 	int64_t sec, usec;

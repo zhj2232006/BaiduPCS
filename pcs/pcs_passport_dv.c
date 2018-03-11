@@ -24,7 +24,7 @@
 #define BROWSER_360EE			5
 #define BROWSER_OPERA			6
 #define BROWSER_SOGOU			7
-#define BROWSER_QIHU_THEWORLD	8 /*ä¸–ç•Œä¹‹çª— */
+#define BROWSER_QIHU_THEWORLD	8 /*ÊÀ½çÖ®´° */
 #define BROWSER_TENCENT_TRAVELER 9
 #define BROWSER_QQ_BROWSER		10
 #define BROWSER_SAFARI			11
@@ -39,21 +39,21 @@
 #define OS_IPAD		6
 
 #define DV_MAGIC_TOOLBAR	0x102
-#define DV_MAGIC_SLOWSCRIPT	0x202 /* è®°å½•æ…¢è„šæœ¬ */
+#define DV_MAGIC_SLOWSCRIPT	0x202 /* ¼ÇÂ¼Âı½Å±¾ */
 #define DV_MAGIC_BROWSER	0x402
 #define DV_MAGIC_INIT		0x502
 #define DV_MAGIC_SCREENINFO	0x602
-#define DV_MAGIC_TESTUTILS	0x702 /* æ˜¯å¦ä½¿ç”¨äº†ä¸€äº›è‡ªåŠ¨æµ‹è¯•å·¥å…·ï¼Œä¾‹å¦‚ï¼šphantom, webdriver ç­‰*/
-#define DV_MAGIC_MOUSEMOVE	0x802 /* é¼ æ ‡äº‹ä»¶ (åŒ…å«ç»è¿‡çš„æ¯«ç§’æ•°) */
-#define DV_MAGIC_MOUSEDOWN	0x902 /* é¼ æ ‡äº‹ä»¶ (åŒ…å«ç»è¿‡çš„æ¯«ç§’æ•°) */
-#define DV_MAGIC_TOUCHSTART	0xa02 /* touchstart äº‹ä»¶ */
+#define DV_MAGIC_TESTUTILS	0x702 /* ÊÇ·ñÊ¹ÓÃÁËÒ»Ğ©×Ô¶¯²âÊÔ¹¤¾ß£¬ÀıÈç£ºphantom, webdriver µÈ*/
+#define DV_MAGIC_MOUSEMOVE	0x802 /* Êó±êÊÂ¼ş (°üº¬¾­¹ıµÄºÁÃëÊı) */
+#define DV_MAGIC_MOUSEDOWN	0x902 /* Êó±êÊÂ¼ş (°üº¬¾­¹ıµÄºÁÃëÊı) */
+#define DV_MAGIC_TOUCHSTART	0xa02 /* touchstart ÊÂ¼ş */
 #define DV_MAGIC_KEYDOWN	0xc02
-#define DV_MAGIC_FCEVENT	0xd02 /* ç„¦ç‚¹äº‹ä»¶ (åŒ…å«ç»è¿‡çš„æ¯«ç§’æ•°) */
+#define DV_MAGIC_FCEVENT	0xd02 /* ½¹µãÊÂ¼ş (°üº¬¾­¹ıµÄºÁÃëÊı) */
 #define DV_MAGIC_PCMAC		0x1002
 #define DV_MAGIC_LOCATION	0x1302
-#define DV_MAGIC_TIME		0x1502 /* æ­¤ js å¯åŠ¨æ—¶é—´ */
+#define DV_MAGIC_TIME		0x1502 /* ´Ë js Æô¶¯Ê±¼ä */
 #define DV_MAGIC_PAGETOKEN	0x1602
-#define DV_MAGIC_VERIFY		0x1702 /*ä½œç”¨æœªçŸ¥ï¼Œå¯èƒ½ç”¨äºéªŒè¯*/
+#define DV_MAGIC_VERIFY		0x1702 /*×÷ÓÃÎ´Öª£¬¿ÉÄÜÓÃÓÚÑéÖ¤*/
 
 #define MAX_TESTUTILS		3
 #define MAX_MOUSEMOVE		5
@@ -392,7 +392,7 @@ static void pkg_p(pkg_t *pkg)
 	buf_writei2(pkg->a.data + 8, (short)pkg->pc);
 }
 
-/* ç”¨äºå‘é€æ•°æ®åˆ°æœåŠ¡å™¨æ—¶ï¼Œæ‰“åŒ…æ•°æ® */
+/* ÓÃÓÚ·¢ËÍÊı¾İµ½·şÎñÆ÷Ê±£¬´ò°üÊı¾İ */
 static int pkg_ppk(pkg_t *pkg, const char *a, int alen, int seq, int blen)
 {
 	int error;
@@ -499,12 +499,12 @@ static int passport_dv_toolbar(pkg_t *pkg)
 	char data[8], *p = data;
 	p = buf_writei2(p, DV_MAGIC_TOOLBAR);
 	p = buf_writei2(p, 0x1);
-	/* bK çš„å€¼ä¸º 0xe97b2,å¯åœ¨ Chrome Developer Tools ä¸­å¯¼å‡º. å¯¼å‡ºæ–¹æ³•å‚è€ƒ passport_dv_verify() ä¸­çš„æ³¨é‡Šã€‚*/
+	/* bK µÄÖµÎª 0xe97b2,¿ÉÔÚ Chrome Developer Tools ÖĞµ¼³ö. µ¼³ö·½·¨²Î¿¼ passport_dv_verify() ÖĞµÄ×¢ÊÍ¡£*/
 	p = buf_writei4(p, 0xe97b2);
 	return pkg_setdv(pkg, data, p - data);
 }
 
-/* ç™»å½•å¼€å§‹æ—¶é—´ */
+/* µÇÂ¼¿ªÊ¼Ê±¼ä */
 static int passport_dv_starttime(pkg_t *pkg, int64_t starttime)
 {
 	char data[10], *p = data;
@@ -513,7 +513,7 @@ static int passport_dv_starttime(pkg_t *pkg, int64_t starttime)
 	return pkg_setdv(pkg, data, p - data);
 }
 
-/* æµè§ˆå™¨ä¿¡æ¯ */
+/* ä¯ÀÀÆ÷ĞÅÏ¢ */
 static int passport_dv_browser(pkg_t *pkg)
 {
 	char data[8], *p = data;
@@ -556,7 +556,7 @@ static int passport_dv_token(pkg_t *pkg, int64_t starttime)
 	return pkg_setdv(pkg, data, p - data);
 }
 
-/* æœªçŸ¥ */
+/* Î´Öª */
 static int passport_dv_verify(pkg_t *pkg)
 {
 	static const char *s_functions[] = {
@@ -640,7 +640,7 @@ static int passport_dv_pcmac(pkg_t *pkg)
 	return pkg_setdv(pkg, data, p - data);
 }
 
-/* ä½ç½®ä¿¡æ¯ */
+/* Î»ÖÃĞÅÏ¢ */
 static int passport_dv_location(pkg_t *pkg)
 {
 	char data[64], *p = data;
@@ -657,7 +657,7 @@ static int passport_dv_location(pkg_t *pkg)
 	return pkg_setdv(pkg, data, p - data);
 }
 
-/* å±å¹•ä¿¡æ¯ */
+/* ÆÁÄ»ĞÅÏ¢ */
 static int passport_dv_screeninfo(pkg_t *pkg)
 {
 	char data[44], *p = data;
@@ -678,7 +678,7 @@ static int passport_dv_screeninfo(pkg_t *pkg)
 static int passport_dv_testutils(pkg_t *pkg)
 {
 	/*
-	é€šè¿‡ä»¥ä¸‹è„šæœ¬äº§ç”Ÿï¼š
+	Í¨¹ıÒÔÏÂ½Å±¾²úÉú£º
 	(function() {
 	var a = [
 	(window['phantom'] ? 1 : 0).toString(),
@@ -910,7 +910,7 @@ static int passport_keycodes(jskey_t *keys, const char *username, int n)
 
 	for (i = 0, shift = 0, key = keys; (i < n) && (i < wlen); i++, key++) {
 		ch = (unsigned)wchs[i];
-		if ((ch >= 'A' && ch <= 'Z') || ch == '_' || ch == '@' || ch == '+') { /* éœ€è¦æŒ‰ Shift */
+		if ((ch >= 'A' && ch <= 'Z') || ch == '_' || ch == '@' || ch == '+') { /* ĞèÒª°´ Shift */
 			if (!shift) {
 				key->keycode = DV_KEY_SHIFT;
 				key->flags = DV_CKEY_NONE;
@@ -947,7 +947,7 @@ static int passport_keycodes(jskey_t *keys, const char *username, int n)
 				key->keycode = DV_KEY_PLACEHOLDER;
 			else {
 				pcs_free(wchs);
-				return pcs_error(PCS_EINVAL); /* éé¢„æœŸçš„ç”¨æˆ·å­—ç¬¦ä¸² */
+				return pcs_error(PCS_EINVAL); /* ·ÇÔ¤ÆÚµÄÓÃ»§×Ö·û´® */
 			}
 		}
 	}
@@ -957,7 +957,7 @@ static int passport_keycodes(jskey_t *keys, const char *username, int n)
 	return PCS_OK;
 }
 
-/* æ¨¡æ‹Ÿè¾“å…¥ç”¨æˆ·å */
+/* Ä£ÄâÊäÈëÓÃ»§Ãû */
 static int passport_dv_imitate_input_username(pkg_t *pkg, int *ptime, const char *username)
 {
 	int i, time, error = PCS_OK;
@@ -980,98 +980,98 @@ static int passport_dv_imitate_input_username(pkg_t *pkg, int *ptime, const char
 	return error;
 }
 
-/* æ¨¡æ‹Ÿç”¨æˆ·è¡Œä¸º */
+/* Ä£ÄâÓÃ»§ĞĞÎª */
 static int passport_dv_imitate(pkg_t *pkg, const char *username)
 {
 	int time, error;
 
-	/* ç§»åŠ¨é¼ æ ‡åˆ°åˆ° â€œè´¦å·å¯†ç ç™»å½•â€ çš„é“¾æ¥ä¸Š */
+	/* ÒÆ¶¯Êó±êµ½µ½ ¡°ÕËºÅÃÜÂëµÇÂ¼¡± µÄÁ´½ÓÉÏ */
 	time = passport_randi(1466);
 	if ((error = passport_dv_mousemove(pkg, "",
 		passport_randi(1110), passport_randi(125), time)))
 		return error;
 
-	/* ç‚¹å‡» â€œè´¦å·å¯†ç ç™»å½•â€ */
+	/* µã»÷ ¡°ÕËºÅÃÜÂëµÇÂ¼¡± */
 	time = passport_randi(1803);
 	if ((error = passport_dv_mousedown(pkg, "",
 		passport_randi(1134), passport_randi(130), 0, "", time,
 		1, 1103, 120, 65, 21)))
 		return error;
 
-	/* â€œè´¦å·å¯†ç ç™»å½•â€è·å–ç„¦ç‚¹ */
+	/* ¡°ÕËºÅÃÜÂëµÇÂ¼¡±»ñÈ¡½¹µã */
 	time += (rand() % 10);
 	if ((error = passport_dv_focus(pkg, "", time)))
 		return error;
 
-	/* ç§»åŠ¨é¼ æ ‡åˆ°ç”¨æˆ·åè¾“å…¥æ¡† */
+	/* ÒÆ¶¯Êó±êµ½ÓÃ»§ÃûÊäÈë¿ò */
 	time = passport_randi(3082);
 	if ((error = passport_dv_mousemove(pkg, "TANGRAM__PSP_4__userName",
 		passport_randi(1075), passport_randi(220), time)))
 		return error;
 
-	/* ç‚¹å‡»ç”¨æˆ·åè¾“å…¥æ¡† */
+	/* µã»÷ÓÃ»§ÃûÊäÈë¿ò */
 	time += (rand() % 5);
 	if ((error = passport_dv_mousedown(pkg, "TANGRAM__PSP_4__userName",
 		passport_randi(1065), passport_randi(219), 0, "", time,
 		0, 0, 0, 0, 0)))
 		return error;
 
-	/* â€œè´¦å·å¯†ç ç™»å½•â€å¤±å»ç„¦ç‚¹ */
+	/* ¡°ÕËºÅÃÜÂëµÇÂ¼¡±Ê§È¥½¹µã */
 	time += (rand() % 5);
 	if ((error = passport_dv_focus(pkg, "", time)))
 		return error;
 
-	/* â€œç”¨æˆ·åè¾“å…¥æ¡†â€è·å–ç„¦ç‚¹ */
+	/* ¡°ÓÃ»§ÃûÊäÈë¿ò¡±»ñÈ¡½¹µã */
 	time += (rand() % 5);
 	if ((error = passport_dv_focus(pkg, "TANGRAM__PSP_4__userName", time)))
 		return error;
 
-	/* å†æ¬¡ç‚¹å‡»â€œç”¨æˆ·åè¾“å…¥æ¡†â€ */
+	/* ÔÙ´Îµã»÷¡°ÓÃ»§ÃûÊäÈë¿ò¡± */
 	time = passport_randi(3706);
 	if ((error = passport_dv_mousedown(pkg, "TANGRAM__PSP_4__userName",
 		passport_randi(1085), passport_randi(203), 0, "", time,
 		0, 0, 0, 0, 0)))
 		return error;
 
-	/* ç§»å¼€é¼ æ ‡ */
+	/* ÒÆ¿ªÊó±ê */
 	time = passport_randi(3945);
 	if ((error = passport_dv_mousemove(pkg, "TANGRAM__PSP_4__userName",
 		passport_randi(917), passport_randi(213), time)))
 		return error;
 
-	/* æ¨¡æ‹Ÿè¾“å…¥ç”¨æˆ·å */
+	/* Ä£ÄâÊäÈëÓÃ»§Ãû */
 	time = passport_randi(5264);
 	if ((error = passport_dv_imitate_input_username(pkg, &time, username)))
 		return error;
 
-	/* æŒ‰ TAB é”® */
+	/* °´ TAB ¼ü */
 	if ((error = passport_dv_keydown(pkg, "TANGRAM__PSP_4__userName",
 		9, 0, time, 0)))
 		return error;
 
-	/* â€œç”¨æˆ·åè¾“å…¥æ¡†â€å¤±å»ç„¦ç‚¹ */
+	/* ¡°ÓÃ»§ÃûÊäÈë¿ò¡±Ê§È¥½¹µã */
 	time += (rand() % 500);
 	if ((error = passport_dv_focus(pkg, "TANGRAM__PSP_4__userName", time)))
 		return error;
 
-	/* â€œå¯†ç è¾“å…¥æ¡†â€è·å¾—ç„¦ç‚¹ */
+	/* ¡°ÃÜÂëÊäÈë¿ò¡±»ñµÃ½¹µã */
 	time += (rand() % 500);
 	if ((error = passport_dv_focus(pkg, "TANGRAM__PSP_4__password", time)))
 		return error;
 
-	/* ç§»å¼€é¼ æ ‡ */
+	/* ÒÆ¿ªÊó±ê */
 	time = passport_randi(16000);
 	if ((error = passport_dv_mousemove(pkg, "",
 		passport_randi(1257), passport_randi(32), time)))
 		return error;
 
-	/* ç§»åŠ¨åˆ°ç™»å½•æŒ‰é’®ä¸Š */
+	/* ÒÆ¶¯µ½µÇÂ¼°´Å¥ÉÏ */
 	time = passport_randi(16400);
 	if ((error = passport_dv_mousemove(pkg, "TANGRAM__PSP_4__memberPassWrapper",
 		passport_randi(1054), passport_randi(289), time)))
 		return error;
 
-	/* ç‚¹å‡»ç™»å½•æŒ‰é’® */
+	/* µã»÷µÇÂ¼°´Å¥ */
 	time = passport_randi(16900);
 	if ((error = passport_dv_mousedown(pkg, "TANGRAM__PSP_4__submit",
 		passport_randi(1050), passport_randi(355), 0, "", time,
@@ -1081,9 +1081,9 @@ static int passport_dv_imitate(pkg_t *pkg, const char *username)
 	return PCS_OK;
 }
 
-/* äº§ç”Ÿ dv
- *   pdv       - ç”¨äºæ¥æ”¶äº§ç”Ÿçš„ dvï¼Œéœ€è¦ free(*pdv)
- *   starttime - ç™»å½•é¡µé¢æ‰“å¼€çš„æ—¶é—´
+/* ²úÉú dv
+ *   pdv       - ÓÃÓÚ½ÓÊÕ²úÉúµÄ dv£¬ĞèÒª free(*pdv)
+ *   starttime - µÇÂ¼Ò³Ãæ´ò¿ªµÄÊ±¼ä
  */
 int passport_build_dv(char **pdv, int64_t starttime, const char *username)
 {
@@ -1249,7 +1249,7 @@ static int passport_print_dvitem_toolbar(int magic, const char *d, int len)
 	d = buf_readch(d, &flags);
 	d = buf_readi4(d, &mg);
 
-	/* ä¸‹è¾¹çš„åå­—æ˜¯çŒœçš„ */
+	/* ÏÂ±ßµÄÃû×ÖÊÇ²ÂµÄ */
 	switch (flags) {
 	case 0x2:
 		printf("  Firebug\n");
@@ -1388,7 +1388,7 @@ static int passport_print_dvitem_mousemove_events(int magic, const char *d, int 
 	const char *p = d;
 	char *id;
 	int idlen, x, y;
-	int time; /*è€—æ—¶*/
+	int time; /*ºÄÊ±*/
 
 	if (len < 9) return pcs_error(PCS_EINVAL);
 
@@ -1418,7 +1418,7 @@ static int passport_print_dvitem_mousedown_events(int magic, const char *d, int 
 	char *id, *elt_attr;
 	int idlen, x, y, button, elt_attr_len, have_rect;
 	int left, top, offset_width, offset_height;
-	int time; /*è€—æ—¶*/
+	int time; /*ºÄÊ±*/
 
 	if (len < 12) return pcs_error(PCS_EINVAL);
 
@@ -1470,7 +1470,7 @@ static int passport_print_dvitem_keydown(int magic, const char *d, int len)
 	const char *p = d;
 	char *id, *type;
 	int idlen, keycode, ctl, count;
-	int time; /*è€—æ—¶*/
+	int time; /*ºÄÊ±*/
 
 	if (len < 7) return pcs_error(PCS_EINVAL);
 
@@ -1543,7 +1543,7 @@ static int passport_print_dvitem_focus_events(int magic, const char *d, int len)
 	const char *p = d;
 	char *id;
 	int idlen;
-	int time; /*è€—æ—¶*/
+	int time; /*ºÄÊ±*/
 
 	if (len < 5) return pcs_error(PCS_EINVAL);
 

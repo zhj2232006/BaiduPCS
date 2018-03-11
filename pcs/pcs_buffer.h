@@ -19,7 +19,7 @@ int pcs_buf_init(pcs_buf_t *buf);
 
 void pcs_buf_free(pcs_buf_t *buf);
 
-/* æ‰©å®¹ï¼Œä½¿å¾— buf æœ‰è¶³å¤Ÿçš„ç©ºé—´æ¥è£…å…¥ want_size å¤§å°çš„æ•°æ® */
+/* À©Èİ£¬Ê¹µÃ buf ÓĞ×ã¹»µÄ¿Õ¼äÀ´×°Èë want_size ´óĞ¡µÄÊı¾İ */
 int pcs_buf_enlarge(pcs_buf_t *buf, int want_size);
 
 int pcs_buf_write(pcs_buf_t *buf, const char *data, int size);

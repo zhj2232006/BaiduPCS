@@ -1,7 +1,7 @@
 #ifndef _PCS_SLIST_H
 #define _PCS_SLIST_H
 
-/* å®šä¹‰äº†å­—ç¬¦ä¸²åˆ—è¡¨ã€‚åˆ—è¡¨ä»¥é“¾è¡¨å½¢å¼å­˜å‚¨ã€‚ */
+/* ¶¨ÒåÁË×Ö·û´®ÁĞ±í¡£ÁĞ±íÒÔÁ´±íĞÎÊ½´æ´¢¡£ */
 typedef struct PcsSList {
 	char			*string;
 	struct PcsSList	*next;

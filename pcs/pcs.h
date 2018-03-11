@@ -23,37 +23,37 @@
 
 typedef enum PcsOption {
 	PCS_OPTION_END = 0,
-	/* å€¼ä¸ºä»¥0ç»“å°¾çš„Cæ ¼å¼å­—ç¬¦ä¸² */
+	/* ÖµÎªÒÔ0½áÎ²µÄC¸ñÊ½×Ö·û´® */
 	PCS_OPTION_USERNAME,
-	/* å€¼ä¸ºä»¥0ç»“å°¾çš„Cæ ¼å¼å­—ç¬¦ä¸² */
+	/* ÖµÎªÒÔ0½áÎ²µÄC¸ñÊ½×Ö·û´® */
 	PCS_OPTION_PASSWORD,
-	/* å€¼ä¸ºPcsGetCaptchaç±»å‹çš„å‡½æ•° */
+	/* ÖµÎªPcsGetCaptchaÀàĞÍµÄº¯Êı */
 	PCS_OPTION_CAPTCHA_FUNCTION,
-	/* Pcsæœ¬èº«ä¸ä½¿ç”¨è¯¥å€¼ï¼Œä»…åŸæ ·ä¼ é€’åˆ°PcsGetCaptchaå‡½æ•°ä¸­ */
+	/* Pcs±¾Éí²»Ê¹ÓÃ¸ÃÖµ£¬½öÔ­Ñù´«µİµ½PcsGetCaptchaº¯ÊıÖĞ */
 	PCS_OPTION_CAPTCHA_FUNCTION_DATA,
-    /* å€¼ä¸º PcsInputFunction ç±»å‹çš„å‡½æ•°*/
+    /* ÖµÎª PcsInputFunction ÀàĞÍµÄº¯Êı*/
     PCS_OPTION_INPUT_FUNCTION,
-    /* Pcs æœ¬èº«ä¸ä½¿ç”¨è¯¥æŒ‡ï¼Œä»…åŸæ ·ä¼ é€’åˆ°å›è°ƒå‡½æ•°ä¸­ */
+    /* Pcs ±¾Éí²»Ê¹ÓÃ¸ÃÖ¸£¬½öÔ­Ñù´«µİµ½»Øµ÷º¯ÊıÖĞ */
     PCS_OPTION_INPUT_FUNCTION_DATA,
-	/* å€¼ä¸ºPcsHttpWriteFunctionç±»å‹çš„å‡½æ•° */
+	/* ÖµÎªPcsHttpWriteFunctionÀàĞÍµÄº¯Êı */
 	PCS_OPTION_DOWNLOAD_WRITE_FUNCTION,
-	/* Pcsæœ¬èº«ä¸ä½¿ç”¨è¯¥å€¼ï¼Œä»…åŸæ ·ä¼ é€’åˆ°PcsHttpWriteFunctionå‡½æ•°ä¸­ */
+	/* Pcs±¾Éí²»Ê¹ÓÃ¸ÃÖµ£¬½öÔ­Ñù´«µİµ½PcsHttpWriteFunctionº¯ÊıÖĞ */
 	PCS_OPTION_DOWNLOAD_WRITE_FUNCTION_DATA,
-	/* å€¼ä¸ºPcsHttpResponseFunctionç±»å‹çš„å‡½æ•° */
+	/* ÖµÎªPcsHttpResponseFunctionÀàĞÍµÄº¯Êı */
 	PCS_OPTION_HTTP_RESPONSE_FUNCTION,
-	/* Pcsæœ¬èº«ä¸ä½¿ç”¨è¯¥å€¼ï¼Œä»…åŸæ ·ä¼ é€’åˆ°PcsHttpResponseFunctionå‡½æ•°ä¸­ */
+	/* Pcs±¾Éí²»Ê¹ÓÃ¸ÃÖµ£¬½öÔ­Ñù´«µİµ½PcsHttpResponseFunctionº¯ÊıÖĞ */
 	PCS_OPTION_HTTP_RESPONSE_FUNCTION_DATE,
-	/* å€¼ä¸ºPcsHttpProgressCallbackç±»å‹çš„å‡½æ•° */
+	/* ÖµÎªPcsHttpProgressCallbackÀàĞÍµÄº¯Êı */
 	PCS_OPTION_PROGRESS_FUNCTION,
-	/* Pcsæœ¬èº«ä¸ä½¿ç”¨è¯¥å€¼ï¼Œä»…åŸæ ·ä¼ é€’åˆ°PcsHttpProgressCallbackå‡½æ•°ä¸­ */
+	/* Pcs±¾Éí²»Ê¹ÓÃ¸ÃÖµ£¬½öÔ­Ñù´«µİµ½PcsHttpProgressCallbackº¯ÊıÖĞ */
 	PCS_OPTION_PROGRESS_FUNCTION_DATE,
-	/* è®¾ç½®æ˜¯å¦å¯ç”¨ä¸‹è½½æˆ–ä¸Šä¼ è¿›åº¦ï¼Œå€¼ä¸ºPcsBoolç±»å‹ */
+	/* ÉèÖÃÊÇ·ñÆôÓÃÏÂÔØ»òÉÏ´«½ø¶È£¬ÖµÎªPcsBoolÀàĞÍ */
 	PCS_OPTION_PROGRESS,
-	/* è®¾ç½®USAGEï¼Œå€¼ä¸ºcharç±»å‹æŒ‡é’ˆ */
+	/* ÉèÖÃUSAGE£¬ÖµÎªcharÀàĞÍÖ¸Õë */
 	PCS_OPTION_USAGE,
-	/*è®¾ç½®æ•´ä¸ªè¯·æ±‚çš„è¶…æ—¶æ—¶é—´ï¼Œå€¼ä¸ºlongç±»å‹*/
+	/*ÉèÖÃÕû¸öÇëÇóµÄ³¬Ê±Ê±¼ä£¬ÖµÎªlongÀàĞÍ*/
 	PCS_OPTION_TIMEOUT,
-	/*è®¾ç½®è¿æ¥å‰çš„ç­‰å¾…æ—¶é—´ï¼Œå€¼ä¸ºlongç±»å‹*/
+	/*ÉèÖÃÁ¬½ÓÇ°µÄµÈ´ıÊ±¼ä£¬ÖµÎªlongÀàĞÍ*/
 	PCS_OPTION_CONNECTTIMEOUT,
 
 
@@ -91,64 +91,64 @@ typedef enum PcsRes {
 } PcsRes;
 
 /*
- * ç™»å½•æ—¶ï¼Œå½“éœ€è¦è¾“å…¥éªŒè¯ç æ—¶ï¼Œå›è°ƒè¯¥å‡½æ•°ç”¨äºè·å–éªŒè¯ç 
- *   ptr  éªŒè¯ç å›¾ç‰‡çš„å­—èŠ‚åº
- *   size éªŒè¯ç å›¾ç‰‡å­—èŠ‚åºçš„å¤§å°ï¼Œä»¥å­—èŠ‚ä¸ºå•ä½
- *   captcha ç”¨äºæ¥æ”¶éªŒè¯ç å­—ç¬¦
- *   captchaSize captchaçš„æœ€å¤§é•¿åº¦
- *   state ä½¿ç”¨PCS_OPTION_CAPTCHA_FUNCTION_DATAé€‰é¡¹è®¾å®šçš„å€¼åŸæ ·ä¼ å…¥
- * è¿”å›æ˜¯å¦æˆåŠŸï¼Œè¿”å›PcsFalseï¼Œå°†å¯¼è‡´ç™»å½•ä¸­æ–­
+ * µÇÂ¼Ê±£¬µ±ĞèÒªÊäÈëÑéÖ¤ÂëÊ±£¬»Øµ÷¸Ãº¯ÊıÓÃÓÚ»ñÈ¡ÑéÖ¤Âë
+ *   ptr  ÑéÖ¤ÂëÍ¼Æ¬µÄ×Ö½ÚĞò
+ *   size ÑéÖ¤ÂëÍ¼Æ¬×Ö½ÚĞòµÄ´óĞ¡£¬ÒÔ×Ö½ÚÎªµ¥Î»
+ *   captcha ÓÃÓÚ½ÓÊÕÑéÖ¤Âë×Ö·û
+ *   captchaSize captchaµÄ×î´ó³¤¶È
+ *   state Ê¹ÓÃPCS_OPTION_CAPTCHA_FUNCTION_DATAÑ¡ÏîÉè¶¨µÄÖµÔ­Ñù´«Èë
+ * ·µ»ØÊÇ·ñ³É¹¦£¬·µ»ØPcsFalse£¬½«µ¼ÖÂµÇÂ¼ÖĞ¶Ï
 */
 typedef PcsBool (*PcsGetCaptchaFunction)(unsigned char *ptr, size_t size, char *captcha, size_t captchaSize, void *state);
 
 /*
- * å½“ Pcs éœ€è¦ç”¨æˆ·è¾“å…¥æ—¶ï¼Œå›è°ƒè¯¥å‡½æ•°ç”¨äºè·å–ç”¨æˆ·è¾“å…¥å€¼
- *   tips  æç¤ºç”¨æˆ·è¾“å…¥çš„å­—ç¬¦ä¸²
- *   value ç”¨äºæ¥å—ç”¨æˆ·è¾“å…¥
- *   valueSize value çš„æœ€å¤§é•¿åº¦,åŒ…æ‹¬ '\0' å€¼
- *   state ä½¿ç”¨ PCS_OPTION_INPUT_FUNCTION_DATE é€‰é¡¹è®¾å®šçš„å€¼ï¼Œå°†è¢«åŸæ ·ä¼ å…¥
- * è¿”å›æ˜¯å¦æˆåŠŸï¼Œè¿”å› PcsFalseï¼Œå°†å¯¼è‡´ä¸­æ–­
+ * µ± Pcs ĞèÒªÓÃ»§ÊäÈëÊ±£¬»Øµ÷¸Ãº¯ÊıÓÃÓÚ»ñÈ¡ÓÃ»§ÊäÈëÖµ
+ *   tips  ÌáÊ¾ÓÃ»§ÊäÈëµÄ×Ö·û´®
+ *   value ÓÃÓÚ½ÓÊÜÓÃ»§ÊäÈë
+ *   valueSize value µÄ×î´ó³¤¶È,°üÀ¨ '\0' Öµ
+ *   state Ê¹ÓÃ PCS_OPTION_INPUT_FUNCTION_DATE Ñ¡ÏîÉè¶¨µÄÖµ£¬½«±»Ô­Ñù´«Èë
+ * ·µ»ØÊÇ·ñ³É¹¦£¬·µ»Ø PcsFalse£¬½«µ¼ÖÂÖĞ¶Ï
  */
 typedef PcsBool (*PcsInputFunction)(const char *tips, char *value, size_t valueSize, void *state);
 
 typedef void *Pcs;
 
-/*è¾“å‡ºPCS APIçš„ç‰ˆæœ¬å·*/
+/*Êä³öPCS APIµÄ°æ±¾ºÅ*/
 PCS_API const char *pcs_version();
 
-/* æ¸…é™¤é”™è¯¯æ¶ˆæ¯ */
+/* Çå³ı´íÎóÏûÏ¢ */
 PCS_API void pcs_clear_errmsg(Pcs handle);
 
-/* è®¾ç½®é”™è¯¯æ¶ˆæ¯ */
+/* ÉèÖÃ´íÎóÏûÏ¢ */
 PCS_API void pcs_set_serrmsg(Pcs handle, const char *errmsg);
 
-/* æ·»åŠ æ–‡æœ¬åˆ°é”™è¯¯æ¶ˆæ¯çš„ç»“å°¾ */
+/* Ìí¼ÓÎÄ±¾µ½´íÎóÏûÏ¢µÄ½áÎ² */
 PCS_API void pcs_cat_serrmsg(Pcs handle, const char *errmsg);
 
 /*
- * åˆ›å»ºPcsã€‚
- * æˆåŠŸåè¿”å›è¯¥Pcsçš„handleï¼Œå¦åˆ™è¿”å›NULLã€‚æ³¨æ„æ­¤å‡½æ•°æ— æ³•ä½¿ç”¨pcs_strerror()è·å–é”™è¯¯ç¼–å·
+ * ´´½¨Pcs¡£
+ * ³É¹¦ºó·µ»Ø¸ÃPcsµÄhandle£¬·ñÔò·µ»ØNULL¡£×¢Òâ´Ëº¯ÊıÎŞ·¨Ê¹ÓÃpcs_strerror()»ñÈ¡´íÎó±àºÅ
 */
 PCS_API Pcs pcs_create(const char *cookie_file);
 
 /*
- * é‡Šæ”¾Pcså¯¹è±¡
+ * ÊÍ·ÅPcs¶ÔÏó
 */
 PCS_API void pcs_destroy(Pcs handle);
 
-/*å…‹éš†ä¸€ä»½ç”¨æˆ·çš„ bdstoken, BDUSS ç­‰ä¿¡æ¯*/
+/*¿ËÂ¡Ò»·İÓÃ»§µÄ bdstoken, BDUSS µÈĞÅÏ¢*/
 PCS_API void pcs_clone_userinfo(Pcs dst, Pcs src);
 
 /*
- * å¦‚æœå·²ç»ç™»å½•ï¼Œ
- * åˆ™è¿”å›ç”¨æˆ·çš„UIDï¼Œå¦åˆ™è¿”å›NULL
+ * Èç¹ûÒÑ¾­µÇÂ¼£¬
+ * Ôò·µ»ØÓÃ»§µÄUID£¬·ñÔò·µ»ØNULL
 */
 PCS_API const char *pcs_sysUID(Pcs handle);
 
 /*
- * è·å–é”™è¯¯æ¶ˆæ¯ã€‚
- * å¦‚æœç¨‹åºä¸­å­˜åœ¨é”™è¯¯ï¼Œåˆ™è¿”å›é”™è¯¯æè¿°ï¼Œå¦åˆ™è¿”å›NULL
- * ä¾‹ï¼š
+ * »ñÈ¡´íÎóÏûÏ¢¡£
+ * Èç¹û³ÌĞòÖĞ´æÔÚ´íÎó£¬Ôò·µ»Ø´íÎóÃèÊö£¬·ñÔò·µ»ØNULL
+ * Àı£º
  *    PcsRes res;
  *    const char *err;
  *    res = pcs_login(handle);
@@ -157,7 +157,7 @@ PCS_API const char *pcs_sysUID(Pcs handle);
  *        printf("Error: %s\n", err);
  *    }
  *
- * ä¾‹2ï¼š
+ * Àı2£º
  *    PcsRes res;
  *    const char *err;
  *    size_t quota, used;
@@ -167,7 +167,7 @@ PCS_API const char *pcs_sysUID(Pcs handle);
  *        printf("Error: %s\n", err);
  *    }
  *
- * ä¾‹3ï¼š
+ * Àı3£º
  *    PcsFileInfoList list;
  *    const char *err;
  *    list = pcs_list(handle, "/", 1, 100, "name", PcsFalse);
@@ -186,242 +186,242 @@ PCS_API const char *pcs_sysUID(Pcs handle);
 PCS_API const char *pcs_strerror(Pcs handle);
 
 /*
- * è®¾å®šå•ä¸ªé€‰é¡¹ï¼Œ
- * æˆåŠŸåè¿”å›PCS_OKï¼Œå¤±è´¥åˆ™è¿”å›é”™è¯¯ç¼–å·
+ * Éè¶¨µ¥¸öÑ¡Ïî£¬
+ * ³É¹¦ºó·µ»ØPCS_OK£¬Ê§°ÜÔò·µ»Ø´íÎó±àºÅ
 */
 PCS_API PcsRes pcs_setopt(Pcs handle, PcsOption opt, void *value);
 
 /*
- * ä¸€æ¬¡è®¾å®šå¤šä¸ªé€‰é¡¹ï¼Œæœ€åä¸€é¡¹å¿…é¡»ä¸ºPCS_OPTION_ENDã€‚
- * ä¾‹ï¼š pcs_setopts(handle, PCS_OPTION_USERNAME, "username", PCS_OPTION_PASSWORD, "password", PCS_OPTION_END);
+ * Ò»´ÎÉè¶¨¶à¸öÑ¡Ïî£¬×îºóÒ»Ïî±ØĞëÎªPCS_OPTION_END¡£
+ * Àı£º pcs_setopts(handle, PCS_OPTION_USERNAME, "username", PCS_OPTION_PASSWORD, "password", PCS_OPTION_END);
  *      pcs_setopts(handle, PCS_OPTION_CAPTCHA_FUNCTION, &get_captcha, PCS_OPTION_CAPTCHA_FUNCTION_DATA, state, PCS_OPTION_END);
- * æˆåŠŸåè¿”å›PCS_OKï¼Œå¤±è´¥åˆ™è¿”å›é”™è¯¯ç¼–å·
+ * ³É¹¦ºó·µ»ØPCS_OK£¬Ê§°ÜÔò·µ»Ø´íÎó±àºÅ
  */
 PCS_API PcsRes pcs_setopts(Pcs handle, ...);
 
 /*
- * è¿”å›æ˜¯å¦å·²ç»ç™»å½•ï¼Œ
- * å·²ç»ç™»å½•åˆ™è¿”å›PCS_LOGINï¼Œå¦åˆ™è¿”å›PCS_NOT_LOGIN
+ * ·µ»ØÊÇ·ñÒÑ¾­µÇÂ¼£¬
+ * ÒÑ¾­µÇÂ¼Ôò·µ»ØPCS_LOGIN£¬·ñÔò·µ»ØPCS_NOT_LOGIN
 */
 PCS_API PcsRes pcs_islogin(Pcs handle);
 
 /*
- * ç™»å½•ç™¾åº¦å¸å·ï¼Œ
- * æˆåŠŸåè¿”å›PCS_LOGINï¼Œå¤±è´¥åˆ™è¿”å›é”™è¯¯ç¼–å·
+ * µÇÂ¼°Ù¶ÈÕÊºÅ£¬
+ * ³É¹¦ºó·µ»ØPCS_LOGIN£¬Ê§°ÜÔò·µ»Ø´íÎó±àºÅ
 */
 PCS_API PcsRes pcs_login(Pcs handle);
 
 /*
-* æ³¨é”€ç™¾åº¦å¸å·ï¼Œ
-* æˆåŠŸåè¿”å›PCS_OKï¼Œå¤±è´¥åˆ™è¿”å›PCS_FAIL
+* ×¢Ïú°Ù¶ÈÕÊºÅ£¬
+* ³É¹¦ºó·µ»ØPCS_OK£¬Ê§°ÜÔò·µ»ØPCS_FAIL
 */
 PCS_API PcsRes pcs_logout(Pcs handle);
 
 /*
- * è·å–ç½‘ç›˜é…é¢
- *   quota ç”¨äºæ¥æ”¶æ€»å¤§å°
- *   used  ç”¨äºæ¥æ”¶å·²ä½¿ç”¨å€¼
- * æˆåŠŸåè¿”å›PCS_OKï¼Œå¤±è´¥åˆ™è¿”å›é”™è¯¯ç¼–å·
+ * »ñÈ¡ÍøÅÌÅä¶î
+ *   quota ÓÃÓÚ½ÓÊÕ×Ü´óĞ¡
+ *   used  ÓÃÓÚ½ÓÊÕÒÑÊ¹ÓÃÖµ
+ * ³É¹¦ºó·µ»ØPCS_OK£¬Ê§°ÜÔò·µ»Ø´íÎó±àºÅ
 */
 PCS_API PcsRes pcs_quota(Pcs handle, int64_t *quota, int64_t *used);
 
 /*
- * åˆ›å»ºä¸€ä¸ªç›®å½•
- * path  å¾…åˆ›å»ºçš„ç›®å½•ï¼Œåœ°å€éœ€å†™å…¨ï¼Œå¦‚/temp
- * æˆåŠŸåè¿”å›PCS_OKï¼Œå¤±è´¥åˆ™è¿”å›é”™è¯¯ç¼–å·
+ * ´´½¨Ò»¸öÄ¿Â¼
+ * path  ´ı´´½¨µÄÄ¿Â¼£¬µØÖ·ĞèĞ´È«£¬Èç/temp
+ * ³É¹¦ºó·µ»ØPCS_OK£¬Ê§°ÜÔò·µ»Ø´íÎó±àºÅ
 */
 PCS_API PcsRes pcs_mkdir(Pcs handle, const char *path);
 
 /*
- * è·å–æ–‡ä»¶åˆ—è¡¨
- *   dir		å¾…è·å–çš„ç›®å½•ï¼Œåœ°å€éœ€å†™å…¨ï¼Œå¦‚/temp
- *   pageindex	é¡µç´¢å¼•ï¼Œä»1å¼€å§‹
- *   pagesize	é¡µå¤§å°
- *   order		æ’åºå­—æ®µï¼Œå¯é€‰å€¼ï¼šname|time|size
- *   desc		å€’åºä¼ PcsTrueï¼Œæ­£åºä¼ PcsFalse
- * æˆåŠŸåï¼Œè¿”å›PcsFileInfoListç±»å‹å®ä¾‹ï¼Œè¯¥ç±»å‹ä¸ºæ–‡ä»¶çš„åŒå‘é“¾è¡¨ï¼Œ
- * ä½¿ç”¨å®Œæˆåéœ€è°ƒç”¨ pcs_filist_destroy() æ–¹æ³•é‡Šæ”¾ã€‚
- * å¤±è´¥æˆ–ç›®å½•ä¸ºç©ºåˆ™è¿”å› NULLã€‚è¿”å›NULLæ—¶ï¼Œå¯æ ¹æ®pcs_strerror()çš„è¿”å›å€¼æ¥åˆ¤æ–­æ˜¯å¦å‡ºé”™ï¼Œå¦‚æœæœªå‡ºé”™åˆ™é”™è¯¯æ¶ˆæ¯ä¸ºNULL
+ * »ñÈ¡ÎÄ¼şÁĞ±í
+ *   dir		´ı»ñÈ¡µÄÄ¿Â¼£¬µØÖ·ĞèĞ´È«£¬Èç/temp
+ *   pageindex	Ò³Ë÷Òı£¬´Ó1¿ªÊ¼
+ *   pagesize	Ò³´óĞ¡
+ *   order		ÅÅĞò×Ö¶Î£¬¿ÉÑ¡Öµ£ºname|time|size
+ *   desc		µ¹Ğò´«PcsTrue£¬ÕıĞò´«PcsFalse
+ * ³É¹¦ºó£¬·µ»ØPcsFileInfoListÀàĞÍÊµÀı£¬¸ÃÀàĞÍÎªÎÄ¼şµÄË«ÏòÁ´±í£¬
+ * Ê¹ÓÃÍê³ÉºóĞèµ÷ÓÃ pcs_filist_destroy() ·½·¨ÊÍ·Å¡£
+ * Ê§°Ü»òÄ¿Â¼Îª¿ÕÔò·µ»Ø NULL¡£·µ»ØNULLÊ±£¬¿É¸ù¾İpcs_strerror()µÄ·µ»ØÖµÀ´ÅĞ¶ÏÊÇ·ñ³ö´í£¬Èç¹ûÎ´³ö´íÔò´íÎóÏûÏ¢ÎªNULL
 */
 PCS_API PcsFileInfoList *pcs_list(Pcs handle, const char *dir, int pageindex, int pagesize, const char *order, PcsBool desc);
 
 /*
- * åœ¨diræŒ‡å®šçš„æ–‡ä»¶å¤¹ä¸­æœç´¢å…³é”®å­—key
- *   dir		å¾…æœç´¢çš„ç›®å½•ï¼Œåœ°å€éœ€å†™å…¨ï¼Œå¦‚/temp
- *   key	    å…³é”®è¯
- *   recursion	æ˜¯å¦é€’å½’æœç´¢å…¶å­ç›®å½•
- * æˆåŠŸåï¼Œè¿”å›PcsFileInfoListç±»å‹å®ä¾‹ï¼Œè¯¥ç±»å‹ä¸ºæ–‡ä»¶çš„åŒå‘é“¾è¡¨ï¼Œ
- * ä½¿ç”¨å®Œæˆåéœ€è°ƒç”¨ pcs_filist_destroy() æ–¹æ³•é‡Šæ”¾ã€‚
- * å¤±è´¥æˆ–æœªæ‰¾åˆ°åˆ™è¿”å› NULLã€‚è¿”å›NULLæ—¶ï¼Œå¯æ ¹æ®pcs_strerror()çš„è¿”å›å€¼æ¥åˆ¤æ–­æ˜¯å¦å‡ºé”™ï¼Œå¦‚æœæœªå‡ºé”™åˆ™é”™è¯¯æ¶ˆæ¯ä¸ºNULL
+ * ÔÚdirÖ¸¶¨µÄÎÄ¼ş¼ĞÖĞËÑË÷¹Ø¼ü×Ökey
+ *   dir		´ıËÑË÷µÄÄ¿Â¼£¬µØÖ·ĞèĞ´È«£¬Èç/temp
+ *   key	    ¹Ø¼ü´Ê
+ *   recursion	ÊÇ·ñµİ¹éËÑË÷Æä×ÓÄ¿Â¼
+ * ³É¹¦ºó£¬·µ»ØPcsFileInfoListÀàĞÍÊµÀı£¬¸ÃÀàĞÍÎªÎÄ¼şµÄË«ÏòÁ´±í£¬
+ * Ê¹ÓÃÍê³ÉºóĞèµ÷ÓÃ pcs_filist_destroy() ·½·¨ÊÍ·Å¡£
+ * Ê§°Ü»òÎ´ÕÒµ½Ôò·µ»Ø NULL¡£·µ»ØNULLÊ±£¬¿É¸ù¾İpcs_strerror()µÄ·µ»ØÖµÀ´ÅĞ¶ÏÊÇ·ñ³ö´í£¬Èç¹ûÎ´³ö´íÔò´íÎóÏûÏ¢ÎªNULL
 */
 PCS_API PcsFileInfoList *pcs_search(Pcs handle, const char *dir, const char *key, PcsBool recursion);
 
 /*
- * è·å–æ–‡ä»¶æˆ–ç›®å½•çš„å…ƒä¿¡æ¯ï¼Œè¯¥æ–¹æ³•é€šè¿‡pcs_searchå®ç°ã€‚
- *   path		å¾…è·å–çš„æ–‡ä»¶æˆ–ç›®å½•ï¼Œåœ°å€éœ€å†™å…¨ï¼Œå¦‚/temp, /temp/file.txt
- * æˆåŠŸåï¼Œè¿”å›PcsFileInfoç±»å‹å®ä¾‹
- * ä½¿ç”¨å®Œæˆåéœ€è°ƒç”¨ pcs_fileinfo_destroy() æ–¹æ³•é‡Šæ”¾ã€‚
- * å¤±è´¥æˆ–æœªæ‰¾åˆ°åˆ™è¿”å› NULLã€‚è¿”å›NULLæ—¶ï¼Œå¯æ ¹æ®pcs_strerror()çš„è¿”å›å€¼æ¥åˆ¤æ–­æ˜¯å¦å‡ºé”™ï¼Œå¦‚æœæœªå‡ºé”™åˆ™é”™è¯¯æ¶ˆæ¯ä¸ºNULL
+ * »ñÈ¡ÎÄ¼ş»òÄ¿Â¼µÄÔªĞÅÏ¢£¬¸Ã·½·¨Í¨¹ıpcs_searchÊµÏÖ¡£
+ *   path		´ı»ñÈ¡µÄÎÄ¼ş»òÄ¿Â¼£¬µØÖ·ĞèĞ´È«£¬Èç/temp, /temp/file.txt
+ * ³É¹¦ºó£¬·µ»ØPcsFileInfoÀàĞÍÊµÀı
+ * Ê¹ÓÃÍê³ÉºóĞèµ÷ÓÃ pcs_fileinfo_destroy() ·½·¨ÊÍ·Å¡£
+ * Ê§°Ü»òÎ´ÕÒµ½Ôò·µ»Ø NULL¡£·µ»ØNULLÊ±£¬¿É¸ù¾İpcs_strerror()µÄ·µ»ØÖµÀ´ÅĞ¶ÏÊÇ·ñ³ö´í£¬Èç¹ûÎ´³ö´íÔò´íÎóÏûÏ¢ÎªNULL
 */
 PCS_API PcsFileInfo *pcs_meta(Pcs handle, const char *path);
 
 /*
- * åˆ é™¤å¤šä¸ªæ–‡ä»¶
- *   slist  å­—ç¬¦ä¸²çš„å•é¡¹é“¾è¡¨ï¼Œä¸€æ¬¡å¯ä¼ å…¥å¤šä¸ªæ–‡ä»¶
- * æˆåŠŸåè¿”å›PcsPanApiResç±»å‹å®ä¾‹ï¼Œå¯å¾ªç¯è·å–æ¯ä¸ªæ–‡ä»¶æˆ–ç›®å½•çš„åˆ é™¤æƒ…å†µï¼ŒæˆåŠŸåˆ™PcsPanApiResInfo->errorä¸º0ï¼Œå¦åˆ™ä¸ºé”™è¯¯ç¼–ç 
- * ä½¿ç”¨å®Œåéœ€è°ƒç”¨pcs_pan_api_res_destroyé‡Šæ”¾
- * å¤±è´¥åˆ™è¿”å› NULLã€‚
+ * É¾³ı¶à¸öÎÄ¼ş
+ *   slist  ×Ö·û´®µÄµ¥ÏîÁ´±í£¬Ò»´Î¿É´«Èë¶à¸öÎÄ¼ş
+ * ³É¹¦ºó·µ»ØPcsPanApiResÀàĞÍÊµÀı£¬¿ÉÑ­»·»ñÈ¡Ã¿¸öÎÄ¼ş»òÄ¿Â¼µÄÉ¾³ıÇé¿ö£¬³É¹¦ÔòPcsPanApiResInfo->errorÎª0£¬·ñÔòÎª´íÎó±àÂë
+ * Ê¹ÓÃÍêºóĞèµ÷ÓÃpcs_pan_api_res_destroyÊÍ·Å
+ * Ê§°ÜÔò·µ»Ø NULL¡£
  */
 PCS_API PcsPanApiRes *pcs_delete(Pcs handle, PcsSList *slist);
 
 /*
- * é‡å‘½åå¤šä¸ªæ–‡ä»¶
- *   slist  å­—ç¬¦ä¸²çš„å•é¡¹é“¾è¡¨ï¼Œä¸€æ¬¡å¯ä¼ å…¥å¤šä¸ªæ–‡ä»¶ï¼Œ
- *          æ¯é¡¹ä¸­çš„string1ä¸ºå¾…é‡å‘½åçš„æ–‡ä»¶ï¼Œè·¯å¾„éœ€å†™å…¨ï¼ˆå¦‚ï¼š/temp/file.txtï¼‰
- *          string2ä¸ºæ–°çš„åå­—ï¼Œä»…éœ€æ–‡ä»¶åï¼Œä¾‹å¦‚newfile.txtï¼Œå†™å…¨è·¯å¾„åˆ™é‡å‘½åå¤±è´¥ã€‚
- *          å¦‚éœ€è¦ç§»åŠ¨è¯·ç”¨pcs_move()æ–¹æ³•
- * æˆåŠŸåè¿”å›PcsPanApiResç±»å‹å®ä¾‹ï¼Œå¯å¾ªç¯è·å–æ¯ä¸ªæ–‡ä»¶æˆ–ç›®å½•çš„åˆ é™¤æƒ…å†µï¼ŒæˆåŠŸåˆ™PcsPanApiResInfo->errorä¸º0ï¼Œå¦åˆ™ä¸ºé”™è¯¯ç¼–ç 
- * ä½¿ç”¨å®Œåéœ€è°ƒç”¨pcs_pan_api_res_destroyé‡Šæ”¾
- * å¤±è´¥åˆ™è¿”å› NULLã€‚
+ * ÖØÃüÃû¶à¸öÎÄ¼ş
+ *   slist  ×Ö·û´®µÄµ¥ÏîÁ´±í£¬Ò»´Î¿É´«Èë¶à¸öÎÄ¼ş£¬
+ *          Ã¿ÏîÖĞµÄstring1Îª´ıÖØÃüÃûµÄÎÄ¼ş£¬Â·¾¶ĞèĞ´È«£¨Èç£º/temp/file.txt£©
+ *          string2ÎªĞÂµÄÃû×Ö£¬½öĞèÎÄ¼şÃû£¬ÀıÈçnewfile.txt£¬Ğ´È«Â·¾¶ÔòÖØÃüÃûÊ§°Ü¡£
+ *          ÈçĞèÒªÒÆ¶¯ÇëÓÃpcs_move()·½·¨
+ * ³É¹¦ºó·µ»ØPcsPanApiResÀàĞÍÊµÀı£¬¿ÉÑ­»·»ñÈ¡Ã¿¸öÎÄ¼ş»òÄ¿Â¼µÄÉ¾³ıÇé¿ö£¬³É¹¦ÔòPcsPanApiResInfo->errorÎª0£¬·ñÔòÎª´íÎó±àÂë
+ * Ê¹ÓÃÍêºóĞèµ÷ÓÃpcs_pan_api_res_destroyÊÍ·Å
+ * Ê§°ÜÔò·µ»Ø NULL¡£
  */
 PCS_API PcsPanApiRes *pcs_rename(Pcs handle, PcsSList2 *slist);
 
 /*
- * ç§»åŠ¨å¤šä¸ªæ–‡ä»¶
- *   slist  å­—ç¬¦ä¸²çš„å•é¡¹é“¾è¡¨ï¼Œä¸€æ¬¡å¯ä¼ å…¥å¤šä¸ªæ–‡ä»¶ï¼Œ
- *          æ¯é¡¹ä¸­çš„string1ä¸ºå¾…ç§»åŠ¨çš„æ–‡ä»¶ï¼Œè·¯å¾„éœ€å†™å…¨ï¼ˆå¦‚ï¼š/temp/file.txtï¼‰
- *          string2ä¸ºæ–°çš„åå­—ï¼Œè·¯å¾„éœ€å†™å…¨ï¼Œä¾‹å¦‚/temp/subfolder/newfile.txtã€‚
- * æˆåŠŸåè¿”å›PcsPanApiResç±»å‹å®ä¾‹ï¼Œå¯å¾ªç¯è·å–æ¯ä¸ªæ–‡ä»¶æˆ–ç›®å½•çš„åˆ é™¤æƒ…å†µï¼ŒæˆåŠŸåˆ™PcsPanApiResInfo->errorä¸º0ï¼Œå¦åˆ™ä¸ºé”™è¯¯ç¼–ç 
- * ä½¿ç”¨å®Œåéœ€è°ƒç”¨pcs_pan_api_res_destroyé‡Šæ”¾
- * å¤±è´¥åˆ™è¿”å› NULLã€‚
+ * ÒÆ¶¯¶à¸öÎÄ¼ş
+ *   slist  ×Ö·û´®µÄµ¥ÏîÁ´±í£¬Ò»´Î¿É´«Èë¶à¸öÎÄ¼ş£¬
+ *          Ã¿ÏîÖĞµÄstring1Îª´ıÒÆ¶¯µÄÎÄ¼ş£¬Â·¾¶ĞèĞ´È«£¨Èç£º/temp/file.txt£©
+ *          string2ÎªĞÂµÄÃû×Ö£¬Â·¾¶ĞèĞ´È«£¬ÀıÈç/temp/subfolder/newfile.txt¡£
+ * ³É¹¦ºó·µ»ØPcsPanApiResÀàĞÍÊµÀı£¬¿ÉÑ­»·»ñÈ¡Ã¿¸öÎÄ¼ş»òÄ¿Â¼µÄÉ¾³ıÇé¿ö£¬³É¹¦ÔòPcsPanApiResInfo->errorÎª0£¬·ñÔòÎª´íÎó±àÂë
+ * Ê¹ÓÃÍêºóĞèµ÷ÓÃpcs_pan_api_res_destroyÊÍ·Å
+ * Ê§°ÜÔò·µ»Ø NULL¡£
  */
 PCS_API PcsPanApiRes *pcs_move(Pcs handle, PcsSList2 *slist);
 
 /*
- * å¤åˆ¶å¤šä¸ªæ–‡ä»¶
- *   slist  å­—ç¬¦ä¸²çš„å•é¡¹é“¾è¡¨ï¼Œä¸€æ¬¡å¯ä¼ å…¥å¤šä¸ªæ–‡ä»¶ï¼Œ
- *          æ¯é¡¹ä¸­çš„string1ä¸ºå¾…å¤åˆ¶çš„æ–‡ä»¶ï¼Œè·¯å¾„éœ€å†™å…¨ï¼ˆå¦‚ï¼š/temp/file.txtï¼‰
- *          string2ä¸ºæ–°çš„åå­—ï¼Œè·¯å¾„éœ€å†™å…¨ï¼Œä¾‹å¦‚/temp/subfolder/newfile.txtã€‚
- * æˆåŠŸåè¿”å›PcsPanApiResç±»å‹å®ä¾‹ï¼Œå¯å¾ªç¯è·å–æ¯ä¸ªæ–‡ä»¶æˆ–ç›®å½•çš„åˆ é™¤æƒ…å†µï¼ŒæˆåŠŸåˆ™PcsPanApiResInfo->errorä¸º0ï¼Œå¦åˆ™ä¸ºé”™è¯¯ç¼–ç 
- * ä½¿ç”¨å®Œåéœ€è°ƒç”¨pcs_pan_api_res_destroyé‡Šæ”¾
- * å¤±è´¥åˆ™è¿”å› NULLã€‚
+ * ¸´ÖÆ¶à¸öÎÄ¼ş
+ *   slist  ×Ö·û´®µÄµ¥ÏîÁ´±í£¬Ò»´Î¿É´«Èë¶à¸öÎÄ¼ş£¬
+ *          Ã¿ÏîÖĞµÄstring1Îª´ı¸´ÖÆµÄÎÄ¼ş£¬Â·¾¶ĞèĞ´È«£¨Èç£º/temp/file.txt£©
+ *          string2ÎªĞÂµÄÃû×Ö£¬Â·¾¶ĞèĞ´È«£¬ÀıÈç/temp/subfolder/newfile.txt¡£
+ * ³É¹¦ºó·µ»ØPcsPanApiResÀàĞÍÊµÀı£¬¿ÉÑ­»·»ñÈ¡Ã¿¸öÎÄ¼ş»òÄ¿Â¼µÄÉ¾³ıÇé¿ö£¬³É¹¦ÔòPcsPanApiResInfo->errorÎª0£¬·ñÔòÎª´íÎó±àÂë
+ * Ê¹ÓÃÍêºóĞèµ÷ÓÃpcs_pan_api_res_destroyÊÍ·Å
+ * Ê§°ÜÔò·µ»Ø NULL¡£
  */
 PCS_API PcsPanApiRes *pcs_copy(Pcs handle, PcsSList2 *slist);
 
 /*
- * ä¸ä¸‹è½½æ–‡ä»¶ï¼Œç›´æ¥è·å–æ–‡æœ¬æ–‡ä»¶çš„å†…å®¹
- *   path		å¾…è·å–çš„æ–‡ä»¶æˆ–ç›®å½•ï¼Œåœ°å€éœ€å†™å…¨ï¼Œå¦‚/temp, /temp/file.txt
- *   dstsz      è·å–åˆ°çš„å†…å®¹çš„å­—èŠ‚é•¿åº¦
- * æˆåŠŸåè¿”å›æ–‡æœ¬å†…å®¹
- * ä½¿ç”¨å®Œåæ— éœ€è°ƒç”¨pcs_free()é‡Šæ”¾
- * å¤±è´¥æˆ–æ— å†…å®¹åˆ™è¿”å› NULLã€‚
+ * ²»ÏÂÔØÎÄ¼ş£¬Ö±½Ó»ñÈ¡ÎÄ±¾ÎÄ¼şµÄÄÚÈİ
+ *   path		´ı»ñÈ¡µÄÎÄ¼ş»òÄ¿Â¼£¬µØÖ·ĞèĞ´È«£¬Èç/temp, /temp/file.txt
+ *   dstsz      »ñÈ¡µ½µÄÄÚÈİµÄ×Ö½Ú³¤¶È
+ * ³É¹¦ºó·µ»ØÎÄ±¾ÄÚÈİ
+ * Ê¹ÓÃÍêºóÎŞĞèµ÷ÓÃpcs_free()ÊÍ·Å
+ * Ê§°Ü»òÎŞÄÚÈİÔò·µ»Ø NULL¡£
  */
 PCS_API const char *pcs_cat(Pcs handle, const char *path, size_t *dstsz);
 
 /*
- * ä¸‹è½½æ–‡ä»¶
- *   path   å¾…ä¸‹è½½çš„æ–‡ä»¶ï¼Œåœ°å€éœ€å†™å…¨ï¼Œå¦‚/temp/file.txt
- * å¿…é¡»æŒ‡å®šå†™å…¥ä¸‹è½½å†…å®¹çš„å‡½æ•°ï¼Œå¯é€šè¿‡PCS_OPTION_DOWNLOAD_WRITE_FUNCTIONé€‰é¡¹æ¥æŒ‡å®š
- * æˆåŠŸåè¿”å›PCS_OKï¼Œå¤±è´¥åˆ™è¿”å›é”™è¯¯ç¼–å·
+ * ÏÂÔØÎÄ¼ş
+ *   path   ´ıÏÂÔØµÄÎÄ¼ş£¬µØÖ·ĞèĞ´È«£¬Èç/temp/file.txt
+ * ±ØĞëÖ¸¶¨Ğ´ÈëÏÂÔØÄÚÈİµÄº¯Êı£¬¿ÉÍ¨¹ıPCS_OPTION_DOWNLOAD_WRITE_FUNCTIONÑ¡ÏîÀ´Ö¸¶¨
+ * ³É¹¦ºó·µ»ØPCS_OK£¬Ê§°ÜÔò·µ»Ø´íÎó±àºÅ
  */
 PCS_API PcsRes pcs_download(Pcs handle, const char *path, curl_off_t max_speed, curl_off_t resume_from, curl_off_t max_length);
 
 /*
- * è·å–å¾…ä¸‹è½½æ–‡ä»¶çš„å­—èŠ‚å¤§å°
+ * »ñÈ¡´ıÏÂÔØÎÄ¼şµÄ×Ö½Ú´óĞ¡
  */
 PCS_API int64_t pcs_get_download_filesize(Pcs handle, const char *path);
 
 /*
- * æŠŠå†…å­˜ä¸­çš„å­—èŠ‚åºä¸Šä¼ åˆ°ç½‘ç›˜
- *   path		ç›®æ ‡æ–‡ä»¶ï¼Œåœ°å€éœ€å†™å…¨ï¼Œå¦‚/temp/file.txt
- *   overwrite  æŒ‡å®šæ˜¯å¦è¦†ç›–åŸæ–‡ä»¶ï¼Œä¼ å…¥PcsTrueåˆ™è¦†ç›–ï¼Œä¼ å…¥PcsFalseï¼Œåˆ™ä¼šä½¿ç”¨å½“å‰æ—¥æœŸé‡å‘½åã€‚
- *              ä¾‹ï¼Œå¦‚æœæ–‡ä»¶file.txtä»¥å­˜åœ¨ï¼Œåˆ™ä¸Šä¼ åæ–°çš„æ–‡ä»¶è‡ªåŠ¨å˜æ›´ä¸ºfile20140117.txt
- *   buffer     å¾…ä¸Šä¼ çš„å­—èŠ‚åº
- *   buffer_size å­—èŠ‚åºçš„å­—èŠ‚å¤§å°
- *   max_speed  æœ€å¤§ä¸Šä¼ é€Ÿåº¦
- * æˆåŠŸåï¼Œè¿”å›PcsFileInfoç±»å‹å®ä¾‹ï¼Œè¯¥å®ä¾‹åŒ…å«ç½‘ç›˜ä¸­æ–°æ–‡ä»¶çš„è·¯å¾„ç­‰ä¿¡æ¯
- * ä½¿ç”¨å®Œæˆåéœ€è°ƒç”¨ pcs_fileinfo_destroy() æ–¹æ³•é‡Šæ”¾ã€‚
- * å¤±è´¥åˆ™è¿”å› NULLã€‚
+ * °ÑÄÚ´æÖĞµÄ×Ö½ÚĞòÉÏ´«µ½ÍøÅÌ
+ *   path		Ä¿±êÎÄ¼ş£¬µØÖ·ĞèĞ´È«£¬Èç/temp/file.txt
+ *   overwrite  Ö¸¶¨ÊÇ·ñ¸²¸ÇÔ­ÎÄ¼ş£¬´«ÈëPcsTrueÔò¸²¸Ç£¬´«ÈëPcsFalse£¬Ôò»áÊ¹ÓÃµ±Ç°ÈÕÆÚÖØÃüÃû¡£
+ *              Àı£¬Èç¹ûÎÄ¼şfile.txtÒÔ´æÔÚ£¬ÔòÉÏ´«ºóĞÂµÄÎÄ¼ş×Ô¶¯±ä¸üÎªfile20140117.txt
+ *   buffer     ´ıÉÏ´«µÄ×Ö½ÚĞò
+ *   buffer_size ×Ö½ÚĞòµÄ×Ö½Ú´óĞ¡
+ *   max_speed  ×î´óÉÏ´«ËÙ¶È
+ * ³É¹¦ºó£¬·µ»ØPcsFileInfoÀàĞÍÊµÀı£¬¸ÃÊµÀı°üº¬ÍøÅÌÖĞĞÂÎÄ¼şµÄÂ·¾¶µÈĞÅÏ¢
+ * Ê¹ÓÃÍê³ÉºóĞèµ÷ÓÃ pcs_fileinfo_destroy() ·½·¨ÊÍ·Å¡£
+ * Ê§°ÜÔò·µ»Ø NULL¡£
  */
 PCS_API PcsFileInfo *pcs_upload_buffer(Pcs handle, const char *path, PcsBool overwrite,
 	const char *buffer, size_t buffer_size, curl_off_t max_speed);
 
 /*
-* ä¸Šä¼ åˆ†ç‰‡æ•°æ®
-*   buffer     å¾…ä¸Šä¼ çš„å­—èŠ‚åº
-*   buffer_size å­—èŠ‚åºçš„å­—èŠ‚å¤§å°
-*   max_speed  æœ€å¤§ä¸Šä¼ é€Ÿåº¦
-* æˆåŠŸåï¼Œè¿”å›PcsFileInfoç±»å‹å®ä¾‹ï¼Œè¯¥å®ä¾‹åŒ…å«ç½‘ç›˜ä¸­æ–°æ–‡ä»¶çš„è·¯å¾„ç­‰ä¿¡æ¯
-* ä½¿ç”¨å®Œæˆåéœ€è°ƒç”¨ pcs_fileinfo_destroy() æ–¹æ³•é‡Šæ”¾ã€‚
-* å¤±è´¥åˆ™è¿”å› NULLã€‚
+* ÉÏ´«·ÖÆ¬Êı¾İ
+*   buffer     ´ıÉÏ´«µÄ×Ö½ÚĞò
+*   buffer_size ×Ö½ÚĞòµÄ×Ö½Ú´óĞ¡
+*   max_speed  ×î´óÉÏ´«ËÙ¶È
+* ³É¹¦ºó£¬·µ»ØPcsFileInfoÀàĞÍÊµÀı£¬¸ÃÊµÀı°üº¬ÍøÅÌÖĞĞÂÎÄ¼şµÄÂ·¾¶µÈĞÅÏ¢
+* Ê¹ÓÃÍê³ÉºóĞèµ÷ÓÃ pcs_fileinfo_destroy() ·½·¨ÊÍ·Å¡£
+* Ê§°ÜÔò·µ»Ø NULL¡£
 */
 PCS_API PcsFileInfo *pcs_upload_slice(Pcs handle, const char *buffer, size_t buffer_size, curl_off_t max_speed);
 
 /*
-* ä¸Šä¼ åˆ†ç‰‡æ–‡ä»¶
-*   read_func     è¯»å–åˆ†ç‰‡æ–‡ä»¶çš„æ–¹æ³•
-*   userdata	  ç¨‹åºæœ¬èº«ä¸ä½¿ç”¨è¯¥å‚æ•°ï¼Œä»…åŸæ ·ä¼ é€’åˆ° read_func å‡½æ•°ä¸­
-*   content_size  å¾…ä¸Šä¼ åˆ†ç‰‡æ–‡ä»¶çš„å¤§å°
-*   max_speed  æœ€å¤§ä¸Šä¼ é€Ÿåº¦
-* æˆåŠŸåï¼Œè¿”å›PcsFileInfoç±»å‹å®ä¾‹ï¼Œè¯¥å®ä¾‹åŒ…å«ç½‘ç›˜ä¸­æ–°æ–‡ä»¶çš„è·¯å¾„ç­‰ä¿¡æ¯
-* ä½¿ç”¨å®Œæˆåéœ€è°ƒç”¨ pcs_fileinfo_destroy() æ–¹æ³•é‡Šæ”¾ã€‚
-* å¤±è´¥åˆ™è¿”å› NULLã€‚
+* ÉÏ´«·ÖÆ¬ÎÄ¼ş
+*   read_func     ¶ÁÈ¡·ÖÆ¬ÎÄ¼şµÄ·½·¨
+*   userdata	  ³ÌĞò±¾Éí²»Ê¹ÓÃ¸Ã²ÎÊı£¬½öÔ­Ñù´«µİµ½ read_func º¯ÊıÖĞ
+*   content_size  ´ıÉÏ´«·ÖÆ¬ÎÄ¼şµÄ´óĞ¡
+*   max_speed  ×î´óÉÏ´«ËÙ¶È
+* ³É¹¦ºó£¬·µ»ØPcsFileInfoÀàĞÍÊµÀı£¬¸ÃÊµÀı°üº¬ÍøÅÌÖĞĞÂÎÄ¼şµÄÂ·¾¶µÈĞÅÏ¢
+* Ê¹ÓÃÍê³ÉºóĞèµ÷ÓÃ pcs_fileinfo_destroy() ·½·¨ÊÍ·Å¡£
+* Ê§°ÜÔò·µ»Ø NULL¡£
 */
 PCS_API PcsFileInfo *pcs_upload_slicefile(Pcs handle,
 	size_t(*read_func)(void *ptr, size_t size, size_t nmemb, void *userdata),
 	void *userdata,
 	size_t content_size, curl_off_t max_speed);
 
-/*åˆå¹¶åˆ†ç‰‡*/
+/*ºÏ²¢·ÖÆ¬*/
 PCS_API PcsFileInfo *pcs_create_superfile(Pcs handle, const char *path, PcsBool overwrite, PcsSList *block_list);
 
 /*
- * ä¸Šä¼ æ–‡ä»¶åˆ°ç½‘ç›˜
- *   path		ç›®æ ‡æ–‡ä»¶ï¼Œåœ°å€éœ€å†™å…¨ï¼Œå¦‚/temp/file.txt
- *   overwrite  æŒ‡å®šæ˜¯å¦è¦†ç›–åŸæ–‡ä»¶ï¼Œä¼ å…¥PcsTrueåˆ™è¦†ç›–ï¼Œä¼ å…¥PcsFalseï¼Œåˆ™ä¼šä½¿ç”¨å½“å‰æ—¥æœŸé‡å‘½åã€‚
- *              ä¾‹ï¼Œå¦‚æœæ–‡ä»¶file.txtä»¥å­˜åœ¨ï¼Œåˆ™ä¸Šä¼ åæ–°çš„æ–‡ä»¶è‡ªåŠ¨å˜æ›´ä¸ºfile20140117.txt
- *   local_filename å¾…ä¸Šä¼ çš„æœ¬åœ°æ–‡ä»¶
- *   max_speed  æœ€å¤§ä¸Šä¼ é€Ÿåº¦
- * é€šè¿‡PCS_OPTION_PROGRESS_FUNCTIONé€‰é¡¹è®¾å®šè¿›åº¦æ¡å›è°ƒç”¨ï¼Œä½¿ç”¨PCS_OPTION_PROGRESSå¯ç”¨è¿›åº¦æ¡å›è°ƒï¼Œå¯ç®€å•å®ç°ä¸Šä¼ è¿›åº¦
- * æˆåŠŸåï¼Œè¿”å›PcsFileInfoç±»å‹å®ä¾‹ï¼Œè¯¥å®ä¾‹åŒ…å«ç½‘ç›˜ä¸­æ–°æ–‡ä»¶çš„è·¯å¾„ç­‰ä¿¡æ¯
- * ä½¿ç”¨å®Œæˆåéœ€è°ƒç”¨ pcs_fileinfo_destroy() æ–¹æ³•é‡Šæ”¾ã€‚
- * å¤±è´¥åˆ™è¿”å› NULLã€‚
+ * ÉÏ´«ÎÄ¼şµ½ÍøÅÌ
+ *   path		Ä¿±êÎÄ¼ş£¬µØÖ·ĞèĞ´È«£¬Èç/temp/file.txt
+ *   overwrite  Ö¸¶¨ÊÇ·ñ¸²¸ÇÔ­ÎÄ¼ş£¬´«ÈëPcsTrueÔò¸²¸Ç£¬´«ÈëPcsFalse£¬Ôò»áÊ¹ÓÃµ±Ç°ÈÕÆÚÖØÃüÃû¡£
+ *              Àı£¬Èç¹ûÎÄ¼şfile.txtÒÔ´æÔÚ£¬ÔòÉÏ´«ºóĞÂµÄÎÄ¼ş×Ô¶¯±ä¸üÎªfile20140117.txt
+ *   local_filename ´ıÉÏ´«µÄ±¾µØÎÄ¼ş
+ *   max_speed  ×î´óÉÏ´«ËÙ¶È
+ * Í¨¹ıPCS_OPTION_PROGRESS_FUNCTIONÑ¡ÏîÉè¶¨½ø¶ÈÌõ»Øµ÷ÓÃ£¬Ê¹ÓÃPCS_OPTION_PROGRESSÆôÓÃ½ø¶ÈÌõ»Øµ÷£¬¿É¼òµ¥ÊµÏÖÉÏ´«½ø¶È
+ * ³É¹¦ºó£¬·µ»ØPcsFileInfoÀàĞÍÊµÀı£¬¸ÃÊµÀı°üº¬ÍøÅÌÖĞĞÂÎÄ¼şµÄÂ·¾¶µÈĞÅÏ¢
+ * Ê¹ÓÃÍê³ÉºóĞèµ÷ÓÃ pcs_fileinfo_destroy() ·½·¨ÊÍ·Å¡£
+ * Ê§°ÜÔò·µ»Ø NULL¡£
  */
 PCS_API PcsFileInfo *pcs_upload(Pcs handle, const char *path, PcsBool overwrite, 
 									   const char *local_filename, curl_off_t max_speed);
 /*
-* ä¸Šä¼ æ–‡ä»¶åˆ°ç½‘ç›˜
-*   to_path		  ç›®æ ‡æ–‡ä»¶ï¼Œåœ°å€éœ€å†™å…¨ï¼Œå¦‚/temp/file.txt
-*   overwrite     æŒ‡å®šæ˜¯å¦è¦†ç›–åŸæ–‡ä»¶ï¼Œä¼ å…¥PcsTrueåˆ™è¦†ç›–ï¼Œä¼ å…¥PcsFalseï¼Œåˆ™ä¼šä½¿ç”¨å½“å‰æ—¥æœŸé‡å‘½åã€‚
-*                 ä¾‹ï¼Œå¦‚æœæ–‡ä»¶file.txtä»¥å­˜åœ¨ï¼Œåˆ™ä¸Šä¼ åæ–°çš„æ–‡ä»¶è‡ªåŠ¨å˜æ›´ä¸ºfile20140117.txt
-*   read_func     è¯»å–æ–‡ä»¶çš„æ–¹æ³•
-*   userdata	  ç¨‹åºæœ¬èº«ä¸ä½¿ç”¨è¯¥å‚æ•°ï¼Œä»…åŸæ ·ä¼ é€’åˆ° read_func å‡½æ•°ä¸­
-*   content_size  å¾…ä¸Šä¼ æ–‡ä»¶çš„å¤§å°
-*   max_speed     æœ€å¤§ä¸Šä¼ é€Ÿåº¦
-* æˆåŠŸåï¼Œè¿”å›PcsFileInfoç±»å‹å®ä¾‹ï¼Œè¯¥å®ä¾‹åŒ…å«ç½‘ç›˜ä¸­æ–°æ–‡ä»¶çš„è·¯å¾„ç­‰ä¿¡æ¯
-* ä½¿ç”¨å®Œæˆåéœ€è°ƒç”¨ pcs_fileinfo_destroy() æ–¹æ³•é‡Šæ”¾ã€‚
-* å¤±è´¥åˆ™è¿”å› NULLã€‚
+* ÉÏ´«ÎÄ¼şµ½ÍøÅÌ
+*   to_path		  Ä¿±êÎÄ¼ş£¬µØÖ·ĞèĞ´È«£¬Èç/temp/file.txt
+*   overwrite     Ö¸¶¨ÊÇ·ñ¸²¸ÇÔ­ÎÄ¼ş£¬´«ÈëPcsTrueÔò¸²¸Ç£¬´«ÈëPcsFalse£¬Ôò»áÊ¹ÓÃµ±Ç°ÈÕÆÚÖØÃüÃû¡£
+*                 Àı£¬Èç¹ûÎÄ¼şfile.txtÒÔ´æÔÚ£¬ÔòÉÏ´«ºóĞÂµÄÎÄ¼ş×Ô¶¯±ä¸üÎªfile20140117.txt
+*   read_func     ¶ÁÈ¡ÎÄ¼şµÄ·½·¨
+*   userdata	  ³ÌĞò±¾Éí²»Ê¹ÓÃ¸Ã²ÎÊı£¬½öÔ­Ñù´«µİµ½ read_func º¯ÊıÖĞ
+*   content_size  ´ıÉÏ´«ÎÄ¼şµÄ´óĞ¡
+*   max_speed     ×î´óÉÏ´«ËÙ¶È
+* ³É¹¦ºó£¬·µ»ØPcsFileInfoÀàĞÍÊµÀı£¬¸ÃÊµÀı°üº¬ÍøÅÌÖĞĞÂÎÄ¼şµÄÂ·¾¶µÈĞÅÏ¢
+* Ê¹ÓÃÍê³ÉºóĞèµ÷ÓÃ pcs_fileinfo_destroy() ·½·¨ÊÍ·Å¡£
+* Ê§°ÜÔò·µ»Ø NULL¡£
 */
 PCS_API PcsFileInfo *pcs_upload_s(Pcs handle, const char *to_path, PcsBool overwrite,
 	size_t(*read_func)(void *ptr, size_t size, size_t nmemb, void *userdata),
 	void *userdata,
 	size_t content_size, curl_off_t max_speed);
 
-/*è·å–æœ¬åœ°æ–‡ä»¶çš„å¤§å°*/
+/*»ñÈ¡±¾µØÎÄ¼şµÄ´óĞ¡*/
 PCS_API int64_t pcs_local_filesize(Pcs handle, const char *path);
 
 /*
- * è®¡ç®—æ–‡ä»¶çš„MD5å€¼
- *   path		ç›®æ ‡æ–‡ä»¶
- *   md5        ç”¨äºæ¥æ”¶æ–‡ä»¶çš„md5å€¼ï¼Œé•¿åº¦å¿…é¡»å¤§äºç­‰äº32
+ * ¼ÆËãÎÄ¼şµÄMD5Öµ
+ *   path		Ä¿±êÎÄ¼ş
+ *   md5        ÓÃÓÚ½ÓÊÕÎÄ¼şµÄmd5Öµ£¬³¤¶È±ØĞë´óÓÚµÈÓÚ32
  */
 PCS_API PcsBool pcs_md5_file(Pcs handle, const char *path, char *md5);
 
 /*
-* è®¡ç®—æ–‡ä»¶çš„MD5å€¼
-*   read_func  è¯»å–æ–‡ä»¶çš„æ–¹æ³•
-*   userdata   åŸæ ·ä¼ å…¥ read_func
-*   md5        ç”¨äºæ¥æ”¶æ–‡ä»¶çš„md5å€¼ï¼Œé•¿åº¦å¿…é¡»å¤§äºç­‰äº32
+* ¼ÆËãÎÄ¼şµÄMD5Öµ
+*   read_func  ¶ÁÈ¡ÎÄ¼şµÄ·½·¨
+*   userdata   Ô­Ñù´«Èë read_func
+*   md5        ÓÃÓÚ½ÓÊÕÎÄ¼şµÄmd5Öµ£¬³¤¶È±ØĞë´óÓÚµÈÓÚ32
 */
 PCS_API PcsBool pcs_md5_s(Pcs handle,
 	size_t(*read_func)(void *ptr, size_t size, size_t nmemb, void *userdata),
@@ -429,21 +429,21 @@ PCS_API PcsBool pcs_md5_s(Pcs handle,
 	char *md5_buf);
 
 /*
-* è®¡ç®—æ–‡ä»¶çš„MD5å€¼ï¼Œä»…ä»æ–‡ä»¶offsetåç§»å¤„å¼€å§‹è®¡ç®—ï¼Œå¹¶ä»…è®¡ç®— length é•¿åº¦çš„æ•°æ®ã€‚
-*   path		ç›®æ ‡æ–‡ä»¶
-*   md5        ç”¨äºæ¥æ”¶æ–‡ä»¶çš„md5å€¼ï¼Œé•¿åº¦å¿…é¡»å¤§äºç­‰äº32
+* ¼ÆËãÎÄ¼şµÄMD5Öµ£¬½ö´ÓÎÄ¼şoffsetÆ«ÒÆ´¦¿ªÊ¼¼ÆËã£¬²¢½ö¼ÆËã length ³¤¶ÈµÄÊı¾İ¡£
+*   path		Ä¿±êÎÄ¼ş
+*   md5        ÓÃÓÚ½ÓÊÕÎÄ¼şµÄmd5Öµ£¬³¤¶È±ØĞë´óÓÚµÈÓÚ32
 */
 PCS_API PcsBool pcs_md5_file_slice(Pcs handle, const char *path, int64_t offset, int64_t length, char *md5_buf);
 
 
 /*
- * å¿«é€Ÿä¸Šä¼ 
- *   path		ç›®æ ‡æ–‡ä»¶
- *   overwrite  æŒ‡å®šæ˜¯å¦è¦†ç›–åŸæ–‡ä»¶ï¼Œä¼ å…¥PcsTrueåˆ™è¦†ç›–ï¼Œä¼ å…¥PcsFalseï¼Œåˆ™ä¼šä½¿ç”¨å½“å‰æ—¥æœŸé‡å‘½åã€‚
- *              ä¾‹ï¼Œå¦‚æœæ–‡ä»¶file.txtä»¥å­˜åœ¨ï¼Œåˆ™ä¸Šä¼ åæ–°çš„æ–‡ä»¶è‡ªåŠ¨å˜æ›´ä¸ºfile20140117.txt
- *   local_filename å¾…ä¸Šä¼ çš„æœ¬åœ°æ–‡ä»¶
- *   content_md5    ç”¨äºæ¥æ”¶æ–‡ä»¶çš„md5å€¼ï¼Œé•¿åº¦å¿…é¡»å¤§äºç­‰äº32ã€‚å¯ä¼ å…¥NULLã€‚
- *   slice_md5      ç”¨äºæ¥æ”¶éªŒè¯æ–‡ä»¶çš„åˆ†ç‰‡çš„md5å€¼ï¼Œé•¿åº¦å¿…é¡»å¤§äºç­‰äº32ã€‚å¯ä¼ å…¥NULLã€‚
+ * ¿ìËÙÉÏ´«
+ *   path		Ä¿±êÎÄ¼ş
+ *   overwrite  Ö¸¶¨ÊÇ·ñ¸²¸ÇÔ­ÎÄ¼ş£¬´«ÈëPcsTrueÔò¸²¸Ç£¬´«ÈëPcsFalse£¬Ôò»áÊ¹ÓÃµ±Ç°ÈÕÆÚÖØÃüÃû¡£
+ *              Àı£¬Èç¹ûÎÄ¼şfile.txtÒÔ´æÔÚ£¬ÔòÉÏ´«ºóĞÂµÄÎÄ¼ş×Ô¶¯±ä¸üÎªfile20140117.txt
+ *   local_filename ´ıÉÏ´«µÄ±¾µØÎÄ¼ş
+ *   content_md5    ÓÃÓÚ½ÓÊÕÎÄ¼şµÄmd5Öµ£¬³¤¶È±ØĞë´óÓÚµÈÓÚ32¡£¿É´«ÈëNULL¡£
+ *   slice_md5      ÓÃÓÚ½ÓÊÕÑéÖ¤ÎÄ¼şµÄ·ÖÆ¬µÄmd5Öµ£¬³¤¶È±ØĞë´óÓÚµÈÓÚ32¡£¿É´«ÈëNULL¡£
  */
 PCS_API PcsFileInfo *pcs_rapid_upload(Pcs handle, const char *path, PcsBool overwrite,
 	const char *local_filename, char *content_md5, char *slice_md5);
@@ -451,21 +451,21 @@ PCS_API PcsFileInfo *pcs_rapid_upload_r(Pcs handle, const char *path, PcsBool ov
 	int64_t content_length, const char *content_md5, const char *slice_md5);
 
 /*
- * è·å–Cookie æ•°æ®ã€‚
- * æˆåŠŸåˆ™è¿”å›Cookieæ•°æ®ï¼Œå¤±è´¥æˆ–æ²¡æœ‰è¿”å›NULL
- * ä½¿ç”¨å®Œåéœ€è¦ä½¿ç”¨pcs_freeé‡Šæ”¾
+ * »ñÈ¡Cookie Êı¾İ¡£
+ * ³É¹¦Ôò·µ»ØCookieÊı¾İ£¬Ê§°Ü»òÃ»ÓĞ·µ»ØNULL
+ * Ê¹ÓÃÍêºóĞèÒªÊ¹ÓÃpcs_freeÊÍ·Å
 */
 PCS_API char *pcs_cookie_data(Pcs handle);
 
 /*
-* è·å–æœ€åä¸€æ¬¡è¯·æ±‚çš„åŸå§‹æ•°æ®ã€‚
-* @size ç”¨äºæ¥æ”¶åŸå§‹æ•°æ®çš„é•¿åº¦
-* @encode ç”¨äºæ¥æ”¶åŸå§‹æ•°æ®çš„ç¼–ç 
-* è¿”å›åŸå§‹æ•°æ®çš„æŒ‡é’ˆã€‚
+* »ñÈ¡×îºóÒ»´ÎÇëÇóµÄÔ­Ê¼Êı¾İ¡£
+* @size ÓÃÓÚ½ÓÊÕÔ­Ê¼Êı¾İµÄ³¤¶È
+* @encode ÓÃÓÚ½ÓÊÕÔ­Ê¼Êı¾İµÄ±àÂë
+* ·µ»ØÔ­Ê¼Êı¾İµÄÖ¸Õë¡£
 */
 PCS_API const char *pcs_req_rawdata(Pcs handle, int *size, const char **encode);
 
-/*è·å–ä¸‹è½½é€Ÿåº¦*/
+/*»ñÈ¡ÏÂÔØËÙ¶È*/
 PCS_API double pcs_speed_download(Pcs handle);
 
 #endif

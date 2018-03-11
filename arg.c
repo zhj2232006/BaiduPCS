@@ -10,7 +10,7 @@
 #define NULL ((void *)0)
 #endif
 
-/*找到str第一次出现ch的位置*/
+/*�ҵ�str��һ�γ���ch��λ��*/
 static inline char *findchar(char *str, int ch)
 {
 	char *p = str;
@@ -30,7 +30,7 @@ static inline char *arg_strdup(const char *str)
 	return res;
 }
 
-/*从程序路径中找到文件名开始的位置，返回开始位置的指针*/
+/*�ӳ���·�����ҵ��ļ�����ʼ��λ�ã����ؿ�ʼλ�õ�ָ��*/
 static inline char *filename(char *path)
 {
 	char *p;
@@ -41,15 +41,15 @@ static inline char *filename(char *path)
 	return p;
 }
 
-#pragma region 解析参数
+#pragma region ��������
 
-/*用于释放struct arg中opts哈希表中的值字段*/
+/*�����ͷ�struct arg��opts��ϣ���е�ֵ�ֶ�*/
 static void free_opt(void *p)
 {
 	if (p) pcs_free(p);
 }
 
-/*解析参数*/
+/*��������*/
 int parse_arg(struct args *arg, int argc, char *argv[], char *(*s2utf8)(const char *s))
 {
 	int i, j = 0;
@@ -74,16 +74,16 @@ int parse_arg(struct args *arg, int argc, char *argv[], char *(*s2utf8)(const ch
 			if (*p == '-') {
 				p++;
 				val = findchar(p, '=');
-				if (ht_has(arg->opts, p, val - p)) return -1; /*重复指定参数*/
+				if (ht_has(arg->opts, p, val - p)) return -1; /*�ظ�ָ������*/
 				if (ht_add(arg->opts, p, val - p, (*val) == '=' ? (s2utf8 ? s2utf8(val + 1) : arg_strdup(val + 1)) : NULL))
-					return -1; /*添加到哈希表中失败*/
+					return -1; /*���ӵ���ϣ����ʧ��*/
 			}
 			else {
 				op = p;
 				while (*op) {
-					if (ht_has(arg->opts, op, 1)) return -1; /*重复指定参数*/
+					if (ht_has(arg->opts, op, 1)) return -1; /*�ظ�ָ������*/
 					if (ht_add(arg->opts, op, 1, NULL))
-						return -1; /*添加到哈希表中失败*/
+						return -1; /*���ӵ���ϣ����ʧ��*/
 					op++;
 				}
 			}
@@ -111,8 +111,8 @@ void free_args(struct args *arg)
 	}
 }
 
-/*判断是否存在opt选项
-如果存在的话，返回1,否则返回0*/
+/*�ж��Ƿ����optѡ��
+������ڵĻ�������1,���򷵻�0*/
 int has_opt(struct args *arg, const char *opt)
 {
 	if (arg->opts) {
@@ -121,8 +121,8 @@ int has_opt(struct args *arg, const char *opt)
 	return 0;
 }
 
-/*判断是否存在opt选项，如果存在的话，把其值填入 （*pValue）中，并返回1，
-如果不存在的话，则设置 (*pValue) = NULL, 并返回0*/
+/*�ж��Ƿ����optѡ�������ڵĻ�������ֵ���� ��*pValue���У�������1��
+��������ڵĻ��������� (*pValue) = NULL, ������0*/
 int has_optEx(struct args *arg, const char *opt, char **pValue)
 {
 	if (arg->opts) {
@@ -137,11 +137,11 @@ int has_optEx(struct args *arg, const char *opt, char **pValue)
 }
 
 /*
-测试arg中可选项是否正确。
+����arg�п�ѡ���Ƿ���ȷ��
   arg     -
-  ...     - 支持的所有可选项，以NULL结束
-如果测试通过则返回0，否则返回非零值
-例：
+  ...     - ֧�ֵ����п�ѡ���NULL����
+�������ͨ���򷵻�0�����򷵻ط���ֵ
+����
   if (test_arg(arg, 0, 1, "d", "e", "r", "config", NULL)) {
     printf("Wrong Arguments\n");
     return -1;
@@ -163,9 +163,9 @@ int test_opts(struct args *arg, ...)
 }
 
 /*
-删除一个选项。
-删除成功返回0，否则返回非0值。
-执行成功，且 pValue不为NULL，则把被删除项的值写入 (*pValue)。注意值需要调用pcs_free()
+ɾ��һ��ѡ�
+ɾ���ɹ�����0�����򷵻ط�0ֵ��
+ִ�гɹ����� pValue��ΪNULL����ѱ�ɾ�����ֵд�� (*pValue)��ע��ֵ��Ҫ����pcs_free()
 */
 int remove_opt(struct args *arg, const char *opt, char **pValue)
 {
@@ -180,10 +180,10 @@ int remove_opt(struct args *arg, const char *opt, char **pValue)
 }
 
 /*
-判断是否存在opt选项
-  ap - 待查询的所有可选项，以NULL结束
-如果全部不存在则返回0，否则返回有几个存在
-例：
+�ж��Ƿ����optѡ��
+  ap - ����ѯ�����п�ѡ���NULL����
+���ȫ���������򷵻�0�����򷵻��м�������
+����
   if (has_vopt(arg, "d", "e", "r", "config", NULL)) {
     printf("One of the options exists.\n");
   } else {
@@ -203,10 +203,10 @@ int has_vopts(struct args *arg, va_list ap)
 }
 
 /*
-判断是否存在opt选项
-  ap - 待查询的所有可选项，以NULL结束
-如果全部不存在则返回0，否则返回有几个存在
-例：
+�ж��Ƿ����optѡ��
+  ap - ����ѯ�����п�ѡ���NULL����
+���ȫ���������򷵻�0�����򷵻��м�������
+����
   if (has_vopt(arg, "d", "e", "r", "config", NULL)) {
     printf("One of the options exists.\n");
   } else {
@@ -224,13 +224,13 @@ int has_opts(struct args *arg, ...)
 }
 
 /*
-测试arg是否正确。
+����arg�Ƿ���ȷ��
 arg     -
-minArgc - 允许的最少参数
-maxArgc - 允许的最多参数
-ap      - 支持的所有可选项，以NULL结束
-如果测试通过则返回0，否则返回非零值
-例：
+minArgc - ���������ٲ���
+maxArgc - ������������
+ap      - ֧�ֵ����п�ѡ���NULL����
+�������ͨ���򷵻�0�����򷵻ط���ֵ
+����
   if (test_arg(arg, 0, 1, "d", "e", "r", "config", NULL)) {
     printf("Wrong Arguments\n");
     return -1;
@@ -250,13 +250,13 @@ int test_varg(struct args *arg, int minArgc, int maxArgc, va_list ap)
 }
 
 /*
-测试arg是否正确。
+����arg�Ƿ���ȷ��
  arg     -
- minArgc - 允许的最少参数
- maxArgc - 允许的最多参数
- ...     - 支持的所有可选项，以NULL结束
-如果测试通过则返回0，否则返回非零值
-例：
+ minArgc - ���������ٲ���
+ maxArgc - ������������
+ ...     - ֧�ֵ����п�ѡ���NULL����
+�������ͨ���򷵻�0�����򷵻ط���ֵ
+����
    if (test_arg(arg, 0, 1, "d", "e", "r", "config", NULL)) {
         printf("Wrong Arguments\n");
 		return -1;

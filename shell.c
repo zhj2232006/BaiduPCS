@@ -51,11 +51,11 @@
 #define CONNECTTIMEOUT				1
 #define DEFAULT_THREAD_NUM			5
 #define MAX_THREAD_NUM				10000
-#define MIN_SLICE_SIZE				(512 * 1024) /*æœ€å°åˆ†ç‰‡å¤§å°*/
-#define MAX_SLICE_SIZE				(10 * 1024 * 1024) /*æœ€å¤§åˆ†ç‰‡å¤§å°*/
-#define MAX_FFLUSH_SIZE				(10 * 1024 * 1024) /*æœ€å¤§ç¼“å­˜å¤§å°*/
-#define MIN_UPLOAD_SLICE_SIZE		(512 * 1024) /*æœ€å°åˆ†ç‰‡å¤§å°*/
-#define MAX_UPLOAD_SLICE_SIZE		(10 * 1024 * 1024) /*æœ€å¤§åˆ†ç‰‡å¤§å°*/
+#define MIN_SLICE_SIZE				(512 * 1024) /*×îĞ¡·ÖÆ¬´óĞ¡*/
+#define MAX_SLICE_SIZE				(10 * 1024 * 1024) /*×î´ó·ÖÆ¬´óĞ¡*/
+#define MAX_FFLUSH_SIZE				(10 * 1024 * 1024) /*×î´ó»º´æ´óĞ¡*/
+#define MIN_UPLOAD_SLICE_SIZE		(512 * 1024) /*×îĞ¡·ÖÆ¬´óĞ¡*/
+#define MAX_UPLOAD_SLICE_SIZE		(10 * 1024 * 1024) /*×î´ó·ÖÆ¬´óĞ¡*/
 #define MAX_UPLOAD_SLICE_COUNT		1024
 
 #define convert_to_real_speed(speed) ((speed) * 1024)
@@ -113,20 +113,20 @@
 #  define WHITE        "\033[1;37m"
 #endif
 
-#define PRINT_PAGE_SIZE			20		/*åˆ—å‡ºç›®å½•æˆ–åˆ—å‡ºæ¯”è¾ƒç»“æœæ—¶ï¼Œåˆ†é¡µå¤§å°*/
+#define PRINT_PAGE_SIZE			20		/*ÁĞ³öÄ¿Â¼»òÁĞ³ö±È½Ï½á¹ûÊ±£¬·ÖÒ³´óĞ¡*/
 
 #define OP_NONE					0
-#define OP_EQ					1		/*æ–‡ä»¶ç›¸åŒ*/
-#define OP_LEFT					2		/*æ–‡ä»¶åº”æ›´æ–°åˆ°å·¦è¾¹*/
-#define OP_RIGHT				4		/*æ–‡ä»¶åº”æ›´æ–°åˆ°å³è¾¹*/
-#define OP_CONFUSE				8		/*å›°æƒ‘ï¼Œä¸çŸ¥é“å¦‚ä½•æ›´æ–°*/
+#define OP_EQ					1		/*ÎÄ¼şÏàÍ¬*/
+#define OP_LEFT					2		/*ÎÄ¼şÓ¦¸üĞÂµ½×ó±ß*/
+#define OP_RIGHT				4		/*ÎÄ¼şÓ¦¸üĞÂµ½ÓÒ±ß*/
+#define OP_CONFUSE				8		/*À§»ó£¬²»ÖªµÀÈçºÎ¸üĞÂ*/
 
 #define OP_ST_NONE				0
-#define OP_ST_SUCC				1		/*æ“ä½œæˆåŠŸ*/
-#define OP_ST_FAIL				2		/*æ“ä½œå¤±è´¥*/
-#define OP_ST_SKIP				4		/*è·³è¿‡æœ¬æ“ä½œ*/
-#define OP_ST_CONFUSE			8		/*å›°æƒ‘æ“ä½œ*/
-#define OP_ST_PROCESSING		16		/*æ­£åœ¨æ‰§è¡Œæ“ä½œ*/
+#define OP_ST_SUCC				1		/*²Ù×÷³É¹¦*/
+#define OP_ST_FAIL				2		/*²Ù×÷Ê§°Ü*/
+#define OP_ST_SKIP				4		/*Ìø¹ı±¾²Ù×÷*/
+#define OP_ST_CONFUSE			8		/*À§»ó²Ù×÷*/
+#define OP_ST_PROCESSING		16		/*ÕıÔÚÖ´ĞĞ²Ù×÷*/
 
 #define FLAG_NONE				0
 #define FLAG_ON_LOCAL			1
@@ -153,29 +153,29 @@
 #define UPLOAD_STATUS_FAIL				3
 #define UPLOAD_STATUS_UPLOADING			4
 
-/* æ–‡ä»¶å…ƒæ•°æ®*/
+/* ÎÄ¼şÔªÊı¾İ*/
 typedef struct MyMeta MyMeta;
 struct MyMeta
 {
-	char		*path;			/*æ–‡ä»¶è·¯å¾„*/
+	char		*path;			/*ÎÄ¼şÂ·¾¶*/
 
-	time_t		local_mtime;	/*æœ¬åœ°æ–‡ä»¶çš„ä¿®æ”¹æ—¶é—´*/
-	int			local_isdir;	/*æœ¬åœ°æ–‡ä»¶æ˜¯å¦æ˜¯ç›®å½•ã€‚0è¡¨ç¤ºä¸æ˜¯ç›®å½•ï¼›é0å€¼è¡¨ç¤ºæœ¬åœ°æ–‡ä»¶æ˜¯ç›®å½•*/
-	int			local_filecount; /*å½“æœ¬åœ°æ˜¯ç›®å½•æ—¶ï¼Œå­˜å‚¨ç›®å½•ä¸‹æ–‡ä»¶çš„æ•°ç›®ã€‚é€’å½’ç»Ÿè®¡ã€‚*/
+	time_t		local_mtime;	/*±¾µØÎÄ¼şµÄĞŞ¸ÄÊ±¼ä*/
+	int			local_isdir;	/*±¾µØÎÄ¼şÊÇ·ñÊÇÄ¿Â¼¡£0±íÊ¾²»ÊÇÄ¿Â¼£»·Ç0Öµ±íÊ¾±¾µØÎÄ¼şÊÇÄ¿Â¼*/
+	int			local_filecount; /*µ±±¾µØÊÇÄ¿Â¼Ê±£¬´æ´¢Ä¿Â¼ÏÂÎÄ¼şµÄÊıÄ¿¡£µİ¹éÍ³¼Æ¡£*/
 
-	char		*remote_path;	/*æ–‡ä»¶è·¯å¾„*/
-	time_t		remote_mtime;	/*æ–‡ä»¶åœ¨ç½‘ç›˜ä¸­çš„æœ€åä¿®æ”¹æ—¶é—´*/
-	int			remote_isdir;	/*æ–‡ä»¶åœ¨ç½‘ç›˜ä¸­æ˜¯ä»¥æ–‡ä»¶å­˜åœ¨è¿˜æ˜¯ä»¥ç›®å½•å­˜åœ¨ã€‚0è¡¨ç¤ºä»¥æ–‡ä»¶å­˜åœ¨ï¼›é0å€¼è¡¨ç¤ºä»¥ç›®å½•å­˜åœ¨*/
+	char		*remote_path;	/*ÎÄ¼şÂ·¾¶*/
+	time_t		remote_mtime;	/*ÎÄ¼şÔÚÍøÅÌÖĞµÄ×îºóĞŞ¸ÄÊ±¼ä*/
+	int			remote_isdir;	/*ÎÄ¼şÔÚÍøÅÌÖĞÊÇÒÔÎÄ¼ş´æÔÚ»¹ÊÇÒÔÄ¿Â¼´æÔÚ¡£0±íÊ¾ÒÔÎÄ¼ş´æÔÚ£»·Ç0Öµ±íÊ¾ÒÔÄ¿Â¼´æÔÚ*/
 	char		*md5;
 
 	int			flag;
 
-	int			op;				/*éœ€è¦æ‰§è¡Œçš„æ“ä½œ*/
-	int			op_st;			/*æ“ä½œçš„ç»“æœ*/
-	char		*msg;			/*æ“ä½œå¤±è´¥æ—¶çš„é”™è¯¯æ¶ˆæ¯*/
+	int			op;				/*ĞèÒªÖ´ĞĞµÄ²Ù×÷*/
+	int			op_st;			/*²Ù×÷µÄ½á¹û*/
+	char		*msg;			/*²Ù×÷Ê§°ÜÊ±µÄ´íÎóÏûÏ¢*/
 
-	MyMeta		*parent;		/*çˆ¶ç›®å½•çš„å…ƒæ•°æ®*/
-	void		*userdata;		/*ç”¨æˆ·æ•°æ®*/
+	MyMeta		*parent;		/*¸¸Ä¿Â¼µÄÔªÊı¾İ*/
+	void		*userdata;		/*ÓÃ»§Êı¾İ*/
 };
 
 struct DownloadThreadState;
@@ -183,15 +183,15 @@ struct DownloadThreadState;
 struct DownloadState
 {
 	FILE *pf;
-	int64_t downloaded_size; /*å·²ç»ä¸‹è½½çš„å­—èŠ‚æ•°*/
-	curl_off_t resume_from; /*æ–­ç‚¹ç»­ä¼ æ—¶ï¼Œä»è¿™ä¸ªä½ç½®å¼€å§‹ç»­ä¼ */
-	time_t time; /*æœ€åä¸€æ¬¡åœ¨å±å¹•æ‰“å°ä¿¡æ¯çš„æ—¶é—´*/
-	size_t speed; /*ç”¨äºç»Ÿè®¡ä¸‹è½½é€Ÿåº¦*/
-	int64_t file_size; /*å®Œæ•´çš„æ–‡ä»¶çš„å­—èŠ‚å¤§å°*/
+	int64_t downloaded_size; /*ÒÑ¾­ÏÂÔØµÄ×Ö½ÚÊı*/
+	curl_off_t resume_from; /*¶ÏµãĞø´«Ê±£¬´ÓÕâ¸öÎ»ÖÃ¿ªÊ¼Ğø´«*/
+	time_t time; /*×îºóÒ»´ÎÔÚÆÁÄ»´òÓ¡ĞÅÏ¢µÄÊ±¼ä*/
+	size_t speed; /*ÓÃÓÚÍ³¼ÆÏÂÔØËÙ¶È*/
+	int64_t file_size; /*ÍêÕûµÄÎÄ¼şµÄ×Ö½Ú´óĞ¡*/
 	ShellContext *context;
 	void *mutex;
-	int	num_of_running_thread; /*å·²ç»å¯åŠ¨çš„çº¿ç¨‹æ•°é‡*/
-	int num_of_slice; /*åˆ†ç‰‡æ•°é‡*/
+	int	num_of_running_thread; /*ÒÑ¾­Æô¶¯µÄÏß³ÌÊıÁ¿*/
+	int num_of_slice; /*·ÖÆ¬ÊıÁ¿*/
 	char **pErrMsg;
 	int	status;
 	const char *remote_file;
@@ -213,9 +213,9 @@ struct DownloadThreadState
 struct RBEnumerateState
 {
 	int		first, second, other;
-	int		print_op;	/* å…è®¸æ‰“å°çš„ OP æ ‡è®°ã€‚
-						 * ä¾‹å¦‚ï¼š"OP_EQ | OP_LEFT | OP_RIGHT" 
-						 * å°†åªæ‰“å° op ä¸º OP_EQ, OP_LEFT å’Œ OP_RIGHT ä¸‰é¡¹çš„èŠ‚ç‚¹
+	int		print_op;	/* ÔÊĞí´òÓ¡µÄ OP ±ê¼Ç¡£
+						 * ÀıÈç£º"OP_EQ | OP_LEFT | OP_RIGHT" 
+						 * ½«Ö»´òÓ¡ op Îª OP_EQ, OP_LEFT ºÍ OP_RIGHT ÈıÏîµÄ½Úµã
 						 */
 	int		print_flag;
 	int		print_fail;
@@ -245,7 +245,7 @@ struct RBEnumerateState
 	const char	*local_basedir;
 	const char	*remote_basedir;
 
-	/*åœ¨æ‰“å°metaåè°ƒç”¨ä¸€æ¬¡*/
+	/*ÔÚ´òÓ¡metaºóµ÷ÓÃÒ»´Î*/
 	int (*process)(MyMeta *meta, struct RBEnumerateState *s, void *state);
 	void *processState;
 
@@ -273,14 +273,14 @@ struct UploadState {
 	FILE *pf;
 	char *path;
 	char *slice_file;
-	int64_t uploaded_size; /*å·²ç»ä¸‹è½½çš„å­—èŠ‚æ•°*/
-	time_t time; /*æœ€åä¸€æ¬¡åœ¨å±å¹•æ‰“å°ä¿¡æ¯çš„æ—¶é—´*/
-	size_t speed; /*ç”¨äºç»Ÿè®¡ä¸‹è½½é€Ÿåº¦*/
-	int64_t file_size; /*å®Œæ•´çš„æ–‡ä»¶çš„å­—èŠ‚å¤§å°*/
+	int64_t uploaded_size; /*ÒÑ¾­ÏÂÔØµÄ×Ö½ÚÊı*/
+	time_t time; /*×îºóÒ»´ÎÔÚÆÁÄ»´òÓ¡ĞÅÏ¢µÄÊ±¼ä*/
+	size_t speed; /*ÓÃÓÚÍ³¼ÆÏÂÔØËÙ¶È*/
+	int64_t file_size; /*ÍêÕûµÄÎÄ¼şµÄ×Ö½Ú´óĞ¡*/
 	ShellContext *context;
 	void *mutex;
-	int	num_of_running_thread; /*å·²ç»å¯åŠ¨çš„çº¿ç¨‹æ•°é‡*/
-	int num_of_slice; /*åˆ†ç‰‡æ•°é‡*/
+	int	num_of_running_thread; /*ÒÑ¾­Æô¶¯µÄÏß³ÌÊıÁ¿*/
+	int num_of_slice; /*·ÖÆ¬ÊıÁ¿*/
 	char **pErrMsg;
 	int	status;
 	struct UploadThreadState *threads;
@@ -293,7 +293,7 @@ struct UploadThreadState {
 	int		status;
 	size_t  uploaded_size;
 	Pcs		*pcs;
-	char	md5[33]; /*ä¸Šä¼ æˆåŠŸåçš„åˆ†ç‰‡MD5å€¼*/
+	char	md5[33]; /*ÉÏ´«³É¹¦ºóµÄ·ÖÆ¬MD5Öµ*/
 	int		tid;
 	struct UploadThreadState *next;
 };
@@ -301,21 +301,21 @@ struct UploadThreadState {
 static const char *app_name = NULL;
 
 /*
-* æ£€æŸ¥æ˜¯å¦ç™»å½•
-*   msg   - æ£€æµ‹åˆ°æœªç™»å½•æ—¶çš„æ‰“å°æ¶ˆæ¯ã€‚ä¼ å…¥NULLçš„è¯ï¼Œåˆ™ä½¿ç”¨é»˜è®¤æ¶ˆæ¯ã€‚
+* ¼ì²éÊÇ·ñµÇÂ¼
+*   msg   - ¼ì²âµ½Î´µÇÂ¼Ê±µÄ´òÓ¡ÏûÏ¢¡£´«ÈëNULLµÄ»°£¬ÔòÊ¹ÓÃÄ¬ÈÏÏûÏ¢¡£
 */
 static PcsBool is_login(ShellContext *context, const char *msg);
 
 #ifdef WIN32
 
-/*åˆ¤æ–­å½“å‰æ“ä½œç³»ç»Ÿç¼–ç æ˜¯å¦æ˜¯UTF-8ç¼–ç */
+/*ÅĞ¶Ïµ±Ç°²Ù×÷ÏµÍ³±àÂëÊÇ·ñÊÇUTF-8±àÂë*/
 int u8_is_utf8_sys()
 {
 	UINT codepage = GetConsoleCP();
 	return codepage == 65001;
 }
 
-/*å¤šå­—èŠ‚å­—ç¬¦è½¬æ¢æˆUTF-8ç¼–ç */
+/*¶à×Ö½Ú×Ö·û×ª»»³ÉUTF-8±àÂë*/
 int u8_mbs_toutf8(char *dest, int sz, const char *src, int srcsz)
 {
 	wchar_t *unicode;
@@ -443,7 +443,7 @@ int truncate(const char *file, int64_t size)
 }
 
 #else
-/*åˆ¤æ–­å½“å‰æ“ä½œç³»ç»Ÿç¼–ç æ˜¯å¦æ˜¯UTF-8ç¼–ç */
+/*ÅĞ¶Ïµ±Ç°²Ù×÷ÏµÍ³±àÂëÊÇ·ñÊÇUTF-8±àÂë*/
 int u8_is_utf8_sys()
 {
 	return 1;
@@ -461,7 +461,7 @@ char *utf82mbs(const char *s)
 
 #endif
 
-#pragma region åŠ è§£å¯†æ–‡ä»¶
+#pragma region ¼Ó½âÃÜÎÄ¼ş
 
 static inline int get_secure_method(ShellContext *context)
 {
@@ -956,9 +956,9 @@ static int decrypt_data(const char *src, size_t src_size, char **dst, size_t *ds
 
 #pragma endregion
 
-#pragma region è·å–é»˜è®¤è·¯å¾„
+#pragma region »ñÈ¡Ä¬ÈÏÂ·¾¶
 
-/*è·å–ä¸Šä¸‹æ–‡å­˜å‚¨æ–‡ä»¶è·¯å¾„*/
+/*»ñÈ¡ÉÏÏÂÎÄ´æ´¢ÎÄ¼şÂ·¾¶*/
 static const char *contextfile()
 {
 	static char filename[1024] = { 0 };
@@ -980,13 +980,13 @@ static const char *contextfile()
 	return filename;
 }
 
-/*è¿”å›COOKIEæ–‡ä»¶è·¯å¾„*/
+/*·µ»ØCOOKIEÎÄ¼şÂ·¾¶*/
 static const char *cookiefile()
 {
 	static char filename[1024] = { 0 };
 	char *env_value = getenv(PCS_COOKIE_ENV);
 	if (env_value) return env_value;
-	if (!filename[0]){ /*å¦‚æœå·²ç»å¤„ç†è¿‡ï¼Œåˆ™ç›´æ¥è¿”å›*/
+	if (!filename[0]){ /*Èç¹ûÒÑ¾­´¦Àí¹ı£¬ÔòÖ±½Ó·µ»Ø*/
 #ifdef WIN32
 		strcpy(filename, getenv("UserProfile"));
 		strcat(filename, "\\.pcs");
@@ -1004,13 +1004,13 @@ static const char *cookiefile()
 	return filename;
 }
 
-/*è¿”å›éªŒè¯ç å›¾ç‰‡æ–‡ä»¶è·¯å¾„*/
+/*·µ»ØÑéÖ¤ÂëÍ¼Æ¬ÎÄ¼şÂ·¾¶*/
 static const char *captchafile()
 {
 	static char filename[1024] = { 0 };
 	char *env_value = getenv(PCS_CAPTCHA_ENV);
 	if (env_value) return env_value;
-	if (!filename[0]){ /*å¦‚æœå·²ç»å¤„ç†è¿‡ï¼Œåˆ™ç›´æ¥è¿”å›*/
+	if (!filename[0]){ /*Èç¹ûÒÑ¾­´¦Àí¹ı£¬ÔòÖ±½Ó·µ»Ø*/
 #ifdef WIN32
 		strcpy(filename, getenv("UserProfile"));
 		strcat(filename, "\\.pcs");
@@ -1030,7 +1030,7 @@ static const char *captchafile()
 
 #pragma endregion
 
-#pragma region çº¿ç¨‹ State ç›¸å…³
+#pragma region Ïß³Ì State Ïà¹Ø
 
 static void init_download_state(struct DownloadState *ds)
 {
@@ -1126,7 +1126,7 @@ static void unlock_for_upload(struct UploadState *us)
 
 #pragma endregion
 
-#pragma region ä¸‰ä¸ªå›è°ƒï¼š è¾“å…¥éªŒè¯ç , æ˜¾ç¤ºä¸Šä¼ è¿›åº¦, å†™ä¸‹è½½æ–‡ä»¶
+#pragma region Èı¸ö»Øµ÷£º ÊäÈëÑéÖ¤Âë, ÏÔÊ¾ÉÏ´«½ø¶È, Ğ´ÏÂÔØÎÄ¼ş
 
 static int save_thread_states_to_file(FILE *pf, int64_t offset, struct DownloadThreadState *state_link)
 {
@@ -1175,7 +1175,7 @@ static int save_upload_thread_states_to_file(const char *filename, struct Upload
 	return 0;
 }
 
-/*è¾“å‡ºéªŒè¯ç å›¾ç‰‡ï¼Œå¹¶ç­‰å¾…ç”¨æˆ·è¾“å…¥è¯†åˆ«ç»“æœ*/
+/*Êä³öÑéÖ¤ÂëÍ¼Æ¬£¬²¢µÈ´ıÓÃ»§ÊäÈëÊ¶±ğ½á¹û*/
 static PcsBool verifycode(unsigned char *ptr, size_t size, char *captcha, size_t captchaSize, void *state)
 {
 	static char filename[1024] = { 0 };
@@ -1237,7 +1237,7 @@ static PcsBool input_str(const char *tips, char *value, size_t valueSize, void *
     return PcsTrue;
 }
 
-/*æ˜¾ç¤ºä¸Šä¼ è¿›åº¦*/
+/*ÏÔÊ¾ÉÏ´«½ø¶È*/
 static int upload_progress(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow)
 {
 	char *path = (char *)clientp;
@@ -1253,7 +1253,7 @@ static int upload_progress(void *clientp, double dltotal, double dlnow, double u
 	return 0;
 }
 
-/*ä¸‹è½½æ–‡ä»¶æ—¶ï¼Œå†™å…¥æ–‡ä»¶å¹¶æ˜¾ç¤ºè¿›åº¦*/
+/*ÏÂÔØÎÄ¼şÊ±£¬Ğ´ÈëÎÄ¼ş²¢ÏÔÊ¾½ø¶È*/
 static int download_write(char *ptr, size_t size, size_t contentlength, void *userdata)
 {
 	struct DownloadState *ds = (struct DownloadState *)userdata;
@@ -1369,7 +1369,7 @@ static int download_write_for_multy_thread(char *ptr, size_t size, size_t conten
 	return size;
 }
 
-/*æ˜¾ç¤ºä¸Šä¼ è¿›åº¦*/
+/*ÏÔÊ¾ÉÏ´«½ø¶È*/
 static int upload_progress_for_multy_thread(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow)
 {
 	static char tmp[64];
@@ -1411,9 +1411,9 @@ static int upload_progress_for_multy_thread(void *clientp, double dltotal, doubl
 
 #pragma endregion
 
-#pragma region å…¬ç”¨å‡½æ•°
+#pragma region ¹«ÓÃº¯Êı
 
-/*æ‰¾åˆ°strç¬¬ä¸€æ¬¡å‡ºç°chçš„ä½ç½®*/
+/*ÕÒµ½strµÚÒ»´Î³öÏÖchµÄÎ»ÖÃ*/
 static inline char *findchar(char *str, int ch)
 {
 	char *p = str;
@@ -1421,31 +1421,31 @@ static inline char *findchar(char *str, int ch)
 	return p;
 }
 
-/*å›åˆ°ä¸Šä¸€è¡Œ*/
+/*»Øµ½ÉÏÒ»ĞĞ*/
 static inline void clear_current_print_line()
 {
 #ifdef _WIN32
-	printf("\r");  //æ¸…é™¤è¯¥è¡Œ
+	printf("\r");  //Çå³ı¸ÃĞĞ
 #else
-	//printf("\033[1A"); //å…ˆå›åˆ°ä¸Šä¸€è¡Œ
-	printf("\033[K");  //æ¸…é™¤è¯¥è¡Œ
+	//printf("\033[1A"); //ÏÈ»Øµ½ÉÏÒ»ĞĞ
+	printf("\033[K");  //Çå³ı¸ÃĞĞ
 #endif
 }
 
-/*å›åˆ°ä¸Šä¸€è¡Œ*/
+/*»Øµ½ÉÏÒ»ĞĞ*/
 static inline void back_prev_print_line()
 {
 #ifdef _WIN32
-	printf("\r"); //å…ˆå›åˆ°ä¸Šä¸€è¡Œ
-	printf("                                        ");  //æ¸…é™¤è¯¥è¡Œ
-	printf("\r"); //å…ˆå›åˆ°ä¸Šä¸€è¡Œ
+	printf("\r"); //ÏÈ»Øµ½ÉÏÒ»ĞĞ
+	printf("                                        ");  //Çå³ı¸ÃĞĞ
+	printf("\r"); //ÏÈ»Øµ½ÉÏÒ»ĞĞ
 #else
-	printf("\033[1A"); //å…ˆå›åˆ°ä¸Šä¸€è¡Œ
-	printf("\033[K");  //æ¸…é™¤è¯¥è¡Œ
+	printf("\033[1A"); //ÏÈ»Øµ½ÉÏÒ»ĞĞ
+	printf("\033[K");  //Çå³ı¸ÃĞĞ
 #endif
 }
 
-/*æŠŠæ–‡ä»¶å¤§å°è½¬æ¢æˆå­—ç¬¦ä¸²*/
+/*°ÑÎÄ¼ş´óĞ¡×ª»»³É×Ö·û´®*/
 static const char *size_tostr(size_t size, int *fix_width, char ch)
 {
 	static char str[128], *p;
@@ -1542,7 +1542,7 @@ static const char *uint64_tostr(int64_t size, int *fix_width, char ch)
 	return str;
 }
 
-/*æ‰“å°æ–‡ä»¶æ—¶é—´*/
+/*´òÓ¡ÎÄ¼şÊ±¼ä*/
 static void print_time(const char *format, time_t time)
 {
 	struct tm *tm = NULL;
@@ -1567,7 +1567,7 @@ static void print_time(const char *format, time_t time)
 	}
 }
 
-/*æ‰“å°å¯è¯»çš„æ–‡ä»¶å¤§å°*/
+/*´òÓ¡¿É¶ÁµÄÎÄ¼ş´óĞ¡*/
 static void print_size(const char *format, size_t size)
 {
 	char tmp[64];
@@ -1584,7 +1584,7 @@ static void print_uint64(const char *format, int64_t size)
 	printf(format, tmp);
 }
 
-/*æ‰“å°æ–‡ä»¶åˆ—è¡¨çš„å¤´*/
+/*´òÓ¡ÎÄ¼şÁĞ±íµÄÍ·*/
 static void print_filelist_head(int size_width, int md5, int thumb)
 {
 	int i;
@@ -1612,7 +1612,7 @@ static void print_filelist_head(int size_width, int md5, int thumb)
     putchar('\n');
 }
 
-/*æ‰“å°æ–‡ä»¶åˆ—è¡¨çš„æ•°æ®è¡Œ*/
+/*´òÓ¡ÎÄ¼şÁĞ±íµÄÊı¾İĞĞ*/
 static void print_filelist_row(PcsFileInfo *f, int size_width, int md5, int thumb)
 {
 	const char *p;
@@ -1644,7 +1644,7 @@ static void print_filelist_row(PcsFileInfo *f, int size_width, int md5, int thum
     putchar('\n');
 }
 
-/*æ‰“å°æ–‡ä»¶åˆ—è¡¨*/
+/*´òÓ¡ÎÄ¼şÁĞ±í*/
 static void print_filelist(PcsFileInfoList *list, int *pFileCount, int *pDirCount, int64_t *pTotalSize,
 	int md5, int thumb)
 {
@@ -1690,7 +1690,7 @@ static void print_filelist(PcsFileInfoList *list, int *pFileCount, int *pDirCoun
 	if (pTotalSize) *pTotalSize += total;
 }
 
-/*æ‰“å°æ–‡ä»¶æˆ–ç›®å½•çš„å…ƒæ•°æ®*/
+/*´òÓ¡ÎÄ¼ş»òÄ¿Â¼µÄÔªÊı¾İ*/
 static void print_fileinfo(PcsFileInfo *f, const char *prex)
 {
 	if (!prex) prex = "";
@@ -1721,9 +1721,9 @@ static void print_fileinfo(PcsFileInfo *f, const char *prex)
 
 #pragma endregion
 
-#pragma region åˆå§‹åŒ–ç›¸å…³å‡½æ•°
+#pragma region ³õÊ¼»¯Ïà¹Øº¯Êı
 
-/*hood cJSON åº“ä¸­åˆ†é…å†…å­˜çš„æ–¹æ³•ï¼Œç”¨äºæ£€æŸ¥å†…å­˜æ³„æ¼*/
+/*hood cJSON ¿âÖĞ·ÖÅäÄÚ´æµÄ·½·¨£¬ÓÃÓÚ¼ì²éÄÚ´æĞ¹Â©*/
 static void hook_cjson()
 {
 	cJSON_Hooks hooks = { 0 };
@@ -1736,7 +1736,7 @@ static void hook_cjson()
 	cJSON_InitHooks(&hooks);
 }
 
-/*æŠŠä¸Šä¸‹æ–‡è½¬æ¢ä¸ºå­—ç¬¦ä¸²*/
+/*°ÑÉÏÏÂÎÄ×ª»»Îª×Ö·û´®*/
 static char *context2str(ShellContext *context)
 {
 	char *json;
@@ -1812,7 +1812,7 @@ static char *context2str(ShellContext *context)
 	return json;
 }
 
-/*ä¿å­˜ä¸Šä¸‹æ–‡*/
+/*±£´æÉÏÏÂÎÄ*/
 static void save_context(ShellContext *context)
 {
 	const char *filename;
@@ -1834,8 +1834,8 @@ static void save_context(ShellContext *context)
 	pcs_free(json);
 }
 
-/*è¿˜åŸä¿å­˜çš„ä¸Šä¸‹æ–‡ã€‚
-æˆåŠŸè¿”å›0ï¼Œå¤±è´¥è¿”å›é0å€¼ã€‚*/
+/*»¹Ô­±£´æµÄÉÏÏÂÎÄ¡£
+³É¹¦·µ»Ø0£¬Ê§°Ü·µ»Ø·Ç0Öµ¡£*/
 static int restore_context(ShellContext *context, const char *filename)
 {
 	char *filecontent = NULL;
@@ -2018,7 +2018,7 @@ static int restore_context(ShellContext *context, const char *filename)
 	return 0;
 }
 
-/*åˆå§‹åŒ–ä¸Šä¸‹æ–‡*/
+/*³õÊ¼»¯ÉÏÏÂÎÄ*/
 static void init_context(ShellContext *context, struct args *arg)
 {
 	memset(context, 0, sizeof(ShellContext));
@@ -2043,7 +2043,7 @@ static void init_context(ShellContext *context, struct args *arg)
 	context->user_agent = pcs_utils_strdup(USAGE);
 }
 
-/*é‡Šæ”¾ä¸Šä¸‹æ–‡*/
+/*ÊÍ·ÅÉÏÏÂÎÄ*/
 static void free_context(ShellContext *context)
 {
 	if (context->cookiefile) pcs_free(context->cookiefile);
@@ -2058,7 +2058,7 @@ static void free_context(ShellContext *context)
 	memset(context, 0, sizeof(ShellContext));
 }
 
-/*åˆå§‹åŒ–PCS*/
+/*³õÊ¼»¯PCS*/
 static Pcs *create_pcs(ShellContext *context)
 {
 	Pcs *pcs = pcs_create(context->cookiefile);
@@ -2084,15 +2084,15 @@ static void destroy_pcs(Pcs *pcs)
 
 #pragma endregion
 
-#pragma region æ‰“å°ç”¨æ³•ç›¸å…³å‡½æ•°
+#pragma region ´òÓ¡ÓÃ·¨Ïà¹Øº¯Êı
 
-/*æ‰“å°ç‰ˆæœ¬*/
+/*´òÓ¡°æ±¾*/
 static void version()
 {
 	printf(program_full_name "%s\n", app_name);
 }
 
-/*æ‰“å°catå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡catÃüÁîÓÃ·¨*/
 static void usage_cat()
 {
 	version();
@@ -2108,7 +2108,7 @@ static void usage_cat()
 	printf("  %s cat \"/music/Europe and America/list.txt\"\n", app_name);
 }
 
-/*æ‰“å°cdå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡cdÃüÁîÓÃ·¨*/
 static void usage_cd()
 {
 	version();
@@ -2124,7 +2124,7 @@ static void usage_cd()
 	printf("  %s cd \"/music/Europe and America\"\n", app_name);
 }
 
-/*æ‰“å°copyå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡copyÃüÁîÓÃ·¨*/
 static void usage_copy()
 {
 	version();
@@ -2140,7 +2140,7 @@ static void usage_copy()
 	printf("  %s copy /music/src.mp3 \"/music/Europe and America/dst.mp3\"\n", app_name);
 }
 
-/*æ‰“å°compareå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡compareÃüÁîÓÃ·¨*/
 static void usage_compare()
 {
 	version();
@@ -2162,7 +2162,7 @@ static void usage_compare()
 	printf("  %s compare -r music /music\n", app_name);
 }
 
-/*æ‰“å°contextå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡contextÃüÁîÓÃ·¨*/
 static void usage_context()
 {
 	version();
@@ -2176,7 +2176,7 @@ static void usage_context()
 	printf("  %s context\n", app_name);
 }
 
-/*æ‰“å°downloadå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡downloadÃüÁîÓÃ·¨*/
 static void usage_download()
 {
 	version();
@@ -2194,7 +2194,7 @@ static void usage_download()
 	printf("  %s download \"/music/dst.mp3\" \"/home/pcs/music/dst.mp3\"\n", app_name);
 }
 
-/*æ‰“å°echoå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡echoÃüÁîÓÃ·¨*/
 static void usage_echo()
 {
 	version();
@@ -2211,7 +2211,7 @@ static void usage_echo()
 	printf("  %s echo -a \"for test/src.txt\" \"This is from 'echo' command.\"\n", app_name);
 }
 
-/*æ‰“å°encodeå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡encodeÃüÁîÓÃ·¨*/
 static void usage_encode()
 {
 	version();
@@ -2229,7 +2229,7 @@ static void usage_encode()
 	printf("  %s encode -d cipher.txt plain.txt\n", app_name);
 }
 
-/*æ‰“å° fix å‘½ä»¤ç”¨æ³•ã€‚*/
+/*´òÓ¡ fix ÃüÁîÓÃ·¨¡£*/
 static void usage_fix()
 {
 	version();
@@ -2251,7 +2251,7 @@ static void usage_fix()
 	printf("  %s fix 39d768542cd2420771f28b9a3652412f 5849513984 ~/xxx.iso xxx.iso\n", app_name);
 }
 
-/*æ‰“å°helpå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡helpÃüÁîÓÃ·¨*/
 static void usage_help()
 {
 	version();
@@ -2266,7 +2266,7 @@ static void usage_help()
 	printf("  %s help synch\n", app_name);
 }
 
-/*æ‰“å°listå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡listÃüÁîÓÃ·¨*/
 static void usage_list()
 {
 	version();
@@ -2284,7 +2284,7 @@ static void usage_list()
 	printf("  %s list \"/music/Europe and America\"\n", app_name);
 }
 
-/*æ‰“å°loginå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡loginÃüÁîÓÃ·¨*/
 static void usage_login()
 {
 	version();
@@ -2309,7 +2309,7 @@ static void usage_login()
 	printf("  %s login --username=gang --password=\"password\"\n", app_name);
 }
 
-/*æ‰“å°logoutå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡logoutÃüÁîÓÃ·¨*/
 static void usage_logout()
 {
 	version();
@@ -2323,7 +2323,7 @@ static void usage_logout()
 	printf("  %s logout\n", app_name);
 }
 
-/*æ‰“å°metaå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡metaÃüÁîÓÃ·¨*/
 static void usage_meta()
 {
 	version();
@@ -2339,7 +2339,7 @@ static void usage_meta()
 	printf("  %s meta \"/music/Europe and America\"\n", app_name);
 }
 
-/*æ‰“å°mkdirå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡mkdirÃüÁîÓÃ·¨*/
 static void usage_mkdir()
 {
 	version();
@@ -2355,7 +2355,7 @@ static void usage_mkdir()
 	printf("  %s mkdir \"/music/Europe and America\"\n", app_name);
 }
 
-/*æ‰“å°moveå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡moveÃüÁîÓÃ·¨*/
 static void usage_move()
 {
 	version();
@@ -2371,7 +2371,7 @@ static void usage_move()
 	printf("  %s move /music/src.mp3 \"/music/Europe and America/dst.mp3\"\n", app_name);
 }
 
-/*æ‰“å°pwdå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡pwdÃüÁîÓÃ·¨*/
 static void usage_pwd()
 {
 	version();
@@ -2385,7 +2385,7 @@ static void usage_pwd()
 	printf("  %s pwd\n", app_name);
 }
 
-/*æ‰“å°quotaå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡quotaÃüÁîÓÃ·¨*/
 static void usage_quota()
 {
 	version();
@@ -2401,7 +2401,7 @@ static void usage_quota()
 	printf("  %s quota -e\n", app_name);
 }
 
-/*æ‰“å°removeå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡removeÃüÁîÓÃ·¨*/
 static void usage_remove()
 {
 	version();
@@ -2417,7 +2417,7 @@ static void usage_remove()
 	printf("  %s remove \"/music/Europe and America/dst.mp3\"\n", app_name);
 }
 
-/*æ‰“å°renameå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡renameÃüÁîÓÃ·¨*/
 static void usage_rename()
 {
 	version();
@@ -2433,7 +2433,7 @@ static void usage_rename()
 	printf("  %s rename \"/music/Europe and America/src.mp3\" \"dst 2.mp3\"\n", app_name);
 }
 
-/*æ‰“å°listå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡listÃüÁîÓÃ·¨*/
 static void usage_set()
 {
 	version();
@@ -2466,7 +2466,7 @@ static void usage_set()
 	printf("  %s set --list_page_size=20 --list_sort_name=name --list_sort_direction=desc\n", app_name);
 }
 
-/*æ‰“å°searchå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡searchÃüÁîÓÃ·¨*/
 static void usage_search()
 {
 	version();
@@ -2487,7 +2487,7 @@ static void usage_search()
 	printf("  %s search \"/music/Europe and America\" \"dst 2.mp3\"\n", app_name);
 }
 
-/*æ‰“å°synchå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡synchÃüÁîÓÃ·¨*/
 static void usage_synch()
 {
 	version();
@@ -2525,7 +2525,7 @@ static void usage_synch()
 	printf("  %s synch -r music /music\n", app_name);
 }
 
-/*æ‰“å°uploadå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡uploadÃüÁîÓÃ·¨*/
 static void usage_upload()
 {
 	version();
@@ -2543,7 +2543,7 @@ static void usage_upload()
 	printf("  %s upload \"/home/pcs/music/dst.mp3\" \"/music/dst.mp3\"\n", app_name);
 }
 
-/*æ‰“å°versionå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡versionÃüÁîÓÃ·¨*/
 static void usage_version()
 {
 	version();
@@ -2557,7 +2557,7 @@ static void usage_version()
 	printf("  %s version\n", app_name);
 }
 
-/*æ‰“å°whoå‘½ä»¤ç”¨æ³•*/
+/*´òÓ¡whoÃüÁîÓÃ·¨*/
 static void usage_who()
 {
 	version();
@@ -2571,7 +2571,7 @@ static void usage_who()
 	printf("  %s who\n", app_name);
 }
 
-/*æ‰“å°ç”¨æ³•*/
+/*´òÓ¡ÓÃ·¨*/
 static void usage()
 {
 	version();
@@ -2624,9 +2624,9 @@ static void usage()
 
 #pragma endregion
 
-#pragma region 'set'å‘½ä»¤çš„åˆ†æ”¯å‡½æ•°
+#pragma region 'set'ÃüÁîµÄ·ÖÖ§º¯Êı
 
-/*è®¾ç½®ä¸Šä¸‹æ–‡ä¸­çš„cookiefileå€¼*/
+/*ÉèÖÃÉÏÏÂÎÄÖĞµÄcookiefileÖµ*/
 static int set_cookiefile(ShellContext *context, const char *val)
 {
 	if (!val || !val[0]) return -1;
@@ -2642,7 +2642,7 @@ static int set_cookiefile(ShellContext *context, const char *val)
 	return 0;
 }
 
-/*è®¾ç½®ä¸Šä¸‹æ–‡ä¸­çš„captchafileå€¼*/
+/*ÉèÖÃÉÏÏÂÎÄÖĞµÄcaptchafileÖµ*/
 static int set_captchafile(ShellContext *context, const char *val)
 {
 	if (!val || !val[0]) return -1;
@@ -2652,7 +2652,7 @@ static int set_captchafile(ShellContext *context, const char *val)
 	return 0;
 }
 
-/*è®¾ç½®ä¸Šä¸‹æ–‡ä¸­çš„list_page_sizeå€¼*/
+/*ÉèÖÃÉÏÏÂÎÄÖĞµÄlist_page_sizeÖµ*/
 static int set_list_page_size(ShellContext *context, const char *val)
 {
 	const char *p = val;
@@ -2669,7 +2669,7 @@ static int set_list_page_size(ShellContext *context, const char *val)
 	return 0;
 }
 
-/*è®¾ç½®ä¸Šä¸‹æ–‡ä¸­çš„list_sort_nameå€¼*/
+/*ÉèÖÃÉÏÏÂÎÄÖĞµÄlist_sort_nameÖµ*/
 static int set_list_sort_name(ShellContext *context, const char *val)
 {
 	if (!val || !val[0]) return -1;
@@ -2682,7 +2682,7 @@ static int set_list_sort_name(ShellContext *context, const char *val)
 	return 0;
 }
 
-/*è®¾ç½®ä¸Šä¸‹æ–‡ä¸­çš„list_sort_directionå€¼*/
+/*ÉèÖÃÉÏÏÂÎÄÖĞµÄlist_sort_directionÖµ*/
 static int set_list_sort_direction(ShellContext *context, const char *val)
 {
 	if (!val || !val[0]) return -1;
@@ -2695,7 +2695,7 @@ static int set_list_sort_direction(ShellContext *context, const char *val)
 	return 0;
 }
 
-/*è®¾ç½®ä¸Šä¸‹æ–‡ä¸­çš„secure_methodå€¼*/
+/*ÉèÖÃÉÏÏÂÎÄÖĞµÄsecure_methodÖµ*/
 static int set_secure_method(ShellContext *context, const char *val)
 {
 	if (!val || !val[0]) return -1;
@@ -2708,7 +2708,7 @@ static int set_secure_method(ShellContext *context, const char *val)
 	return 0;
 }
 
-/*è®¾ç½®ä¸Šä¸‹æ–‡ä¸­çš„secure_keyå€¼*/
+/*ÉèÖÃÉÏÏÂÎÄÖĞµÄsecure_keyÖµ*/
 static int set_secure_key(ShellContext *context, const char *val)
 {
 	if (!val || !val[0]) return -1;
@@ -2718,7 +2718,7 @@ static int set_secure_key(ShellContext *context, const char *val)
 	return 0;
 }
 
-/*è®¾ç½®ä¸Šä¸‹æ–‡ä¸­çš„secure_enableå€¼*/
+/*ÉèÖÃÉÏÏÂÎÄÖĞµÄsecure_enableÖµ*/
 static int set_secure_enable(ShellContext *context, const char *val)
 {
 	if (!val || !val[0]) return -1;
@@ -2734,7 +2734,7 @@ static int set_secure_enable(ShellContext *context, const char *val)
 	return 0;
 }
 
-/*è®¾ç½®ä¸Šä¸‹æ–‡ä¸­çš„timeout_retryå€¼*/
+/*ÉèÖÃÉÏÏÂÎÄÖĞµÄtimeout_retryÖµ*/
 static int set_timeout_retry(ShellContext *context, const char *val)
 {
 	if (!val || !val[0]) return -1;
@@ -2750,7 +2750,7 @@ static int set_timeout_retry(ShellContext *context, const char *val)
 	return 0;
 }
 
-/*è®¾ç½®ä¸Šä¸‹æ–‡ä¸­çš„max_threadå€¼*/
+/*ÉèÖÃÉÏÏÂÎÄÖĞµÄmax_threadÖµ*/
 static int set_max_thread(ShellContext *context, const char *val)
 {
 	const char *p = val;
@@ -2767,7 +2767,7 @@ static int set_max_thread(ShellContext *context, const char *val)
 	return 0;
 }
 
-/*è®¾ç½®ä¸Šä¸‹æ–‡ä¸­çš„max_speed_per_threadå€¼*/
+/*ÉèÖÃÉÏÏÂÎÄÖĞµÄmax_speed_per_threadÖµ*/
 static int set_max_speed_per_thread(ShellContext *context, const char *val)
 {
 	const char *p = val;
@@ -2784,7 +2784,7 @@ static int set_max_speed_per_thread(ShellContext *context, const char *val)
 	return 0;
 }
 
-/*è®¾ç½®ä¸Šä¸‹æ–‡ä¸­çš„max_upload_speed_per_threadå€¼*/
+/*ÉèÖÃÉÏÏÂÎÄÖĞµÄmax_upload_speed_per_threadÖµ*/
 static int set_max_upload_speed_per_thread(ShellContext *context, const char *val)
 {
 	const char *p = val;
@@ -2801,7 +2801,7 @@ static int set_max_upload_speed_per_thread(ShellContext *context, const char *va
 	return 0;
 }
 
-/*è®¾ç½®ä¸Šä¸‹æ–‡ä¸­çš„cache_sizeå€¼*/
+/*ÉèÖÃÉÏÏÂÎÄÖĞµÄcache_sizeÖµ*/
 static int set_cache_size(ShellContext *context, const char *val)
 {
 	const char *p = val;
@@ -2818,7 +2818,7 @@ static int set_cache_size(ShellContext *context, const char *val)
 	return 0;
 }
 
-/*è®¾ç½®ä¸Šä¸‹æ–‡ä¸­çš„ user_agent å€¼*/
+/*ÉèÖÃÉÏÏÂÎÄÖĞµÄ user_agent Öµ*/
 static int set_user_agent(ShellContext *context, const char *val)
 {
 	if (!val || !val[0]) return -1;
@@ -2830,25 +2830,25 @@ static int set_user_agent(ShellContext *context, const char *val)
 
 #pragma endregion
 
-#pragma region Meta ç›¸å…³æ–¹æ³•
+#pragma region Meta Ïà¹Ø·½·¨
 
 static void meta_destroy(MyMeta *meta);
 
-#pragma region çº¢é»‘æ ‘çš„å‡ ä¸ªå›è°ƒå‡½æ•°
+#pragma region ºìºÚÊ÷µÄ¼¸¸ö»Øµ÷º¯Êı
 
-/*çº¢é»‘æ ‘ä¸­ç”¨äºé‡Šæ”¾ key */
+/*ºìºÚÊ÷ÖĞÓÃÓÚÊÍ·Å key */
 static void rb_destory_key(void *a, void *state)
 {
 
 }
 
-/*çº¢é»‘æ ‘ä¸­ç”¨äºé‡Šæ”¾ info */
+/*ºìºÚÊ÷ÖĞÓÃÓÚÊÍ·Å info */
 static void rb_destory_info(void *a, void *state)
 {
 	if (a) meta_destroy((MyMeta *)a);
 }
 
-/*çº¢é»‘æ ‘ä¸­ç”¨äºæ¯”è¾ƒ key å€¼ã€‚å½“ *a > *b æ—¶ï¼Œè¿”å› 1; å½“ *a < *b æ—¶ï¼Œè¿”å› -1; å½“ç›¸ç­‰æ—¶ï¼Œè¿”å› 0ã€‚ */
+/*ºìºÚÊ÷ÖĞÓÃÓÚ±È½Ï key Öµ¡£µ± *a > *b Ê±£¬·µ»Ø 1; µ± *a < *b Ê±£¬·µ»Ø -1; µ±ÏàµÈÊ±£¬·µ»Ø 0¡£ */
 static int rb_compare(const void *a, const void *b, void *state)
 {
 	int rc;
@@ -2859,13 +2859,13 @@ static int rb_compare(const void *a, const void *b, void *state)
 	return (rc < 0 ? -1 : (rc > 0 ? 1 : 0));
 }
 
-/*çº¢é»‘æ ‘ä¸­ç”¨äºæ‰“å° key */
+/*ºìºÚÊ÷ÖĞÓÃÓÚ´òÓ¡ key */
 static void rb_print_key(const void *a, void *state)
 {
 	printf("%s", (char *)a);
 }
 
-/*çº¢é»‘æ ‘ä¸­ç”¨äºæ‰“å° info */
+/*ºìºÚÊ÷ÖĞÓÃÓÚ´òÓ¡ info */
 static void rb_print_info(void *a, void *state)
 {
 	MyMeta *meta = (MyMeta *)a;
@@ -2891,7 +2891,7 @@ static void rb_print_info(void *a, void *state)
 
 #pragma endregion
 
-/*åˆ›å»ºä¸€ä¸ªMyMeta*/
+/*´´½¨Ò»¸öMyMeta*/
 static MyMeta *meta_create(const char *path, const char *md5)
 {
 	MyMeta *meta;
@@ -2906,7 +2906,7 @@ static MyMeta *meta_create(const char *path, const char *md5)
 	return meta;
 }
 
-/*é‡Šæ”¾æ‰ä¸€ä¸ªMyMeta*/
+/*ÊÍ·ÅµôÒ»¸öMyMeta*/
 static void meta_destroy(MyMeta *meta)
 {
 	if (!meta) return;
@@ -2917,7 +2917,7 @@ static void meta_destroy(MyMeta *meta)
 	pcs_free(meta);
 }
 
-/*meta_load()å‡½æ•°ä¸­å½“è·å–åˆ°ä¸€ä¸ªæ–‡ä»¶åçš„å›è°ƒå‡½æ•°*/
+/*meta_load()º¯ÊıÖĞµ±»ñÈ¡µ½Ò»¸öÎÄ¼şºóµÄ»Øµ÷º¯Êı*/
 static void onGotLocalFile(LocalFileInfo *info, LocalFileInfo *parent, void *state)
 {
 	struct ScanLocalFileState *st = (struct ScanLocalFileState *)state;
@@ -2941,8 +2941,8 @@ static void onGotLocalFile(LocalFileInfo *info, LocalFileInfo *parent, void *sta
 }
 
 /*
- * ä»æœ¬åœ°æ–‡ä»¶ç³»ç»Ÿçš„ç›®å½•æ ‘ä¸­åˆ›å»º<MyMeta>å¯¹è±¡ï¼Œå¹¶å­˜å…¥çº¢é»‘æ ‘ä¸­
- * è¿”å›çº¢é»‘æ ‘å¯¹è±¡
+ * ´Ó±¾µØÎÄ¼şÏµÍ³µÄÄ¿Â¼Ê÷ÖĞ´´½¨<MyMeta>¶ÔÏó£¬²¢´æÈëºìºÚÊ÷ÖĞ
+ * ·µ»ØºìºÚÊ÷¶ÔÏó
 */
 static rb_red_blk_tree *meta_load(const char *dir, int recursive)
 {
@@ -2967,18 +2967,18 @@ static rb_red_blk_tree *meta_load(const char *dir, int recursive)
 }
 
 /*
-* å†³å®šæ–‡ä»¶æ‰§è¡Œä½•ç§æ“ä½œã€‚
-*   1) å½“æ–‡ä»¶åœ¨æœ¬åœ°å’Œç½‘ç›˜ä¸­éƒ½å­˜åœ¨æ—¶ï¼Œæ¯”è¾ƒæœ¬åœ°å’Œç½‘ç›˜çš„å…ƒæ•°æ®ã€‚
-*         a) å¦‚æœæœ¬åœ°æ–‡ä»¶ä¿®æ”¹æ—¶é—´å°äºç½‘ç›˜æ–‡ä»¶åˆ›å»ºæ—¶é—´ï¼Œåˆ™éœ€è¦ä¸‹è½½
-*         b) å¦‚æœæœ¬åœ°æ–‡ä»¶ä¿®æ”¹æ—¶é—´å¤§äºç½‘ç›˜æ–‡ä»¶åˆ›å»ºæ—¶é—´ï¼Œåˆ™éœ€è¦ä¸Šä¼ 
-*         c) å¦‚æœæœ¬åœ°æ–‡ä»¶ä¿®æ”¹æ—¶é—´ç­‰äºç½‘ç›˜æ–‡ä»¶åˆ›å»ºæ—¶é—´ï¼Œåˆ™ä¸éœ€åšä»»ä½•æ“ä½œ
-*  2) å½“æ–‡ä»¶åœ¨æœ¬åœ°å­˜åœ¨ï¼Œä½†æ˜¯åœ¨ç½‘ç›˜ä¸­ä¸å­˜åœ¨æ—¶ï¼Œåˆ™éœ€è¦ä¸Šä¼ 
-*  3) å½“æ–‡ä»¶åœ¨æœ¬åœ°ä¸å­˜åœ¨ï¼Œä½†æ˜¯åœ¨ç½‘ç›˜ä¸­å­˜åœ¨æ—¶ï¼Œåˆ™éœ€è¦ä¸‹è½½
-*  4) å…¶ä»–æƒ…å†µï¼Œä¸éœ€åšä»»ä½•æ“ä½œã€‚
+* ¾ö¶¨ÎÄ¼şÖ´ĞĞºÎÖÖ²Ù×÷¡£
+*   1) µ±ÎÄ¼şÔÚ±¾µØºÍÍøÅÌÖĞ¶¼´æÔÚÊ±£¬±È½Ï±¾µØºÍÍøÅÌµÄÔªÊı¾İ¡£
+*         a) Èç¹û±¾µØÎÄ¼şĞŞ¸ÄÊ±¼äĞ¡ÓÚÍøÅÌÎÄ¼ş´´½¨Ê±¼ä£¬ÔòĞèÒªÏÂÔØ
+*         b) Èç¹û±¾µØÎÄ¼şĞŞ¸ÄÊ±¼ä´óÓÚÍøÅÌÎÄ¼ş´´½¨Ê±¼ä£¬ÔòĞèÒªÉÏ´«
+*         c) Èç¹û±¾µØÎÄ¼şĞŞ¸ÄÊ±¼äµÈÓÚÍøÅÌÎÄ¼ş´´½¨Ê±¼ä£¬Ôò²»Ğè×öÈÎºÎ²Ù×÷
+*  2) µ±ÎÄ¼şÔÚ±¾µØ´æÔÚ£¬µ«ÊÇÔÚÍøÅÌÖĞ²»´æÔÚÊ±£¬ÔòĞèÒªÉÏ´«
+*  3) µ±ÎÄ¼şÔÚ±¾µØ²»´æÔÚ£¬µ«ÊÇÔÚÍøÅÌÖĞ´æÔÚÊ±£¬ÔòĞèÒªÏÂÔØ
+*  4) ÆäËûÇé¿ö£¬²»Ğè×öÈÎºÎ²Ù×÷¡£
 */
 static inline void decide_op(MyMeta *meta)
 {
-	if ((meta->flag & FLAG_ON_LOCAL) && (meta->flag & FLAG_ON_REMOTE)) { /*æ–‡ä»¶åœ¨æœ¬åœ°å’Œç½‘ç›˜ä¸­éƒ½å­˜åœ¨*/
+	if ((meta->flag & FLAG_ON_LOCAL) && (meta->flag & FLAG_ON_REMOTE)) { /*ÎÄ¼şÔÚ±¾µØºÍÍøÅÌÖĞ¶¼´æÔÚ*/
 		if (meta->local_isdir && meta->remote_isdir) {
 			meta->op = OP_EQ;
 		}
@@ -3006,11 +3006,11 @@ static inline void decide_op(MyMeta *meta)
 }
 
 /*
- * æ‰“å°æ˜¾ç¤ºmetaæ—¶çš„åˆ—è¡¨å¤´
- *   first  - ç¬¬ä¸€åˆ—å®½åº¦ï¼Œç¬¬ä¸€åˆ—ä¸ºæ“ä½œæˆåŠŸè¿˜æ˜¯å¤±è´¥çš„æ ‡è®°åˆ—ã€‚ä¸å­˜åœ¨æ—¶ï¼Œä¼ å…¥0
- *   second - ç¬¬äºŒåˆ—å®½åº¦ï¼Œç¬¬äºŒåˆ—ä¸ºæœ¬åœ°æ–‡ä»¶çš„è·¯å¾„
- *   other  - å‰©ä¸‹åˆ—çš„æ€»å®½åº¦ï¼Œä¸åŒ…æ‹¬ç¬¬ä¸‰åˆ—ã€‚ç¬¬ä¸‰åˆ—å®½åº¦ä¸ºå›ºå®šå€¼2
- *   page_index - åˆ†é¡µç¼–å·ï¼Œä¸æ‰“å°åˆ†é¡µçš„è¯ï¼Œä¼ å…¥0
+ * ´òÓ¡ÏÔÊ¾metaÊ±µÄÁĞ±íÍ·
+ *   first  - µÚÒ»ÁĞ¿í¶È£¬µÚÒ»ÁĞÎª²Ù×÷³É¹¦»¹ÊÇÊ§°ÜµÄ±ê¼ÇÁĞ¡£²»´æÔÚÊ±£¬´«Èë0
+ *   second - µÚ¶şÁĞ¿í¶È£¬µÚ¶şÁĞÎª±¾µØÎÄ¼şµÄÂ·¾¶
+ *   other  - Ê£ÏÂÁĞµÄ×Ü¿í¶È£¬²»°üÀ¨µÚÈıÁĞ¡£µÚÈıÁĞ¿í¶ÈÎª¹Ì¶¨Öµ2
+ *   page_index - ·ÖÒ³±àºÅ£¬²»´òÓ¡·ÖÒ³µÄ»°£¬´«Èë0
 */
 static void print_meta_list_head(int first, int second, int other)
 {
@@ -3022,7 +3022,7 @@ static void print_meta_list_head(int first, int second, int other)
 	printf(" OP Net Disk File\n");
 	if (first > 0) total += first + 1;
 	total += second + 1;
-	total += 2 + 1; /*2ä¸ºåˆ—å¤´"OP"çš„é•¿åº¦ï¼Œ1ä¸ºåˆ†éš”ç©ºç™½*/
+	total += 2 + 1; /*2ÎªÁĞÍ·"OP"µÄ³¤¶È£¬1Îª·Ö¸ô¿Õ°×*/
 	total += other;
 	for (i = 0; i < total; i++) putchar('-');
 	putchar('\n');
@@ -3030,11 +3030,11 @@ static void print_meta_list_head(int first, int second, int other)
 
 
 /*
-* æ‰“å°æ˜¾ç¤ºmetaæ—¶çš„åˆ—è¡¨å¤´
-*   first  - ç¬¬ä¸€åˆ—å®½åº¦ï¼Œç¬¬ä¸€åˆ—ä¸ºæ“ä½œæˆåŠŸè¿˜æ˜¯å¤±è´¥çš„æ ‡è®°åˆ—ã€‚ä¸å­˜åœ¨æ—¶ï¼Œä¼ å…¥0
-*   second - ç¬¬äºŒåˆ—å®½åº¦ï¼Œç¬¬äºŒåˆ—ä¸ºæœ¬åœ°æ–‡ä»¶çš„è·¯å¾„
-*   other  - å‰©ä¸‹åˆ—çš„æ€»å®½åº¦ï¼Œä¸åŒ…æ‹¬ç¬¬ä¸‰åˆ—ã€‚ç¬¬ä¸‰åˆ—å®½åº¦ä¸ºå›ºå®šå€¼2
-*   meta   - å¾…æ‰“å°çš„ meta 
+* ´òÓ¡ÏÔÊ¾metaÊ±µÄÁĞ±íÍ·
+*   first  - µÚÒ»ÁĞ¿í¶È£¬µÚÒ»ÁĞÎª²Ù×÷³É¹¦»¹ÊÇÊ§°ÜµÄ±ê¼ÇÁĞ¡£²»´æÔÚÊ±£¬´«Èë0
+*   second - µÚ¶şÁĞ¿í¶È£¬µÚ¶şÁĞÎª±¾µØÎÄ¼şµÄÂ·¾¶
+*   other  - Ê£ÏÂÁĞµÄ×Ü¿í¶È£¬²»°üÀ¨µÚÈıÁĞ¡£µÚÈıÁĞ¿í¶ÈÎª¹Ì¶¨Öµ2
+*   meta   - ´ı´òÓ¡µÄ meta 
 */
 static void print_meta_list_row(int first, int second, int other, MyMeta *meta)
 {
@@ -3176,7 +3176,7 @@ static void print_meta_list_row_err(int first, int second, int other, MyMeta *me
 }
 
 /*
-* æ‰“å°ç»Ÿè®¡
+* ´òÓ¡Í³¼Æ
 */
 static void print_meta_list_statistic(struct RBEnumerateState *s, int print_fail)
 {
@@ -3185,7 +3185,7 @@ static void print_meta_list_statistic(struct RBEnumerateState *s, int print_fail
 	printf("\nStatistic:\n");
 	if (s->first > 0) total += s->first + 1;
 	total += s->second + 1;
-	total += 2 + 1; /*2ä¸ºåˆ—å¤´"OP"çš„é•¿åº¦ï¼Œ1ä¸ºåˆ†éš”ç©ºç™½*/
+	total += 2 + 1; /*2ÎªÁĞÍ·"OP"µÄ³¤¶È£¬1Îª·Ö¸ô¿Õ°×*/
 	total += s->other;
 	for (i = 0; i < total; i++) putchar('-');
 	putchar('\n');
@@ -3202,10 +3202,10 @@ static void print_meta_list_statistic(struct RBEnumerateState *s, int print_fail
 }
 
 /*
-* æ‰“å°æ˜¾ç¤ºmetaæ—¶çš„åˆ—è¡¨å¤´
-*   first  - ç¬¬ä¸€åˆ—å®½åº¦ï¼Œç¬¬ä¸€åˆ—ä¸ºæ“ä½œæˆåŠŸè¿˜æ˜¯å¤±è´¥çš„æ ‡è®°åˆ—ã€‚ä¸å­˜åœ¨æ—¶ï¼Œä¼ å…¥0
-*   second - ç¬¬äºŒåˆ—å®½åº¦ï¼Œç¬¬äºŒåˆ—ä¸ºæœ¬åœ°æ–‡ä»¶çš„è·¯å¾„
-*   other  - å‰©ä¸‹åˆ—çš„æ€»å®½åº¦ï¼Œä¸åŒ…æ‹¬ç¬¬ä¸‰åˆ—ã€‚ç¬¬ä¸‰åˆ—å®½åº¦ä¸ºå›ºå®šå€¼2
+* ´òÓ¡ÏÔÊ¾metaÊ±µÄÁĞ±íÍ·
+*   first  - µÚÒ»ÁĞ¿í¶È£¬µÚÒ»ÁĞÎª²Ù×÷³É¹¦»¹ÊÇÊ§°ÜµÄ±ê¼ÇÁĞ¡£²»´æÔÚÊ±£¬´«Èë0
+*   second - µÚ¶şÁĞ¿í¶È£¬µÚ¶şÁĞÎª±¾µØÎÄ¼şµÄÂ·¾¶
+*   other  - Ê£ÏÂÁĞµÄ×Ü¿í¶È£¬²»°üÀ¨µÚÈıÁĞ¡£µÚÈıÁĞ¿í¶ÈÎª¹Ì¶¨Öµ2
 */
 static void print_meta_list_notes(int first, int second, int other)
 {
@@ -3217,7 +3217,7 @@ static void print_meta_list_notes(int first, int second, int other)
 	printf("  >< means confuse, don't known how to. \n");
 }
 
-/*åˆ¤æ–­æ˜¯å¦å…è®¸æ‰“å°ã€‚è¿”å›0è¡¨ç¤ºä¸å…è®¸ï¼Œè¿”å›é0å€¼è¡¨ç¤ºå…è®¸*/
+/*ÅĞ¶ÏÊÇ·ñÔÊĞí´òÓ¡¡£·µ»Ø0±íÊ¾²»ÔÊĞí£¬·µ»Ø·Ç0Öµ±íÊ¾ÔÊĞí*/
 static inline int rb_print_enabled(MyMeta *meta, struct RBEnumerateState *s)
 {
 	if (!(meta->op & s->print_op) || !((meta->op) & (~(s->no_print_op))))
@@ -3227,7 +3227,7 @@ static inline int rb_print_enabled(MyMeta *meta, struct RBEnumerateState *s)
 	return 1;
 }
 
-/* æšä¸¾æ—¶ç”¨äºæ‰“å°æ¯ä¸€é¡¹ */
+/* Ã¶¾ÙÊ±ÓÃÓÚ´òÓ¡Ã¿Ò»Ïî */
 static int rb_print_meta(void *a, void *state)
 {
 	MyMeta *meta = (MyMeta *)a;
@@ -3273,13 +3273,13 @@ static int rb_print_meta(void *a, void *state)
 		if (meta->op_st == OP_ST_PROCESSING) meta->op_st = OP_ST_FAIL;
 		if (meta->op_st == OP_ST_FAIL) {
 #ifdef _WIN32
-			fprintf(stderr, "\r");  //æ¸…é™¤è¯¥è¡Œ
-			fprintf(stderr, "                                        ");  //æ¸…é™¤è¯¥è¡Œ
-			fprintf(stderr, "\r");  //æ¸…é™¤è¯¥è¡Œ
+			fprintf(stderr, "\r");  //Çå³ı¸ÃĞĞ
+			fprintf(stderr, "                                        ");  //Çå³ı¸ÃĞĞ
+			fprintf(stderr, "\r");  //Çå³ı¸ÃĞĞ
 #else
-			fprintf(stderr, "\033[K");  //æ¸…é™¤è¯¥è¡Œ
-			fprintf(stderr, "\033[1A"); //å…ˆå›åˆ°ä¸Šä¸€è¡Œ
-			fprintf(stderr, "\033[K");  //æ¸…é™¤è¯¥è¡Œ
+			fprintf(stderr, "\033[K");  //Çå³ı¸ÃĞĞ
+			fprintf(stderr, "\033[1A"); //ÏÈ»Øµ½ÉÏÒ»ĞĞ
+			fprintf(stderr, "\033[K");  //Çå³ı¸ÃĞĞ
 #endif
 			print_meta_list_row_err(s->first, s->second, s->other, meta);
 		}
@@ -3297,7 +3297,7 @@ static int rb_print_meta(void *a, void *state)
 	return 0;
 }
 
-/* æšä¸¾å†³å®šçº¢é»‘æ ‘ä¸­é¡¹çš„opå€¼ï¼ŒåŒæ—¶ä¹Ÿå†³å®šflagä¸­çš„FLAG_PARENT_NOT_ON_REMOTEæ ‡è®°ï¼ŒåŒæ—¶ç»Ÿè®¡ä¸€äº›å€¼ */
+/* Ã¶¾Ù¾ö¶¨ºìºÚÊ÷ÖĞÏîµÄopÖµ£¬Í¬Ê±Ò²¾ö¶¨flagÖĞµÄFLAG_PARENT_NOT_ON_REMOTE±ê¼Ç£¬Í¬Ê±Í³¼ÆÒ»Ğ©Öµ */
 static int rb_decide_op(void *a, void *state)
 {
 	MyMeta *meta = (MyMeta *)a;
@@ -3348,11 +3348,11 @@ static int rb_decide_op(void *a, void *state)
 
 #pragma endregion
 
-#pragma region å„å‘½ä»¤å‡½æ•°ä½“
+#pragma region ¸÷ÃüÁîº¯ÊıÌå
 
 /*
- * æ£€æŸ¥æ˜¯å¦ç™»å½•
- *   msg   - æ£€æµ‹åˆ°æœªç™»å½•æ—¶çš„æ‰“å°æ¶ˆæ¯ã€‚ä¼ å…¥NULLçš„è¯ï¼Œåˆ™ä½¿ç”¨é»˜è®¤æ¶ˆæ¯ã€‚
+ * ¼ì²éÊÇ·ñµÇÂ¼
+ *   msg   - ¼ì²âµ½Î´µÇÂ¼Ê±µÄ´òÓ¡ÏûÏ¢¡£´«ÈëNULLµÄ»°£¬ÔòÊ¹ÓÃÄ¬ÈÏÏûÏ¢¡£
 */
 static PcsBool is_login(ShellContext *context, const char *msg)
 {
@@ -3461,7 +3461,7 @@ static void *download_thread(void *params)
 			unlock_for_download(ds);
 			delay = rand();
 			delay %= 10;
-			sleep(delay); /*10ç§’åé‡è¯•*/
+			sleep(delay); /*10ÃëºóÖØÊÔ*/
 			continue;
 		}
 		lock_for_download(ds);
@@ -3488,14 +3488,14 @@ static void start_download_thread(struct DownloadState *ds, void **pHandle)
 	HANDLE thandle;
 	/* hThread = CreateThread (&security_attributes, dwStackSize, ThreadProc, pParam, dwFlags, &idThread)
 	WINBASEAPI HANDLE WINAPI CreateThread(LPSECURITY_ATTRIBUTES,DWORD,LPTHREAD_START_ROUTINE,PVOID,DWORD,PDWORD);
-	ç¬¬ä¸€ä¸ªå‚æ•°æ˜¯æŒ‡å‘SECURITY_ATTRIBUTESå‹æ€çš„ç»“æ„çš„æŒ‡é’ˆã€‚åœ¨Windows 98ä¸­å¿½ç•¥è¯¥å‚æ•°ã€‚åœ¨Windows NTä¸­ï¼Œå®ƒè¢«è®¾ä¸ºNULLã€‚
-	ç¬¬äºŒä¸ªå‚æ•°æ˜¯ç”¨äºæ–°çº¿ç¨‹çš„åˆå§‹å †æ ˆå¤§å°ï¼Œé»˜è®¤å€¼ä¸º0ã€‚åœ¨ä»»ä½•æƒ…å†µä¸‹ï¼ŒWindowsæ ¹æ®éœ€è¦åŠ¨æ€å»¶é•¿å †æ ˆçš„å¤§å°ã€‚
-	ç¬¬ä¸‰ä¸ªå‚æ•°æ˜¯æŒ‡å‘çº¿ç¨‹å‡½æ•°çš„æŒ‡æ ‡ã€‚å‡½æ•°åç§°æ²¡æœ‰é™åˆ¶ï¼Œä½†æ˜¯å¿…é¡»ä»¥ä¸‹åˆ—å½¢å¼å£°æ˜:DWORD WINAPI ThreadProc (PVOID pParam) ;
-	ç¬¬å››ä¸ªå‚æ•°ä¸ºä¼ é€’ç»™ThreadProcçš„å‚æ•°ã€‚è¿™æ ·ä¸»çº¿ç¨‹å’Œä»å±çº¿ç¨‹å°±å¯ä»¥å…±äº«æ•°æ®ã€‚
-	ç¬¬äº”ä¸ªå‚æ•°é€šå¸¸ä¸º0ï¼Œä½†å½“å»ºç«‹çš„çº¿ç¨‹ä¸é©¬ä¸Šæ‰§è¡Œæ—¶ä¸ºæ——æ ‡
-	ç¬¬å…­ä¸ªå‚æ•°æ˜¯ä¸€ä¸ªæŒ‡é’ˆï¼ŒæŒ‡å‘æ¥å—æ‰§è¡Œç»ªIDå€¼çš„å˜é‡
+	µÚÒ»¸ö²ÎÊıÊÇÖ¸ÏòSECURITY_ATTRIBUTESĞÍÌ¬µÄ½á¹¹µÄÖ¸Õë¡£ÔÚWindows 98ÖĞºöÂÔ¸Ã²ÎÊı¡£ÔÚWindows NTÖĞ£¬Ëü±»ÉèÎªNULL¡£
+	µÚ¶ş¸ö²ÎÊıÊÇÓÃÓÚĞÂÏß³ÌµÄ³õÊ¼¶ÑÕ»´óĞ¡£¬Ä¬ÈÏÖµÎª0¡£ÔÚÈÎºÎÇé¿öÏÂ£¬Windows¸ù¾İĞèÒª¶¯Ì¬ÑÓ³¤¶ÑÕ»µÄ´óĞ¡¡£
+	µÚÈı¸ö²ÎÊıÊÇÖ¸ÏòÏß³Ìº¯ÊıµÄÖ¸±ê¡£º¯ÊıÃû³ÆÃ»ÓĞÏŞÖÆ£¬µ«ÊÇ±ØĞëÒÔÏÂÁĞĞÎÊ½ÉùÃ÷:DWORD WINAPI ThreadProc (PVOID pParam) ;
+	µÚËÄ¸ö²ÎÊıÎª´«µİ¸øThreadProcµÄ²ÎÊı¡£ÕâÑùÖ÷Ïß³ÌºÍ´ÓÊôÏß³Ì¾Í¿ÉÒÔ¹²ÏíÊı¾İ¡£
+	µÚÎå¸ö²ÎÊıÍ¨³£Îª0£¬µ«µ±½¨Á¢µÄÏß³Ì²»ÂíÉÏÖ´ĞĞÊ±ÎªÆì±ê
+	µÚÁù¸ö²ÎÊıÊÇÒ»¸öÖ¸Õë£¬Ö¸Ïò½ÓÊÜÖ´ĞĞĞ÷IDÖµµÄ±äÁ¿
 	*/
-	thandle = CreateThread(NULL, 0, download_thread, (LPVOID)ds, 0, &tid); // å»ºç«‹çº¿ç¨‹
+	thandle = CreateThread(NULL, 0, download_thread, (LPVOID)ds, 0, &tid); // ½¨Á¢Ïß³Ì
 	if (pHandle) *pHandle = thandle;
 	if (!thandle) {
 		printf("Error: Can't create download thread.\n");
@@ -3600,17 +3600,17 @@ static int create_file(const char *file, int64_t fsize)
 }
 
 /*
- * æ‰§è¡Œä¸‹è½½æ“ä½œ
- *   context        - ä¸Šä¸‹æ–‡
- *   local_file     - æ–‡ä»¶æœ¬åœ°å­˜å‚¨è·¯å¾„
- *   remote_file    - è¿œç«¯æ–‡ä»¶
- *   remote_mtime   - è¿œç«¯æ–‡ä»¶çš„æœ€åä¿®æ”¹æ—¶é—´
- *   local_basedir  - æœ¬åœ°å­˜å‚¨è·¯å¾„æ˜¯åŸºäºå“ªä¸€ä¸ªç›®å½•çš„
- *   remote_basedir - è¿œç«¯æ–‡ä»¶æ˜¯åŸºäºå“ªä¸€ä¸ªç›®å½•çš„
- *   pErrMsg        - å¦‚æœä¸‹è½½å¤±è´¥æ—¶ï¼Œç”¨äºæ¥æ”¶å¤±è´¥æ¶ˆæ¯ï¼Œå¦‚æœæ— éœ€å¤±è´¥æ¶ˆæ¯ï¼Œåˆ™ä¼ å…¥NULL
- *                    ä½¿ç”¨å®Œåéœ€è°ƒç”¨pcs_free()
- *   op_st          - ç”¨äºæ¥æ”¶æ“ä½œçŠ¶æ€çš„ã€‚å³ OP_ST_FAILï¼Œ OP_ST_SUCCï¼Œ OP_ST_SKIP
- * æˆåŠŸåè¿”å›0ï¼Œå¤±è´¥åè¿”å›é0å€¼
+ * Ö´ĞĞÏÂÔØ²Ù×÷
+ *   context        - ÉÏÏÂÎÄ
+ *   local_file     - ÎÄ¼ş±¾µØ´æ´¢Â·¾¶
+ *   remote_file    - Ô¶¶ËÎÄ¼ş
+ *   remote_mtime   - Ô¶¶ËÎÄ¼şµÄ×îºóĞŞ¸ÄÊ±¼ä
+ *   local_basedir  - ±¾µØ´æ´¢Â·¾¶ÊÇ»ùÓÚÄÄÒ»¸öÄ¿Â¼µÄ
+ *   remote_basedir - Ô¶¶ËÎÄ¼şÊÇ»ùÓÚÄÄÒ»¸öÄ¿Â¼µÄ
+ *   pErrMsg        - Èç¹ûÏÂÔØÊ§°ÜÊ±£¬ÓÃÓÚ½ÓÊÕÊ§°ÜÏûÏ¢£¬Èç¹ûÎŞĞèÊ§°ÜÏûÏ¢£¬Ôò´«ÈëNULL
+ *                    Ê¹ÓÃÍêºóĞèµ÷ÓÃpcs_free()
+ *   op_st          - ÓÃÓÚ½ÓÊÕ²Ù×÷×´Ì¬µÄ¡£¼´ OP_ST_FAIL£¬ OP_ST_SUCC£¬ OP_ST_SKIP
+ * ³É¹¦ºó·µ»Ø0£¬Ê§°Üºó·µ»Ø·Ç0Öµ
  */
 static inline int do_download(ShellContext *context, 
 	const char *local_file, const char *remote_file, time_t remote_mtime,
@@ -3644,7 +3644,7 @@ static inline int do_download(ShellContext *context,
 		local_path = combin_path(local_basedir, -1, local_file);
 	}
 
-	/*åˆ›å»ºç›®å½•*/
+	/*´´½¨Ä¿Â¼*/
 	dir = base_dir(local_path, -1);
 	if (dir) {
 		if (CreateDirectoryRecursive(dir) != MKDIR_OK) {
@@ -3716,8 +3716,8 @@ static inline int do_download(ShellContext *context,
 	}
 
 	if (fsize <= MIN_SLICE_SIZE) {
-		/*å¯åŠ¨ä¸‹è½½*/
-		/*æ‰“å¼€æ–‡ä»¶*/
+		/*Æô¶¯ÏÂÔØ*/
+		/*´ò¿ªÎÄ¼ş*/
 		ds.pf = fopen(tmp_local_path, "wb");
 		if (!ds.pf) {
 			if (pErrMsg) {
@@ -3781,7 +3781,7 @@ static inline int do_download(ShellContext *context,
 		HANDLE *handles = NULL;
 #endif
 		if (restore_download_state(&ds, tmp_local_path, &pendding_slice_count)) {
-			//åˆ†ç‰‡å¼€å§‹
+			//·ÖÆ¬¿ªÊ¼
 			mode = "wb";
 			ds.resume_from = 0;
 			slice_size = MIN_SLICE_SIZE;
@@ -3808,7 +3808,7 @@ static inline int do_download(ShellContext *context,
 				}
 			}
 			ds.num_of_slice = slice_count;
-			//åˆ†ç‰‡ç»“æŸ
+			//·ÖÆ¬½áÊø
 			//printf("fs: %" PRIu64 ", %" PRIu64 ", %" PRIu64 ", %d\n", ds.file_size, ds.file_size + 4 + sizeof(struct DownloadThreadState) * slice_count, slice_size, slice_count);
 			if (create_file(tmp_local_path, ds.file_size + 4 + sizeof(struct DownloadThreadState) * slice_count)) {
 				if (pErrMsg) {
@@ -3825,7 +3825,7 @@ static inline int do_download(ShellContext *context,
 			}
 			mode = "rb+";
 		}
-		/*æ‰“å¼€æ–‡ä»¶*/
+		/*´ò¿ªÎÄ¼ş*/
 		ds.pf = fopen(tmp_local_path, mode);
 		if (!ds.pf) {
 			if (pErrMsg) {
@@ -3841,7 +3841,7 @@ static inline int do_download(ShellContext *context,
 			return -1;
 		}
 		ds.cache.fp = ds.pf;
-		//ä¿å­˜åˆ†ç‰‡æ•°æ®
+		//±£´æ·ÖÆ¬Êı¾İ
 		printf("Create/Load temporary file...\r");
 		fflush(stdout);
 		if (save_thread_states_to_file(ds.pf, ds.file_size, ds.threads)) {
@@ -3880,7 +3880,7 @@ static inline int do_download(ShellContext *context,
 #endif
 		}
 
-		/*ç­‰å¾…æ‰€æœ‰è¿è¡Œçš„çº¿ç¨‹é€€å‡º*/
+		/*µÈ´ıËùÓĞÔËĞĞµÄÏß³ÌÍË³ö*/
 		while (1) {
 			lock_for_download(&ds);
 			running_thread_count = ds.num_of_running_thread;
@@ -3918,7 +3918,7 @@ static inline int do_download(ShellContext *context,
 		pcs_free(handles);
 #endif
 
-		/*åˆ¤æ–­æ˜¯å¦æ‰€æœ‰åˆ†ç‰‡éƒ½ä¸‹è½½å®Œæˆäº†*/
+		/*ÅĞ¶ÏÊÇ·ñËùÓĞ·ÖÆ¬¶¼ÏÂÔØÍê³ÉÁË*/
 		is_success = 1;
 		ts = ds.threads;
 		while (ts) {
@@ -4004,7 +4004,7 @@ static inline int do_download(ShellContext *context,
 		return -1;
 	}
 
-	/*è®¾ç½®æ–‡ä»¶æœ€åä¿®æ”¹æ—¶é—´ä¸ºç½‘ç›˜æ–‡ä»¶æœ€åä¿®æ”¹æ—¶é—´*/
+	/*ÉèÖÃÎÄ¼ş×îºóĞŞ¸ÄÊ±¼äÎªÍøÅÌÎÄ¼ş×îºóĞŞ¸ÄÊ±¼ä*/
 	SetFileLastModifyTime(local_path, remote_mtime);
 	if (op_st) (*op_st) = OP_ST_SUCC;
 	pcs_free(tmp_local_path);
@@ -4162,7 +4162,7 @@ static void *upload_thread(void *params)
 #else
 			printf("Upload slice failed, retry delay 10 second, tid: %p. message: %s\n", pthread_self(), pcs_strerror(pcs));
 #endif
-			sleep(10); /*10ç§’åé‡è¯•*/
+			sleep(10); /*10ÃëºóÖØÊÔ*/
 			continue;
 		}
 		lock_for_upload(ds);
@@ -4192,14 +4192,14 @@ static void start_upload_thread(struct UploadState *us, void **pHandle)
 	HANDLE thandle;
 	/* hThread = CreateThread (&security_attributes, dwStackSize, ThreadProc, pParam, dwFlags, &idThread)
 	WINBASEAPI HANDLE WINAPI CreateThread(LPSECURITY_ATTRIBUTES,DWORD,LPTHREAD_START_ROUTINE,PVOID,DWORD,PDWORD);
-	ç¬¬ä¸€ä¸ªå‚æ•°æ˜¯æŒ‡å‘SECURITY_ATTRIBUTESå‹æ€çš„ç»“æ„çš„æŒ‡é’ˆã€‚åœ¨Windows 98ä¸­å¿½ç•¥è¯¥å‚æ•°ã€‚åœ¨Windows NTä¸­ï¼Œå®ƒè¢«è®¾ä¸ºNULLã€‚
-	ç¬¬äºŒä¸ªå‚æ•°æ˜¯ç”¨äºæ–°çº¿ç¨‹çš„åˆå§‹å †æ ˆå¤§å°ï¼Œé»˜è®¤å€¼ä¸º0ã€‚åœ¨ä»»ä½•æƒ…å†µä¸‹ï¼ŒWindowsæ ¹æ®éœ€è¦åŠ¨æ€å»¶é•¿å †æ ˆçš„å¤§å°ã€‚
-	ç¬¬ä¸‰ä¸ªå‚æ•°æ˜¯æŒ‡å‘çº¿ç¨‹å‡½æ•°çš„æŒ‡æ ‡ã€‚å‡½æ•°åç§°æ²¡æœ‰é™åˆ¶ï¼Œä½†æ˜¯å¿…é¡»ä»¥ä¸‹åˆ—å½¢å¼å£°æ˜:DWORD WINAPI ThreadProc (PVOID pParam) ;
-	ç¬¬å››ä¸ªå‚æ•°ä¸ºä¼ é€’ç»™ThreadProcçš„å‚æ•°ã€‚è¿™æ ·ä¸»çº¿ç¨‹å’Œä»å±çº¿ç¨‹å°±å¯ä»¥å…±äº«æ•°æ®ã€‚
-	ç¬¬äº”ä¸ªå‚æ•°é€šå¸¸ä¸º0ï¼Œä½†å½“å»ºç«‹çš„çº¿ç¨‹ä¸é©¬ä¸Šæ‰§è¡Œæ—¶ä¸ºæ——æ ‡
-	ç¬¬å…­ä¸ªå‚æ•°æ˜¯ä¸€ä¸ªæŒ‡é’ˆï¼ŒæŒ‡å‘æ¥å—æ‰§è¡Œç»ªIDå€¼çš„å˜é‡
+	µÚÒ»¸ö²ÎÊıÊÇÖ¸ÏòSECURITY_ATTRIBUTESĞÍÌ¬µÄ½á¹¹µÄÖ¸Õë¡£ÔÚWindows 98ÖĞºöÂÔ¸Ã²ÎÊı¡£ÔÚWindows NTÖĞ£¬Ëü±»ÉèÎªNULL¡£
+	µÚ¶ş¸ö²ÎÊıÊÇÓÃÓÚĞÂÏß³ÌµÄ³õÊ¼¶ÑÕ»´óĞ¡£¬Ä¬ÈÏÖµÎª0¡£ÔÚÈÎºÎÇé¿öÏÂ£¬Windows¸ù¾İĞèÒª¶¯Ì¬ÑÓ³¤¶ÑÕ»µÄ´óĞ¡¡£
+	µÚÈı¸ö²ÎÊıÊÇÖ¸ÏòÏß³Ìº¯ÊıµÄÖ¸±ê¡£º¯ÊıÃû³ÆÃ»ÓĞÏŞÖÆ£¬µ«ÊÇ±ØĞëÒÔÏÂÁĞĞÎÊ½ÉùÃ÷:DWORD WINAPI ThreadProc (PVOID pParam) ;
+	µÚËÄ¸ö²ÎÊıÎª´«µİ¸øThreadProcµÄ²ÎÊı¡£ÕâÑùÖ÷Ïß³ÌºÍ´ÓÊôÏß³Ì¾Í¿ÉÒÔ¹²ÏíÊı¾İ¡£
+	µÚÎå¸ö²ÎÊıÍ¨³£Îª0£¬µ«µ±½¨Á¢µÄÏß³Ì²»ÂíÉÏÖ´ĞĞÊ±ÎªÆì±ê
+	µÚÁù¸ö²ÎÊıÊÇÒ»¸öÖ¸Õë£¬Ö¸Ïò½ÓÊÜÖ´ĞĞĞ÷IDÖµµÄ±äÁ¿
 	*/
-	thandle = CreateThread(NULL, 0, upload_thread, (LPVOID)us, 0, &tid); // å»ºç«‹çº¿ç¨‹
+	thandle = CreateThread(NULL, 0, upload_thread, (LPVOID)us, 0, &tid); // ½¨Á¢Ïß³Ì
 	if (pHandle) *pHandle = thandle;
 	if (!thandle) {
 		printf("Error: Can't create download thread.\n");
@@ -4405,7 +4405,7 @@ static inline int do_upload(ShellContext *context,
 			}
 		}
 
-		/*æ‰“å¼€æ–‡ä»¶*/
+		/*´ò¿ªÎÄ¼ş*/
 		us.pf = fopen(local_path, "rb");
 		if (!us.pf) {
 			if (pErrMsg) {
@@ -4432,7 +4432,7 @@ static inline int do_upload(ShellContext *context,
 		slice_count = context->max_thread;
 		if (slice_count < 1) slice_count = 1;
 		if (restore_upload_state(&us, slice_file, &pendding_slice_count)) {
-			//åˆ†ç‰‡å¼€å§‹
+			//·ÖÆ¬¿ªÊ¼
 			us.uploaded_size = 0;
 			slice_size = content_length / slice_count;
 			if ((content_length % slice_count))
@@ -4473,9 +4473,9 @@ static inline int do_upload(ShellContext *context,
 				}
 			}
 			us.num_of_slice = slice_count;
-			//åˆ†ç‰‡ç»“æŸ
+			//·ÖÆ¬½áÊø
 		}
-		//ä¿å­˜åˆ†ç‰‡æ•°æ®
+		//±£´æ·ÖÆ¬Êı¾İ
 		printf("Saving slices...\r");
 		fflush(stdout);
 		if (save_upload_thread_states_to_file(slice_file, us.threads)) {
@@ -4513,7 +4513,7 @@ static inline int do_upload(ShellContext *context,
 #endif
 		}
 
-		/*ç­‰å¾…æ‰€æœ‰è¿è¡Œçš„çº¿ç¨‹é€€å‡º*/
+		/*µÈ´ıËùÓĞÔËĞĞµÄÏß³ÌÍË³ö*/
 		while (1) {
 			lock_for_upload(&us);
 			running_thread_count = us.num_of_running_thread;
@@ -4532,7 +4532,7 @@ static inline int do_upload(ShellContext *context,
 		pcs_free(handles);
 #endif
 
-		/*åˆ¤æ–­æ˜¯å¦æ‰€æœ‰åˆ†ç‰‡éƒ½ä¸‹è½½å®Œæˆäº†*/
+		/*ÅĞ¶ÏÊÇ·ñËùÓĞ·ÖÆ¬¶¼ÏÂÔØÍê³ÉÁË*/
 		is_success = 1;
 		ts = us.threads;
 		while (ts) {
@@ -4557,7 +4557,7 @@ static inline int do_upload(ShellContext *context,
 			return -1;
 		}
 		else {
-			//åˆå¹¶æ–‡ä»¶
+			//ºÏ²¢ÎÄ¼ş
 			PcsSList *slist = NULL, *si, *si_tail;
 			ts = us.threads;
 			while (ts) {
@@ -4600,7 +4600,7 @@ static inline int do_upload(ShellContext *context,
 
 	}
 
-	/*å½“æ–‡ä»¶åä»¥.(ç‚¹å·)å¼€å¤´çš„è¯ï¼Œåˆ™ç½‘ç›˜ä¼šè‡ªåŠ¨å»é™¤ç¬¬ä¸€ä¸ªç‚¹ã€‚ä»¥ä¸‹ifè¯­å¥çš„ç›®çš„å°±æ˜¯æŠŠç½‘ç›˜æ–‡ä»¶é‡å‘½åä¸ºä»¥ç‚¹å·å¼€å¤´ã€‚*/
+	/*µ±ÎÄ¼şÃûÒÔ.(µãºÅ)¿ªÍ·µÄ»°£¬ÔòÍøÅÌ»á×Ô¶¯È¥³ıµÚÒ»¸öµã¡£ÒÔÏÂifÓï¾äµÄÄ¿µÄ¾ÍÊÇ°ÑÍøÅÌÎÄ¼şÖØÃüÃûÎªÒÔµãºÅ¿ªÍ·¡£*/
 	if (res) {
 		char *diskName = pcs_utils_filename(res->path),
 			*orgName = pcs_utils_filename(remote_file);
@@ -4669,7 +4669,7 @@ static inline int do_upload(ShellContext *context,
 	return 0;
 }
 
-/*æ‰“å°ç½‘ç›˜æ–‡ä»¶å†…å®¹*/
+/*´òÓ¡ÍøÅÌÎÄ¼şÄÚÈİ*/
 static int cmd_cat(ShellContext *context, struct args *arg)
 {
 	char *path;
@@ -4726,7 +4726,7 @@ static int cmd_cat(ShellContext *context, struct args *arg)
 	return 0;
 }
 
-/*æ›´æ”¹ç½‘ç›˜å½“å‰å·¥ä½œç›®å½•*/
+/*¸ü¸ÄÍøÅÌµ±Ç°¹¤×÷Ä¿Â¼*/
 static int cmd_cd(ShellContext *context, struct args *arg)
 {
 	char *p;
@@ -4763,7 +4763,7 @@ static int cmd_cd(ShellContext *context, struct args *arg)
 	return 0;
 }
 
-/*å¤åˆ¶ç½‘ç›˜æ–‡ä»¶*/
+/*¸´ÖÆÍøÅÌÎÄ¼ş*/
 static int cmd_copy(ShellContext *context, struct args *arg)
 {
 	PcsPanApiRes *res;
@@ -4822,25 +4822,25 @@ static int cmd_copy(ShellContext *context, struct args *arg)
 typedef struct compare_arg compare_arg;
 struct compare_arg
 {
-	int			recursive;		/*æ˜¯å¦é€’å½’*/
-	int			print_eq;		/*æ˜¯å¦æ‰“å°æœªæ”¹åŠ¨çš„æ–‡ä»¶*/
-	int			print_left;		/*æ˜¯å¦æ‰“å°éœ€ä¸‹è½½çš„æ–‡ä»¶*/
-	int			print_right;	/*æ˜¯å¦æ‰“å°éœ€ä¸Šä¼ çš„æ–‡ä»¶*/
-	int			print_confuse;	/*æ˜¯å¦æ‰“å°æ— æ³•ç¡®å®šæ˜¯ä¸‹è½½è¿˜æ˜¯ä¸Šä¼ çš„æ–‡ä»¶*/
-	int			dry_run;		/*ç”¨äºæ¼”ç¤ºï¼Œä¸æ‰§è¡Œä»»ä½•ä¸Šä¼ å’Œä¸‹è½½æ“ä½œ*/
+	int			recursive;		/*ÊÇ·ñµİ¹é*/
+	int			print_eq;		/*ÊÇ·ñ´òÓ¡Î´¸Ä¶¯µÄÎÄ¼ş*/
+	int			print_left;		/*ÊÇ·ñ´òÓ¡ĞèÏÂÔØµÄÎÄ¼ş*/
+	int			print_right;	/*ÊÇ·ñ´òÓ¡ĞèÉÏ´«µÄÎÄ¼ş*/
+	int			print_confuse;	/*ÊÇ·ñ´òÓ¡ÎŞ·¨È·¶¨ÊÇÏÂÔØ»¹ÊÇÉÏ´«µÄÎÄ¼ş*/
+	int			dry_run;		/*ÓÃÓÚÑİÊ¾£¬²»Ö´ĞĞÈÎºÎÉÏ´«ºÍÏÂÔØ²Ù×÷*/
 
-	char	*local_file;	/*æœ¬åœ°è·¯å¾„*/
-	const char	*remote_file;	/*è¿œç«¯è·¯å¾„*/
+	char	*local_file;	/*±¾µØÂ·¾¶*/
+	const char	*remote_file;	/*Ô¶¶ËÂ·¾¶*/
 
 	int			check_local_dir_exist;
 
-	/*å½“Stateå‡†å¤‡å¥½åè°ƒç”¨ä¸€æ¬¡æœ¬æ–¹æ³•*/
+	/*µ±State×¼±¸ºÃºóµ÷ÓÃÒ»´Î±¾·½·¨*/
 	void (*onRBEnumerateStatePrepared)(ShellContext *context, compare_arg *arg, rb_red_blk_tree *rb, struct RBEnumerateState *state, void *st);
 };
 
 /*
- * è§£æcompareçš„å‚æ•°ã€‚
- * æˆåŠŸè¿”å›0ï¼›å¤±è´¥è¿”å›é0å€¼
+ * ½âÎöcompareµÄ²ÎÊı¡£
+ * ³É¹¦·µ»Ø0£»Ê§°Ü·µ»Ø·Ç0Öµ
 */
 static int parse_compare_args(struct args *g, compare_arg *cmpArg)
 {
@@ -4858,10 +4858,10 @@ static int parse_compare_args(struct args *g, compare_arg *cmpArg)
 }
 
 /*
-* æ¯”è¾ƒä¸¤ä¸ªæ–‡ä»¶çš„å¼‚åŒã€‚
-*   local       - æœ¬åœ°æ–‡ä»¶å¯¹è±¡
-*   remote		- ç½‘ç›˜æ–‡ä»¶å¯¹è±¡
-*   skip        - ç›®å½•è·³è¿‡çš„å­—èŠ‚æ•°ã€‚
+* ±È½ÏÁ½¸öÎÄ¼şµÄÒìÍ¬¡£
+*   local       - ±¾µØÎÄ¼ş¶ÔÏó
+*   remote		- ÍøÅÌÎÄ¼ş¶ÔÏó
+*   skip        - Ä¿Â¼Ìø¹ıµÄ×Ö½ÚÊı¡£
 */
 static MyMeta *compare_file(const LocalFileInfo *local, const PcsFileInfo *remote)
 {
@@ -4888,16 +4888,16 @@ static MyMeta *compare_file(const LocalFileInfo *local, const PcsFileInfo *remot
 }
 
 /*
-* åˆ—å‡ºç½‘ç›˜ç›®å½•æ–‡ä»¶ï¼Œå¹¶æŠŠç»“æœåˆå¹¶åˆ°ä»£è¡¨æœ¬åœ°æ–‡ä»¶å…ƒæ•°æ®çš„çº¢é»‘æ ‘ä¸­ã€‚
-*   context     - ä¸Šä¸‹æ–‡
-*   rb          - è‡ªå·±ç»´æŠ¤çš„ä¸€ä¸ªæ–‡ä»¶å…ƒæ•°æ®
-*   remote_dir  - ç½‘ç›˜æ–‡ä»¶å¯¹è±¡
-*   recursive   - è¡¨ç¤ºæ˜¯å¦é€’å½’
-*   skip        - ä»ä»€ä¹ˆä½ç½®å¼€å§‹æˆªå–è·¯å¾„ï¼Œæˆªå–åçš„è·¯å¾„ä½œä¸ºçº¢é»‘æ ‘ä¸­é¡¹çš„Key
-*   total_cnt   - ç”¨äºç»Ÿè®¡
-*   check_local_dir_exist - å¦‚æœä¼ å…¥é0å€¼çš„è¯ï¼Œ
-*                     å°†åˆ¤æ–­ç½‘ç›˜ç›®å½•åœ¨æœ¬åœ°æ˜¯å¦å­˜åœ¨ï¼Œåªæœ‰å­˜åœ¨æ—¶ï¼Œæ‰ä¼šç»§ç»­åŠ è½½å…¶ä¸‹æ–‡ä»¶å’Œç›®å½•
-* æˆåŠŸåˆ™è¿”å›0ï¼›å¦åˆ™è¿”å›é0å€¼
+* ÁĞ³öÍøÅÌÄ¿Â¼ÎÄ¼ş£¬²¢°Ñ½á¹ûºÏ²¢µ½´ú±í±¾µØÎÄ¼şÔªÊı¾İµÄºìºÚÊ÷ÖĞ¡£
+*   context     - ÉÏÏÂÎÄ
+*   rb          - ×Ô¼ºÎ¬»¤µÄÒ»¸öÎÄ¼şÔªÊı¾İ
+*   remote_dir  - ÍøÅÌÎÄ¼ş¶ÔÏó
+*   recursive   - ±íÊ¾ÊÇ·ñµİ¹é
+*   skip        - ´ÓÊ²Ã´Î»ÖÃ¿ªÊ¼½ØÈ¡Â·¾¶£¬½ØÈ¡ºóµÄÂ·¾¶×÷ÎªºìºÚÊ÷ÖĞÏîµÄKey
+*   total_cnt   - ÓÃÓÚÍ³¼Æ
+*   check_local_dir_exist - Èç¹û´«Èë·Ç0ÖµµÄ»°£¬
+*                     ½«ÅĞ¶ÏÍøÅÌÄ¿Â¼ÔÚ±¾µØÊÇ·ñ´æÔÚ£¬Ö»ÓĞ´æÔÚÊ±£¬²Å»á¼ÌĞø¼ÓÔØÆäÏÂÎÄ¼şºÍÄ¿Â¼
+* ³É¹¦Ôò·µ»Ø0£»·ñÔò·µ»Ø·Ç0Öµ
 */
 static int combin_with_remote_dir_files(ShellContext *context, rb_red_blk_tree *rb,
 	const char *remote_dir, int recursive, int skip, int *total_cnt, int check_local_dir_exist)
@@ -5093,21 +5093,21 @@ static int compare(ShellContext *context, compare_arg *arg,
 	LocalFileInfo *local = NULL;
 	PcsFileInfo *remote = NULL;
 
-	/*æ£€æŸ¥æœ¬åœ°æ–‡ä»¶ - å¼€å§‹*/
+	/*¼ì²é±¾µØÎÄ¼ş - ¿ªÊ¼*/
 	local = GetLocalFileInfo(arg->local_file);
 	if (!local) {
 		fprintf(stderr, "Error: The local file not exist.\n");
 		return -1;
 	}
-	/*æ£€æŸ¥æœ¬åœ°æ–‡ä»¶ - ç»“æŸ*/
+	/*¼ì²é±¾µØÎÄ¼ş - ½áÊø*/
 
-	//æ£€æŸ¥æ˜¯å¦å·²ç»ç™»å½•
+	//¼ì²éÊÇ·ñÒÑ¾­µÇÂ¼
 	if (!is_login(context, NULL)) {
 		DestroyLocalFileInfo(local);
 		return -1;
 	}
 
-	//æ‹¼æ¥å‡ºç½‘ç›˜æ–‡ä»¶çš„å®Œæ•´è·¯å¾„
+	//Æ´½Ó³öÍøÅÌÎÄ¼şµÄÍêÕûÂ·¾¶
 	path = combin_net_disk_path(context->workdir, arg->remote_file);
 	if (!path) {
 		DestroyLocalFileInfo(local);
@@ -5119,7 +5119,7 @@ static int compare(ShellContext *context, compare_arg *arg,
 		remote->isdir = PcsTrue;
 	}
 	else {
-		/*è·å–ç½‘ç›˜æ–‡ä»¶å…ƒæ•°æ®*/
+		/*»ñÈ¡ÍøÅÌÎÄ¼şÔªÊı¾İ*/
 		remote = pcs_meta(context->pcs, path);
 		if (!remote) {
 			fprintf(stderr, "Error: The remote file not exist, or have error: %s\n", pcs_strerror(context->pcs));
@@ -5129,7 +5129,7 @@ static int compare(ShellContext *context, compare_arg *arg,
 		}
 	}
 
-	/*æœ¬åœ°æ˜¯æ–‡ä»¶ï¼Œè¿œç«¯æ˜¯ç›®å½•*/
+	/*±¾µØÊÇÎÄ¼ş£¬Ô¶¶ËÊÇÄ¿Â¼*/
 	if (!local->isdir && remote->isdir) {
 		fprintf(stderr, "Error: Can't compare the file with directory.\n");
 		DestroyLocalFileInfo(local);
@@ -5138,7 +5138,7 @@ static int compare(ShellContext *context, compare_arg *arg,
 		return -1;
 	}
 
-	/*æœ¬åœ°æ˜¯ç›®å½•ï¼Œè¿œç«¯æ˜¯æ–‡ä»¶*/
+	/*±¾µØÊÇÄ¿Â¼£¬Ô¶¶ËÊÇÎÄ¼ş*/
 	if (local->isdir && !remote->isdir) {
 		fprintf(stderr, "Error: Can't compare the directory with file.\n");
 		DestroyLocalFileInfo(local);
@@ -5147,7 +5147,7 @@ static int compare(ShellContext *context, compare_arg *arg,
 		return -1;
 	}
 
-	/*æœ¬åœ°å’Œè¿œç«¯éƒ½æ˜¯æ–‡ä»¶*/
+	/*±¾µØºÍÔ¶¶Ë¶¼ÊÇÎÄ¼ş*/
 	if (!local->isdir && !remote->isdir) {
 		MyMeta *mm = NULL;
 		int rc;
@@ -5161,7 +5161,7 @@ static int compare(ShellContext *context, compare_arg *arg,
 		return rc;
 	}
 
-	/*æœ¬åœ°å’Œè¿œç«¯éƒ½æ˜¯ç›®å½•*/
+	/*±¾µØºÍÔ¶¶Ë¶¼ÊÇÄ¿Â¼*/
 	if (local->isdir && remote->isdir) {
 		rb_red_blk_tree *rb = NULL;
 		int skip = 0, total_cnt = 0;
@@ -5203,7 +5203,7 @@ static int compare(ShellContext *context, compare_arg *arg,
 	return -1;
 }
 
-/*æ¯”è¾ƒæœ¬åœ°å’Œç½‘ç›˜ç›®å½•çš„å¼‚åŒ*/
+/*±È½Ï±¾µØºÍÍøÅÌÄ¿Â¼µÄÒìÍ¬*/
 static int cmd_compare(ShellContext *context, struct args *arg)
 {
 	compare_arg cmpArg = { 0 };
@@ -5231,7 +5231,7 @@ static int cmd_compare(ShellContext *context, struct args *arg)
 
 #pragma endregion
 
-/*æ‰“å°å‡ºä¸Šä¸‹æ–‡*/
+/*´òÓ¡³öÉÏÏÂÎÄ*/
 static int cmd_context(ShellContext *context, struct args *arg)
 {
 	char *json;
@@ -5250,7 +5250,7 @@ static int cmd_context(ShellContext *context, struct args *arg)
 	return 0;
 }
 
-/*ä¸‹è½½*/
+/*ÏÂÔØ*/
 static int cmd_download(ShellContext *context, struct args *arg)
 {
 	int is_force = 0;
@@ -5273,7 +5273,7 @@ static int cmd_download(ShellContext *context, struct args *arg)
 	relPath = arg->argv[0];
 	locPath = u8_is_utf8_sys() ? arg->argv[1] : utf82mbs(arg->argv[1]);
 
-	/*æ£€æŸ¥æœ¬åœ°æ–‡ä»¶ - å¼€å§‹*/
+	/*¼ì²é±¾µØÎÄ¼ş - ¿ªÊ¼*/
 	local = GetLocalFileInfo(locPath);
 	if (local && local->isdir) {
 		fprintf(stderr, "Error: The local file exist, but it's a directory.\n");
@@ -5290,9 +5290,9 @@ static int cmd_download(ShellContext *context, struct args *arg)
 		}
 	}
 	if (local) DestroyLocalFileInfo(local);
-	/*æ£€æŸ¥æœ¬åœ°æ–‡ä»¶ - ç»“æŸ*/
+	/*¼ì²é±¾µØÎÄ¼ş - ½áÊø*/
 
-	//æ£€æŸ¥æ˜¯å¦å·²ç»ç™»å½•
+	//¼ì²éÊÇ·ñÒÑ¾­µÇÂ¼
 	if (!is_login(context, NULL)) {
 		if (!u8_is_utf8_sys()) pcs_free(locPath);
 		return -1;
@@ -5306,7 +5306,7 @@ static int cmd_download(ShellContext *context, struct args *arg)
 		return -1;
 	}
 
-	/*æ£€æŸ¥ç½‘ç›˜æ–‡ä»¶ - å¼€å§‹*/
+	/*¼ì²éÍøÅÌÎÄ¼ş - ¿ªÊ¼*/
 	meta = pcs_meta(context->pcs, path);
 	if (!meta) {
 		fprintf(stderr, "Error: The remote file not exist, or have error: %s\n", pcs_strerror(context->pcs));
@@ -5321,9 +5321,9 @@ static int cmd_download(ShellContext *context, struct args *arg)
 		if (!u8_is_utf8_sys()) pcs_free(locPath);
 		return -1;
 	}
-	/*æ£€æŸ¥ç½‘ç›˜æ–‡ä»¶ - ç»“æŸ*/
+	/*¼ì²éÍøÅÌÎÄ¼ş - ½áÊø*/
 
-	/*å¼€å§‹ä¸‹è½½*/
+	/*¿ªÊ¼ÏÂÔØ*/
 
 	if (do_download(context,
 		locPath, meta->path, meta->server_mtime,
@@ -5344,7 +5344,7 @@ static int cmd_download(ShellContext *context, struct args *arg)
 	return 0;
 }
 
-/*è¾“å‡ºæ–‡æœ¬åˆ°ç½‘ç›˜æŸä¸€ä¸ªæ–‡ä»¶*/
+/*Êä³öÎÄ±¾µ½ÍøÅÌÄ³Ò»¸öÎÄ¼ş*/
 static int cmd_echo(ShellContext *context, struct args *arg)
 {
 	int is_append = 0;
@@ -5380,7 +5380,7 @@ static int cmd_echo(ShellContext *context, struct args *arg)
 		return -1;
 	}
 
-	/*æ£€æŸ¥ç½‘ç›˜æ–‡ä»¶ - å¼€å§‹*/
+	/*¼ì²éÍøÅÌÎÄ¼ş - ¿ªÊ¼*/
 	meta = pcs_meta(context->pcs, path);
 	if (meta && meta->isdir) {
 		fprintf(stderr, "Error: The remote file is directory. \n");
@@ -5392,12 +5392,12 @@ static int cmd_echo(ShellContext *context, struct args *arg)
 		pcs_fileinfo_destroy(meta);
 		meta = NULL;
 	}
-	/*æ£€æŸ¥ç½‘ç›˜æ–‡ä»¶ - ç»“æŸ*/
+	/*¼ì²éÍøÅÌÎÄ¼ş - ½áÊø*/
 
 	if (is_append) {
 		const char *org;
 		size_t len;
-		//è·å–æ–‡ä»¶çš„å†…å®¹
+		//»ñÈ¡ÎÄ¼şµÄÄÚÈİ
 		org = pcs_cat(context->pcs, path, &len);
 		if (org == NULL) {
 			//fprintf(stderr, "Error: %s path=%s.\n", pcs_strerror(context->pcs), path);
@@ -5426,7 +5426,7 @@ static int cmd_echo(ShellContext *context, struct args *arg)
 				}
 			}
 		}
-		//æ‹¼æ¥ä¸¤ä¸ªå­—ç¬¦ä¸²
+		//Æ´½ÓÁ½¸ö×Ö·û´®
 		t = (char *)pcs_malloc(sz + len + 1);
 		assert(t);
 		if (len > 0)
@@ -5592,7 +5592,7 @@ static int cmd_encode(ShellContext *context, struct args *arg)
 	return 0;
 }
 
-/*æ ¹æ® MD5 å’Œ å‰ 256 å­—èŠ‚çš„æ–‡ä»¶ç¢ç‰‡ï¼Œæ¥æ‰¾å›æ–‡ä»¶*/
+/*¸ù¾İ MD5 ºÍ Ç° 256 ×Ö½ÚµÄÎÄ¼şËéÆ¬£¬À´ÕÒ»ØÎÄ¼ş*/
 static int cmd_fix(ShellContext *context, struct args *arg)
 {
 	int is_force = 0;
@@ -5626,7 +5626,7 @@ static int cmd_fix(ShellContext *context, struct args *arg)
 		return -1;
 	}
 
-	/*æ£€æŸ¥æœ¬åœ°æ–‡ä»¶ - å¼€å§‹*/
+	/*¼ì²é±¾µØÎÄ¼ş - ¿ªÊ¼*/
 	local = GetLocalFileInfo(scrapFile);
 	if (!local) {
 		fprintf(stderr, "Error: The 'scrap' not exist.\n");
@@ -5645,9 +5645,9 @@ static int cmd_fix(ShellContext *context, struct args *arg)
 		fprintf(stderr, "The scrap size is not satisfied, the file must be great than %d.", PCS_RAPIDUPLOAD_THRESHOLD);
 		return -1;
 	}
-	/*æ£€æŸ¥æœ¬åœ°æ–‡ä»¶ - ç»“æŸ*/
+	/*¼ì²é±¾µØÎÄ¼ş - ½áÊø*/
 
-	//æ£€æŸ¥æ˜¯å¦å·²ç»ç™»å½•
+	//¼ì²éÊÇ·ñÒÑ¾­µÇÂ¼
 	if (!is_login(context, NULL)) {
 		DestroyLocalFileInfo(local);
 		if (!u8_is_utf8_sys()) pcs_free(scrapFile);
@@ -5668,7 +5668,7 @@ static int cmd_fix(ShellContext *context, struct args *arg)
 		path = tmp;
 	}
 
-	/*æ£€æŸ¥ç½‘ç›˜æ–‡ä»¶ - å¼€å§‹*/
+	/*¼ì²éÍøÅÌÎÄ¼ş - ¿ªÊ¼*/
 	meta = pcs_meta(context->pcs, path);
 	if (meta && meta->isdir) {
 		char *tmp = combin_net_disk_path(path, local->filename);
@@ -5700,7 +5700,7 @@ static int cmd_fix(ShellContext *context, struct args *arg)
 		pcs_fileinfo_destroy(meta);
 		meta = NULL;
 	}
-	/*æ£€æŸ¥ç½‘ç›˜æ–‡ä»¶ - ç»“æŸ*/
+	/*¼ì²éÍøÅÌÎÄ¼ş - ½áÊø*/
 
 	if (!pcs_md5_file_slice(context->pcs, scrapFile, 0, PCS_RAPIDUPLOAD_THRESHOLD, slice_md5)) {
 		fprintf(stderr, "Error: Cannot get slice md5.\n");
@@ -5709,7 +5709,7 @@ static int cmd_fix(ShellContext *context, struct args *arg)
 		return -1;
 	}
 
-	/*å¼€å§‹ä¿®å¤*/
+	/*¿ªÊ¼ĞŞ¸´*/
 	meta = pcs_rapid_upload_r(context->pcs, path,
 		is_force ? PcsTrue : PcsFalse,
 		content_length, content_md5, slice_md5);
@@ -5728,7 +5728,7 @@ static int cmd_fix(ShellContext *context, struct args *arg)
 	return 0;
 }
 
-/*æ‰“å°å¸®åŠ©ä¿¡æ¯*/
+/*´òÓ¡°ïÖúĞÅÏ¢*/
 static int cmd_help(ShellContext *context, struct args *arg)
 {
 	int rc;
@@ -5868,7 +5868,7 @@ static int cmd_help(ShellContext *context, struct args *arg)
 	return rc;
 }
 
-/*åˆ—å‡ºç›®å½•*/
+/*ÁĞ³öÄ¿Â¼*/
 static int cmd_list(ShellContext *context, struct args *arg)
 {
 	char *path;
@@ -5943,7 +5943,7 @@ static int cmd_list(ShellContext *context, struct args *arg)
 	return 0;
 }
 
-/*ç™»å½•*/
+/*µÇÂ¼*/
 static int cmd_login(ShellContext *context, struct args *arg)
 {
 	PcsRes pcsres;
@@ -5991,7 +5991,7 @@ static int cmd_login(ShellContext *context, struct args *arg)
 	return 0;
 }
 
-/*æ³¨é”€*/
+/*×¢Ïú*/
 static int cmd_logout(ShellContext *context, struct args *arg)
 {
 	PcsRes pcsres;
@@ -6020,7 +6020,7 @@ static int cmd_logout(ShellContext *context, struct args *arg)
 	return 0;
 }
 
-/*æ‰“å°æ–‡ä»¶æˆ–ç›®å½•çš„å…ƒæ•°æ®*/
+/*´òÓ¡ÎÄ¼ş»òÄ¿Â¼µÄÔªÊı¾İ*/
 static int cmd_meta(ShellContext *context, struct args *arg)
 {
 	char *path;
@@ -6056,7 +6056,7 @@ static int cmd_meta(ShellContext *context, struct args *arg)
 	return 0;
 }
 
-/*åˆ›å»ºç›®å½•*/
+/*´´½¨Ä¿Â¼*/
 static int cmd_mkdir(ShellContext *context, struct args *arg)
 {
 	PcsRes res;
@@ -6088,7 +6088,7 @@ static int cmd_mkdir(ShellContext *context, struct args *arg)
 	return 0;
 }
 
-/*ç§»åŠ¨æ–‡ä»¶*/
+/*ÒÆ¶¯ÎÄ¼ş*/
 static int cmd_move(ShellContext *context, struct args *arg)
 {
 	PcsPanApiRes *res;
@@ -6141,7 +6141,7 @@ static int cmd_move(ShellContext *context, struct args *arg)
 	return 0;
 }
 
-/*æ‰“å°å½“å‰å·¥ä½œç›®å½•*/
+/*´òÓ¡µ±Ç°¹¤×÷Ä¿Â¼*/
 static int cmd_pwd(ShellContext *context, struct args *arg)
 {
 	if (test_arg(arg, 0, 0, "h", "help", NULL)) {
@@ -6156,7 +6156,7 @@ static int cmd_pwd(ShellContext *context, struct args *arg)
 	return 0;
 }
 
-/*æ‰“å°é…é¢*/
+/*´òÓ¡Åä¶î*/
 static int cmd_quota(ShellContext *context, struct args *arg)
 {
 	const char *opts[] = { "e", NULL };
@@ -6196,7 +6196,7 @@ static int cmd_quota(ShellContext *context, struct args *arg)
 	return 0;
 }
 
-/*åˆ é™¤æ–‡ä»¶*/
+/*É¾³ıÎÄ¼ş*/
 static int cmd_remove(ShellContext *context, struct args *arg)
 {
 	PcsPanApiRes *res;
@@ -6240,7 +6240,7 @@ static int cmd_remove(ShellContext *context, struct args *arg)
 	return 0;
 }
 
-/*é‡å‘½åæ–‡ä»¶*/
+/*ÖØÃüÃûÎÄ¼ş*/
 static int cmd_rename(ShellContext *context, struct args *arg)
 {
 	PcsPanApiRes *res;
@@ -6297,7 +6297,7 @@ static int cmd_rename(ShellContext *context, struct args *arg)
 	return 0;
 }
 
-/*æ›´æ”¹ä¸Šä¸‹æ–‡è®¾ç½®*/
+/*¸ü¸ÄÉÏÏÂÎÄÉèÖÃ*/
 static int cmd_set(ShellContext *context, struct args *arg)
 {
 	char *val = NULL;
@@ -6437,7 +6437,7 @@ static int cmd_set(ShellContext *context, struct args *arg)
 	return 0;
 }
 
-/*æœç´¢æ–‡ä»¶*/
+/*ËÑË÷ÎÄ¼ş*/
 static int cmd_search(ShellContext *context, struct args *arg)
 {
 	const char *opts[] = { "r", NULL };
@@ -6505,15 +6505,15 @@ static int cmd_search(ShellContext *context, struct args *arg)
 
 static int synchDownload(MyMeta *meta, struct RBEnumerateState *s, void *state)
 {
-	if (s->dry_run) { /*æ¼”ç¤ºæ“ä½œï¼Œæ¨¡æ‹ŸæˆåŠŸ*/
+	if (s->dry_run) { /*ÑİÊ¾²Ù×÷£¬Ä£Äâ³É¹¦*/
 		meta->op_st = OP_ST_SUCC;
 		return 0;
 	}
 
-	if (meta->remote_isdir) { /*è·³è¿‡ç›®å½•*/
+	if (meta->remote_isdir) { /*Ìø¹ıÄ¿Â¼*/
 		char *local_path;
 		local_path = combin_path(s->local_basedir, -1, meta->path);
-		/*åˆ›å»ºç›®å½•*/
+		/*´´½¨Ä¿Â¼*/
 		if (CreateDirectoryRecursive(local_path) != MKDIR_OK) {
 			if (meta->msg) pcs_free(meta->msg);
 			meta->msg = pcs_utils_sprintf("Error: Can't create the directory: %s", local_path);
@@ -6534,14 +6534,14 @@ static int synchDownload(MyMeta *meta, struct RBEnumerateState *s, void *state)
 
 static int synchUpload(MyMeta *meta, struct RBEnumerateState *s, void *state)
 {
-	if (s->dry_run) { /*æ¼”ç¤ºæ“ä½œï¼Œæ¨¡æ‹ŸæˆåŠŸ*/
+	if (s->dry_run) { /*ÑİÊ¾²Ù×÷£¬Ä£Äâ³É¹¦*/
 		meta->op_st = OP_ST_SUCC;
 		return 0;
 	}
 
-	if (meta->local_isdir) { /*è·³è¿‡ç›®å½•*/
-		if (meta->local_filecount == 0 && !(meta->flag & FLAG_ON_REMOTE)) { /*å…¶ä¸‹æ²¡æœ‰æ–‡ä»¶ï¼Œå› æ­¤éœ€æ‰‹åŠ¨åˆ›å»ºç›®å½•*/
-			/*åˆ›å»ºç›®å½•*/
+	if (meta->local_isdir) { /*Ìø¹ıÄ¿Â¼*/
+		if (meta->local_filecount == 0 && !(meta->flag & FLAG_ON_REMOTE)) { /*ÆäÏÂÃ»ÓĞÎÄ¼ş£¬Òò´ËĞèÊÖ¶¯´´½¨Ä¿Â¼*/
+			/*´´½¨Ä¿Â¼*/
 			char *remote_path, *dir;
 			PcsRes res;
 
@@ -6666,7 +6666,7 @@ static int synchFile(ShellContext *context, compare_arg *arg, MyMeta *meta, void
 	return 0;
 }
 
-/*åŒæ­¥æœ¬åœ°å’Œç½‘ç›˜ç›®å½•*/
+/*Í¬²½±¾µØºÍÍøÅÌÄ¿Â¼*/
 static int cmd_synch(ShellContext *context, struct args *arg)
 {
 	compare_arg cmpArg = { 0 };
@@ -6695,7 +6695,7 @@ static int cmd_synch(ShellContext *context, struct args *arg)
 
 #pragma endregion
 
-/*ä¸Šä¼ */
+/*ÉÏ´«*/
 static int cmd_upload(ShellContext *context, struct args *arg)
 {
 	const char *opts[] = { "f", NULL };
@@ -6719,7 +6719,7 @@ static int cmd_upload(ShellContext *context, struct args *arg)
 	locPath = u8_is_utf8_sys() ? arg->argv[0] : utf82mbs(arg->argv[0]);
 	relPath = arg->argv[1];
 
-	/*æ£€æŸ¥æœ¬åœ°æ–‡ä»¶ - å¼€å§‹*/
+	/*¼ì²é±¾µØÎÄ¼ş - ¿ªÊ¼*/
 	local = GetLocalFileInfo(locPath);
 	if (!local) {
 		fprintf(stderr, "Error: The local file not exist.\n");
@@ -6732,9 +6732,9 @@ static int cmd_upload(ShellContext *context, struct args *arg)
 		if (!u8_is_utf8_sys()) pcs_free(locPath);
 		return -1;
 	}
-	/*æ£€æŸ¥æœ¬åœ°æ–‡ä»¶ - ç»“æŸ*/
+	/*¼ì²é±¾µØÎÄ¼ş - ½áÊø*/
 
-	//æ£€æŸ¥æ˜¯å¦å·²ç»ç™»å½•
+	//¼ì²éÊÇ·ñÒÑ¾­µÇÂ¼
 	if (!is_login(context, NULL)) {
 		DestroyLocalFileInfo(local);
 		if (!u8_is_utf8_sys()) pcs_free(locPath);
@@ -6755,7 +6755,7 @@ static int cmd_upload(ShellContext *context, struct args *arg)
 		path = tmp;
 	}
 
-	/*æ£€æŸ¥ç½‘ç›˜æ–‡ä»¶ - å¼€å§‹*/
+	/*¼ì²éÍøÅÌÎÄ¼ş - ¿ªÊ¼*/
 	meta = pcs_meta(context->pcs, path);
 	if (meta && meta->isdir) {
 		char *tmp = combin_net_disk_path(path, local->filename);
@@ -6781,9 +6781,9 @@ static int cmd_upload(ShellContext *context, struct args *arg)
 	}
 	else if (meta && is_force) {
 		char *diskName = pcs_utils_filename(meta->path);
-		if (diskName[0] == '.') { /*ä»¥ç‚¹å¼€å¤´çš„æ–‡ä»¶åœ¨ä¸Šä¼ åç‚¹å·ä¼šè¢«è‡ªåŠ¨å»æ‰ï¼Œ
-								  å› æ­¤éœ€è¦å†æ¬¡æ‰§è¡Œpcs_rename()å‡½æ•°é‡å‘½åå…¶ä¸ºæ­£ç¡®çš„åå­—ã€‚
-								  æ­¤å¤„é¢„å…ˆåˆ é™¤è¯¥æ–‡ä»¶çš„ç›®çš„æ˜¯ä¸ºäº†é˜²æ­¢åœ¨do_upload()å‡½æ•°ä¸­é‡å‘½åå¤±è´¥ã€‚*/
+		if (diskName[0] == '.') { /*ÒÔµã¿ªÍ·µÄÎÄ¼şÔÚÉÏ´«ºóµãºÅ»á±»×Ô¶¯È¥µô£¬
+								  Òò´ËĞèÒªÔÙ´ÎÖ´ĞĞpcs_rename()º¯ÊıÖØÃüÃûÆäÎªÕıÈ·µÄÃû×Ö¡£
+								  ´Ë´¦Ô¤ÏÈÉ¾³ı¸ÃÎÄ¼şµÄÄ¿µÄÊÇÎªÁË·ÀÖ¹ÔÚdo_upload()º¯ÊıÖĞÖØÃüÃûÊ§°Ü¡£*/
 			PcsPanApiRes *res2;
 			PcsSList sl2 = {
 				meta->path, NULL
@@ -6797,9 +6797,9 @@ static int cmd_upload(ShellContext *context, struct args *arg)
 		}
 		pcs_free(diskName);
 	}
-	/*æ£€æŸ¥ç½‘ç›˜æ–‡ä»¶ - ç»“æŸ*/
+	/*¼ì²éÍøÅÌÎÄ¼ş - ½áÊø*/
 
-	/*å¼€å§‹ä¸Šä¼ */
+	/*¿ªÊ¼ÉÏ´«*/
 	if (do_upload(context,
 		locPath, path, is_force ? PcsTrue : PcsFalse,
 		"", context->workdir,
@@ -6819,7 +6819,7 @@ static int cmd_upload(ShellContext *context, struct args *arg)
 	return 0;
 }
 
-/*æ‰“å°ç‰ˆæœ¬*/
+/*´òÓ¡°æ±¾*/
 static int cmd_version(ShellContext *context, struct args *arg)
 {
 	if (test_arg(arg, 0, 0, "h", "help", NULL)) {
@@ -6834,7 +6834,7 @@ static int cmd_version(ShellContext *context, struct args *arg)
 	return 0;
 }
 
-/*æ‰“å°å½“å‰ç™»å½•ç”¨æˆ·*/
+/*´òÓ¡µ±Ç°µÇÂ¼ÓÃ»§*/
 static int cmd_who(ShellContext *context, struct args *arg)
 {
 	if (test_arg(arg, 0, 0, "h", "help", NULL)) {
@@ -6852,7 +6852,7 @@ static int cmd_who(ShellContext *context, struct args *arg)
 
 #pragma endregion
 
-/*è·¯ç”±åˆ°å…·ä½“çš„å‘½ä»¤å‡½æ•°*/
+/*Â·ÓÉµ½¾ßÌåµÄÃüÁîº¯Êı*/
 static int exec_cmd(ShellContext *context, struct args *arg)
 {
 	int rc;

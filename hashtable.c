@@ -87,7 +87,7 @@ static void node_destroy(HashtableNode *node, void(*free_value)(void *))
 
 static int table_add_item(HashtableNode **table, int real_capacity, const char *key, int key_size, void *value, int ignore_case)
 {
-	//ä¸åŒçš„å­—ç¬¦ä¸²ä¸‰æ¬¡hashè¿˜ä¼šç¢°æ’çš„å‡ ç‡æ— é™æ¥è¿‘äºä¸å¯èƒ½
+	//²»Í¬µÄ×Ö·û´®Èı´Îhash»¹»áÅö×²µÄ¼¸ÂÊÎŞÏŞ½Ó½üÓÚ²»¿ÉÄÜ
 	unsigned int nHash, nHashA, nHashB;
 	unsigned int pos;
 	HashtableNode *last = NULL, *p;
@@ -124,7 +124,7 @@ static int table_add_item(HashtableNode **table, int real_capacity, const char *
 
 static int table_set_item(HashtableNode **table, int real_capacity, const char *key, int key_size, void *value, int ignore_case, int *pHasOld, void **pOldVal)
 {
-	//ä¸åŒçš„å­—ç¬¦ä¸²ä¸‰æ¬¡hashè¿˜ä¼šç¢°æ’çš„å‡ ç‡æ— é™æ¥è¿‘äºä¸å¯èƒ½
+	//²»Í¬µÄ×Ö·û´®Èı´Îhash»¹»áÅö×²µÄ¼¸ÂÊÎŞÏŞ½Ó½üÓÚ²»¿ÉÄÜ
 	unsigned int nHash, nHashA, nHashB;
 	unsigned int pos;
 	HashtableNode *last = NULL, *p;
@@ -307,7 +307,7 @@ int ht_set(Hashtable *ht, const char *key, int key_size, void *value, void **pOl
 	void *oldVal = NULL;
 	int rc, pHasOld;
 	rc = table_set_item(ht->table, ht->real_capacity, key, key_size, value, ht->ignore_case, &pHasOld, pOldVal ? pOldVal : &oldVal);
-	if (oldVal && ht->free_value) (*ht->free_value)(oldVal); /*å¦‚æœpOldValä¼ å…¥NULLï¼Œä¸”æœ‰æ—§å€¼æ—¶ï¼Œè‡ªåŠ¨é‡Šæ”¾*/
+	if (oldVal && ht->free_value) (*ht->free_value)(oldVal); /*Èç¹ûpOldVal´«ÈëNULL£¬ÇÒÓĞ¾ÉÖµÊ±£¬×Ô¶¯ÊÍ·Å*/
 	if (!pHasOld) ht->count++;
 	return rc;
 }

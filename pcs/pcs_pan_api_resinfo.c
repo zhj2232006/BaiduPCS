@@ -12,20 +12,20 @@ PCS_API const char *pcs_pan_api_res_info_errmsg(int error)
 {
 	const char *errmsg = NULL;
 	switch (error) {
-	case 0: //å¤„ç†æˆåŠŸ
-		errmsg = "æˆåŠŸ";
+	case 0: //´¦Àí³É¹¦
+		errmsg = "³É¹¦";
 		break;
-	case -8: //æ–‡ä»¶å·²å­˜åœ¨äºç›®æ ‡æ–‡ä»¶å¤¹ä¸­
-		errmsg = "æ–‡ä»¶å·²å­˜åœ¨äºç›®æ ‡æ–‡ä»¶å¤¹ä¸­";
+	case -8: //ÎÄ¼şÒÑ´æÔÚÓÚÄ¿±êÎÄ¼ş¼ĞÖĞ
+		errmsg = "ÎÄ¼şÒÑ´æÔÚÓÚÄ¿±êÎÄ¼ş¼ĞÖĞ";
 		break;
-	case -9: //æ–‡ä»¶ä¸å­˜åœ¨
-		errmsg = "æ–‡ä»¶ä¸å­˜åœ¨";
+	case -9: //ÎÄ¼ş²»´æÔÚ
+		errmsg = "ÎÄ¼ş²»´æÔÚ";
 		break;
-	case -10: //å‰©ä½™ç©ºé—´ä¸è¶³
-		errmsg = "å‰©ä½™ç©ºé—´ä¸è¶³";
+	case -10: //Ê£Óà¿Õ¼ä²»×ã
+		errmsg = "Ê£Óà¿Õ¼ä²»×ã";
 		break;
 	default:
-		errmsg = "æœªçŸ¥é”™è¯¯";
+		errmsg = "Î´Öª´íÎó";
 	}
 	return errmsg;
 }

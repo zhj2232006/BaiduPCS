@@ -124,7 +124,7 @@ static inline void pcs_http_prepare(struct pcs_http *http, enum HttpMethod metho
 		curl_easy_setopt(http->curl, CURLOPT_LOW_SPEED_TIME, 30L);
 	}
 
-	// è®¾ç½®æ–‡ä»¶ç»­ä¼ çš„ä½ç½®ç»™libcurl
+	// ÉèÖÃÎÄ¼şĞø´«µÄÎ»ÖÃ¸ølibcurl
 	if (resume_from && max_length) {
 		char *range = pcs_utils_sprintf("%" PRId64 "-%" PRId64, resume_from, resume_from + max_length - 1);
 		curl_easy_setopt(http->curl, CURLOPT_RANGE, range);
@@ -314,7 +314,7 @@ static inline PcsBool pcs_http_parse_http_head(struct pcs_http *http, char **ptr
 		memcpy(p, *ptr, *size);
 		p[*size] = '\0';
 
-		//æŸ¥æ‰¾HTTPå¤´ç»“æŸæ ‡è®°
+		//²éÕÒHTTPÍ·½áÊø±ê¼Ç
 		cusor = p + *size;
 		end = p - 2;
 		if (end < http->res_header)
@@ -343,9 +343,9 @@ static inline PcsBool pcs_http_parse_http_head(struct pcs_http *http, char **ptr
 			*size -= cnt;
 
 			http->res_type++;
-			//ä»å¤´ä¸­è·å–å†…å®¹é•¿åº¦
+			//´ÓÍ·ÖĞ»ñÈ¡ÄÚÈİ³¤¶È
 			http->res_content_length = pcs_http_get_content_length_from_header(http->res_header, http->res_header_size);
-			//ä»å¤´ä¸­è·å–ç¼–ç 
+			//´ÓÍ·ÖĞ»ñÈ¡±àÂë
 			if (try_get_encode)
 				http->res_encode = pcs_http_get_charset_from_header(http->res_header, http->res_header_size);
 			else
@@ -395,7 +395,7 @@ size_t pcs_http_write(char *ptr, size_t size, size_t nmemb, void *userdata)
 			http->res_body_size += sz;
 		}
 		else if (http->res_type == PCS_HTTP_RES_TYPE_VALIDATE_TEXT + 1) {
-			//éªŒè¯å†…å®¹æ­£ç¡®æ€§
+			//ÑéÖ¤ÄÚÈİÕıÈ·ĞÔ
 			p = &ptr[sz - 1];
 			while(p > ptr) {
 				if (*p == 0) {
@@ -439,7 +439,7 @@ static inline char *pcs_http_perform(struct pcs_http *http, const char *url)
 		if (!http->strerror) http->strerror = pcs_utils_sprintf("%s: %s", curl_easy_strerror(res), url);//pcs_utils_strdup(curl_easy_strerror(res));
 		return NULL;
 	}
-	if (httpcode != 200 && httpcode != 206) { /*206 éƒ¨åˆ†è¯·æ±‚æˆåŠŸçš„è¿”å›ç */
+	if (httpcode != 200 && httpcode != 206) { /*206 ²¿·ÖÇëÇó³É¹¦µÄ·µ»ØÂë*/
 		if (http->strerror) pcs_free(http->strerror);
 		http->strerror = pcs_utils_sprintf("%d %s", httpcode, http->res_body);
 		return NULL;
@@ -847,7 +847,7 @@ PCS_API PcsBool pcs_http_get_download(PcsHttp handle, const char *url, PcsBool f
 	struct pcs_http *http = (struct pcs_http *)handle;
 	pcs_http_prepare(http, HTTP_METHOD_GET, url, follow_location, &pcs_http_write, http,
 		max_speed, 0,
-		5 * 1024L, 10L, /* 10ç§’å†…çš„å¹³å‡ä¸‹è½½é€Ÿåº¦ä½äº 5KB/s çš„è¯ï¼Œåˆ™å–æ¶ˆä¸‹è½½ */
+		5 * 1024L, 10L, /* 10ÃëÄÚµÄÆ½¾ùÏÂÔØËÙ¶ÈµÍÓÚ 5KB/s µÄ»°£¬ÔòÈ¡ÏûÏÂÔØ */
 		resume_from, max_length);
 	http->res_type = PCS_HTTP_RES_TYPE_DOWNLOAD;
 	pcs_http_perform(http, url);
@@ -865,7 +865,7 @@ PCS_API int64_t pcs_http_get_download_filesize(PcsHttp handle, const char *url, 
 	double downloadFileLenth = 0;
 	struct pcs_http *http = (struct pcs_http *)handle;
 	pcs_http_prepare(http, HTTP_METHOD_GET, url, follow_location, pcs_http_null_write, NULL, 0, 0, 0, 0, 0, 0);
-	curl_easy_setopt(http->curl, CURLOPT_NOBODY, 1L);   //ä¸éœ€è¦body
+	curl_easy_setopt(http->curl, CURLOPT_NOBODY, 1L);   //²»ĞèÒªbody
 	res = curl_easy_perform(http->curl);
 	if (res == CURLE_OK) {
 		curl_easy_getinfo(http->curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &downloadFileLenth);
@@ -1054,9 +1054,9 @@ PCS_API const char *pcs_http_rawdata(PcsHttp handle, int *size, const char **enc
 
 PCS_API double pcs_http_speed_download(PcsHttp handle)
 {
-	double downloadSpeed;// è®°å½•ä¸‹è½½é€Ÿåº¦  
+	double downloadSpeed;// ¼ÇÂ¼ÏÂÔØËÙ¶È  
 	struct pcs_http *http = (struct pcs_http *)handle;
-	CURLcode re = curl_easy_getinfo(http->curl, CURLINFO_SPEED_DOWNLOAD, &downloadSpeed);  // è·å–ä¸‹è½½é€Ÿåº¦
+	CURLcode re = curl_easy_getinfo(http->curl, CURLINFO_SPEED_DOWNLOAD, &downloadSpeed);  // »ñÈ¡ÏÂÔØËÙ¶È
 	if (re == CURLE_OK)
 		return downloadSpeed;
 	else

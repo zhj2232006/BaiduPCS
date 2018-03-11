@@ -30,7 +30,7 @@
 # define vsnprintf _vsnprintf
 #endif
 
-#define PCS_MD5_SIZE	16 /*MD5çš„é•¿åº¦ï¼Œå›ºå®šä¸º16ã€‚ä¿®æ”¹ä¸ºå…¶ä»–å€¼å°†å¯¼è‡´æ ¡éªŒé”™è¯¯*/
+#define PCS_MD5_SIZE	16 /*MD5µÄ³¤¶È£¬¹Ì¶¨Îª16¡£ĞŞ¸ÄÎªÆäËûÖµ½«µ¼ÖÂĞ£Ñé´íÎó*/
 
 #define PCS_SKIP_SPACE(p) while((*p) && (*p == ' ' || *p == '\f' || *p == '\n' || *p == '\r' || *p == '\t' || *p == '\v')) p++
 
@@ -90,7 +90,7 @@ struct pcs {
 #define PCS_ACTION_DOWNLOAD		1
 #define PCS_ACTION_UPLOAD		2
 
-/* åœ¨ err_msg.c ä¸­å®ç° */
+/* ÔÚ err_msg.c ÖĞÊµÏÖ */
 const char *get_login_errmsg(int error);
 const char *get_errmsg_by_errno(int error);
 const char *get_share_errmsg_by_errno(int error);
@@ -131,7 +131,7 @@ PCS_API void pcs_cat_errmsg(Pcs handle, const char *fmt, ...)
 	pcs_free(errmsg);
 }
 
-/* è®¾ç½®é”™è¯¯æ¶ˆæ¯ */
+/* ÉèÖÃ´íÎóÏûÏ¢ */
 PCS_API void pcs_set_serrmsg(Pcs handle, const char *errmsg)
 {
 	struct pcs *pcs = (struct pcs *)handle;
@@ -142,7 +142,7 @@ PCS_API void pcs_set_serrmsg(Pcs handle, const char *errmsg)
 	pcs->errmsg = pcs_utils_strdup(errmsg);
 }
 
-/* æ·»åŠ æ–‡æœ¬åˆ°é”™è¯¯æ¶ˆæ¯çš„ç»“å°¾ */
+/* Ìí¼ÓÎÄ±¾µ½´íÎóÏûÏ¢µÄ½áÎ² */
 PCS_API void pcs_cat_serrmsg(Pcs handle, const char *errmsg)
 {
 	struct pcs *pcs = (struct pcs *)handle;
@@ -168,7 +168,7 @@ PCS_API void pcs_cat_serrmsg(Pcs handle, const char *errmsg)
 //		pcs_set_error(handle, pcs_strerror(handle, error));
 //}
 
-/*è°ƒç”¨ç”¨æˆ·æ³¨å†Œçš„éªŒè¯ç å‡½æ•°æ¥è®©ç”¨æˆ·è¯†åˆ«éªŒè¯ç å›¾ç‰‡ï¼Œå¹¶è®©ç”¨æˆ·è¾“å…¥è¯†åˆ«ç»“æœ*/
+/*µ÷ÓÃÓÃ»§×¢²áµÄÑéÖ¤Âëº¯ÊıÀ´ÈÃÓÃ»§Ê¶±ğÑéÖ¤ÂëÍ¼Æ¬£¬²¢ÈÃÓÃ»§ÊäÈëÊ¶±ğ½á¹û*/
 PcsRes pcs_get_captcha(Pcs handle, const char *code_string, char *captcha, int captchaSize)
 {
 	struct pcs *pcs = (struct pcs *)handle;
@@ -196,7 +196,7 @@ PcsRes pcs_get_captcha(Pcs handle, const char *code_string, char *captcha, int c
 	return PCS_OK;
 }
 
-/* è°ƒç”¨ç”¨æˆ·æ³¨å†Œçš„è¾“å…¥å‡½æ•°æ¥è®©ç”¨æˆ·è¾“å…¥æ•°æ® */
+/* µ÷ÓÃÓÃ»§×¢²áµÄÊäÈëº¯ÊıÀ´ÈÃÓÃ»§ÊäÈëÊı¾İ */
 PcsRes pcs_input(Pcs handle, const char *tips, char *value, size_t valueSize)
 {
     struct pcs *pcs = (struct pcs *)handle;
@@ -212,7 +212,7 @@ PcsRes pcs_input(Pcs handle, const char *tips, char *value, size_t valueSize)
     return PCS_OK;
 }
 
-/*ä»htmlä¸­è§£æå‡ºç±»ä¼¼äº FileUtils.bdstoken="****" çš„å€¼ã€‚æ­¤ä¾‹ä¸­ï¼Œkeyä¼ å…¥"FileUtils.bdstoken"ï¼Œå°†è¿”å›"****"å€¼*/
+/*´ÓhtmlÖĞ½âÎö³öÀàËÆÓÚ FileUtils.bdstoken="****" µÄÖµ¡£´ËÀıÖĞ£¬key´«Èë"FileUtils.bdstoken"£¬½«·µ»Ø"****"Öµ*/
 static char *pcs_get_value_by_key(const char *html, const char *key)
 {
 	char *val = NULL;
@@ -241,7 +241,7 @@ static char *pcs_get_value_by_key(const char *html, const char *key)
 	return val;
 }
 
-/*ä»htmlä¸­è§£æå‡ºç±»ä¼¼äº yunData.setData(****) çš„å‚æ•°ã€‚*/
+/*´ÓhtmlÖĞ½âÎö³öÀàËÆÓÚ yunData.setData(****) µÄ²ÎÊı¡£*/
 static char *pcs_get_yunData(const char *html, const char *key)
 {
 #define ST_LEN 32
@@ -320,7 +320,7 @@ static char *pcs_get_yunData(const char *html, const char *key)
 #undef st_top
 }
 
-/*ä»URLåœ°å€çš„QueryStringä¸­è§£æå‡ºç±»ä¼¼äº &error=123&a= çš„å€¼ã€‚æ­¤ä¾‹ä¸­ï¼Œkeyä¼ å…¥"&error"ï¼Œå°†è¿”å›123*/
+/*´ÓURLµØÖ·µÄQueryStringÖĞ½âÎö³öÀàËÆÓÚ &error=123&a= µÄÖµ¡£´ËÀıÖĞ£¬key´«Èë"&error"£¬½«·µ»Ø123*/
 static char *pcs_get_embed_query_int_value_by_key(const char *html, const char *key)
 {
 	char *val = NULL;
@@ -346,7 +346,7 @@ static char *pcs_get_embed_query_int_value_by_key(const char *html, const char *
 	return val;
 }
 
-/*ä»URLåœ°å€çš„QueryStringä¸­è§£æå‡ºç±»ä¼¼äº &token=abc_ef-g&a= çš„å€¼ã€‚æ­¤ä¾‹ä¸­ï¼Œkeyä¼ å…¥"&token"ï¼Œå°†è¿”å›abc_ef-g*/
+/*´ÓURLµØÖ·µÄQueryStringÖĞ½âÎö³öÀàËÆÓÚ &token=abc_ef-g&a= µÄÖµ¡£´ËÀıÖĞ£¬key´«Èë"&token"£¬½«·µ»Øabc_ef-g*/
 static char *pcs_get_embed_query_token_by_key(const char *html, const char *key)
 {
 	char *val = NULL;
@@ -372,7 +372,7 @@ static char *pcs_get_embed_query_token_by_key(const char *html, const char *key)
 	return val;
 }
 
-/*pcs_build_pan_api_url()çš„çŸ¢é‡æ¨¡å¼*/
+/*pcs_build_pan_api_url()µÄÊ¸Á¿Ä£Ê½*/
 static char *pcs_build_pan_api_url_v(Pcs handle, const char *action, va_list args)
 {
 	struct pcs *pcs = (struct pcs *)handle;
@@ -394,9 +394,9 @@ static char *pcs_build_pan_api_url_v(Pcs handle, const char *action, va_list arg
 	return url;
 }
 
-/*ä¼ å…¥actionï¼Œå³å‚æ•°ï¼Œæ‹¼æ¥å‡ºæœ€ç»ˆå­—ç¬¦ä¸²ã€‚å‚æ•°ä»¥(key, value)å¯¹çš„å½¢å¼ä¼ å…¥ï¼Œæœ€åä¼ å…¥ä¸€ä¸ªNULLè¡¨ç¤ºç»ˆæ­¢
-ä¾‹ï¼špcs_build_pan_api_url(handle, "list", k1, v1, k2, v2, NULL); 
-//å°†è¿”å›ï¼šhttp://pan.baidu.com/api/list?channel=chunlei&clienttype=0&web=1&t=189343343&bdstoken=dfjewdfe&k1=v1&k2=v2
+/*´«Èëaction£¬¼´²ÎÊı£¬Æ´½Ó³ö×îÖÕ×Ö·û´®¡£²ÎÊıÒÔ(key, value)¶ÔµÄĞÎÊ½´«Èë£¬×îºó´«ÈëÒ»¸öNULL±íÊ¾ÖÕÖ¹
+Àı£ºpcs_build_pan_api_url(handle, "list", k1, v1, k2, v2, NULL); 
+//½«·µ»Ø£ºhttp://pan.baidu.com/api/list?channel=chunlei&clienttype=0&web=1&t=189343343&bdstoken=dfjewdfe&k1=v1&k2=v2
 */
 static char *pcs_build_pan_api_url(Pcs handle, const char *action, ...)
 {
@@ -408,8 +408,8 @@ static char *pcs_build_pan_api_url(Pcs handle, const char *action, ...)
 	return url;
 }
 
-/*è½¬æ¢JSONå¯¹è±¡ä¸ºPcsFileInfoå¯¹è±¡ã€‚
-JSONå¯¹è±¡æ ¼å¼ä¸ºï¼š
+/*×ª»»JSON¶ÔÏóÎªPcsFileInfo¶ÔÏó¡£
+JSON¶ÔÏó¸ñÊ½Îª£º
 {
 	"fs_id": 123,
 	"path": "/a/b",
@@ -535,7 +535,7 @@ static PcsFileInfo *pcs_parse_fileinfo(cJSON * item)
 }
 
 /*
-æ ¹æ®ä¼ å…¥å‚æ•°ï¼Œæ‰§è¡Œapiå‡½æ•°ã€‚å‚æ•°ä¼ å…¥æ–¹æ³•ï¼Œå‚è€ƒpcs_build_pan_api_url()å‡½æ•°
+¸ù¾İ´«Èë²ÎÊı£¬Ö´ĞĞapiº¯Êı¡£²ÎÊı´«Èë·½·¨£¬²Î¿¼pcs_build_pan_api_url()º¯Êı
 action: list, search
 */
 static PcsFileInfoList *pcs_pan_api_1(Pcs handle, const char *action, ...)
@@ -584,7 +584,7 @@ static PcsFileInfoList *pcs_pan_api_1(Pcs handle, const char *action, ...)
 	error = item->valueint;
 	if (error != 0) {
 		//printf("%s\n", html);
-		pcs_set_errmsg(handle, "%s, Errorï¼š%d", get_errmsg_by_errno(error), error);
+		pcs_set_errmsg(handle, "%s, Error£º%d", get_errmsg_by_errno(error), error);
 		cJSON_Delete(json);
 		return NULL;
 	}
@@ -629,7 +629,7 @@ static PcsFileInfoList *pcs_pan_api_1(Pcs handle, const char *action, ...)
 	return filist;
 }
 
-/*æ ¹æ®slistå­—ç¬¦ä¸²é“¾è¡¨ï¼Œæ„é€ æˆæ•°ç»„æ ¼å¼çš„jsonå­—ç¬¦ä¸²ï¼Œå¹¶æŠŠæ•°ç»„å…ƒç´ æ•°é‡å†™å…¥åˆ°countæŒ‡å®šçš„å†…å­˜ä¸­*/
+/*¸ù¾İslist×Ö·û´®Á´±í£¬¹¹Ôì³ÉÊı×é¸ñÊ½µÄjson×Ö·û´®£¬²¢°ÑÊı×éÔªËØÊıÁ¿Ğ´Èëµ½countÖ¸¶¨µÄÄÚ´æÖĞ*/
 static char *pcs_build_filelist_1(Pcs handle, PcsSList *slist, int *count)
 {
 	PcsSList *item;
@@ -671,7 +671,7 @@ static char *pcs_build_filelist_1(Pcs handle, PcsSList *slist, int *count)
 	return file_list_string;
 }
 
-/*æ ¹æ®slistå­—ç¬¦ä¸²é“¾è¡¨ï¼Œæ„é€ æˆæ•°ç»„æ ¼å¼çš„jsonå­—ç¬¦ä¸²ï¼Œå¹¶æŠŠæ•°ç»„å…ƒç´ æ•°é‡å†™å…¥åˆ°countæŒ‡å®šçš„å†…å­˜ä¸­*/
+/*¸ù¾İslist×Ö·û´®Á´±í£¬¹¹Ôì³ÉÊı×é¸ñÊ½µÄjson×Ö·û´®£¬²¢°ÑÊı×éÔªËØÊıÁ¿Ğ´Èëµ½countÖ¸¶¨µÄÄÚ´æÖĞ*/
 static char *pcs_build_filelist_2(Pcs handle, PcsSList2 *slist, int *count)
 {
 	PcsSList2 *item;
@@ -716,7 +716,7 @@ static char *pcs_build_filelist_2(Pcs handle, PcsSList2 *slist, int *count)
 	return file_list_string;
 }
 
-/*æ ¹æ®slistå­—ç¬¦ä¸²é“¾è¡¨ï¼Œæ„é€ æˆæ•°ç»„æ ¼å¼çš„jsonå­—ç¬¦ä¸²ï¼Œå¹¶æŠŠæ•°ç»„å…ƒç´ æ•°é‡å†™å…¥åˆ°countæŒ‡å®šçš„å†…å­˜ä¸­*/
+/*¸ù¾İslist×Ö·û´®Á´±í£¬¹¹Ôì³ÉÊı×é¸ñÊ½µÄjson×Ö·û´®£¬²¢°ÑÊı×éÔªËØÊıÁ¿Ğ´Èëµ½countÖ¸¶¨µÄÄÚ´æÖĞ*/
 static char *pcs_build_filelist_3(Pcs handle, PcsSList2 *slist, int *count)
 {
 	PcsSList2 *item;
@@ -781,7 +781,7 @@ static char *pcs_build_filelist_3(Pcs handle, PcsSList2 *slist, int *count)
 }
 
 /*
-æ ¹æ®ä¼ å…¥å‚æ•°ï¼Œæ‰§è¡Œapiå‡½æ•°ã€‚
+¸ù¾İ´«Èë²ÎÊı£¬Ö´ĞĞapiº¯Êı¡£
 opera: delete, rename, move, copy
 */
 static PcsPanApiRes *pcs_pan_api_filemanager(Pcs handle, const char *opera, const char *filelist, int file_count)
@@ -794,10 +794,10 @@ static PcsPanApiRes *pcs_pan_api_filemanager(Pcs handle, const char *opera, cons
 	PcsPanApiRes *res = NULL;
 	PcsPanApiResInfoList *tail, *ri;
 
-	PcsBool err_no_space = PcsFalse, //errno = -10 å‰©ä½™ç©ºé—´ä¸è¶³
-		err_target_not_exist = PcsFalse, //errno = -8 æ–‡ä»¶å·²å­˜åœ¨äºç›®æ ‡æ–‡ä»¶å¤¹ä¸­
-		err_src_file_not_exist = PcsFalse, //errno = -9 æ–‡ä»¶ä¸å­˜åœ¨
-		err_has_succ_items = PcsFalse; //æ˜¯å¦å­˜åœ¨å¤„ç†æˆåŠŸçš„æ–‡ä»¶é¡¹
+	PcsBool err_no_space = PcsFalse, //errno = -10 Ê£Óà¿Õ¼ä²»×ã
+		err_target_not_exist = PcsFalse, //errno = -8 ÎÄ¼şÒÑ´æÔÚÓÚÄ¿±êÎÄ¼ş¼ĞÖĞ
+		err_src_file_not_exist = PcsFalse, //errno = -9 ÎÄ¼ş²»´æÔÚ
+		err_has_succ_items = PcsFalse; //ÊÇ·ñ´æÔÚ´¦Àí³É¹¦µÄÎÄ¼şÏî
 
 	url = pcs_build_pan_api_url(handle, "filemanager",
 		"opera", opera,
@@ -874,16 +874,16 @@ static PcsPanApiRes *pcs_pan_api_filemanager(Pcs handle, const char *opera, cons
 			tail = ri;
 		}
 		switch (ri->info.error) {
-		case 0: //I:å¤„ç†æˆåŠŸ
+		case 0: //I:´¦Àí³É¹¦
 			err_has_succ_items = PcsTrue;
 			break;
-		case -8: //D:æ–‡ä»¶å·²å­˜åœ¨äºç›®æ ‡æ–‡ä»¶å¤¹ä¸­
+		case -8: //D:ÎÄ¼şÒÑ´æÔÚÓÚÄ¿±êÎÄ¼ş¼ĞÖĞ
 			err_target_not_exist = PcsTrue;
 			break;
-		case -9: //C:æ–‡ä»¶ä¸å­˜åœ¨
+		case -9: //C:ÎÄ¼ş²»´æÔÚ
 			err_src_file_not_exist = PcsTrue;
 			break;
-		case -10: //G:å‰©ä½™ç©ºé—´ä¸è¶³
+		case -10: //G:Ê£Óà¿Õ¼ä²»×ã
 			err_no_space = PcsTrue;
 			break;
 		}
@@ -894,41 +894,41 @@ static PcsPanApiRes *pcs_pan_api_filemanager(Pcs handle, const char *opera, cons
 		if (is_move || strcmp(opera, "copy") == 0) {
 			if (res->error == 12) {
 				if (!err_no_space && !err_src_file_not_exist && !err_target_not_exist) {
-					pcs_set_errmsg(handle, "%s%s", is_move ? "ç§»åŠ¨" : "å¤åˆ¶", "å¤±è´¥ï¼Œè¯·ç¨å€™é‡è¯•");
+					pcs_set_errmsg(handle, "%s%s", is_move ? "ÒÆ¶¯" : "¸´ÖÆ", "Ê§°Ü£¬ÇëÉÔºòÖØÊÔ");
 				}
 				else {
 					if (cnt == file_count && !err_has_succ_items) {
 						if (err_no_space)
-							pcs_set_errmsg(handle, "%s%s", is_move ? "ç§»åŠ¨" : "å¤åˆ¶", "å¤±è´¥ï¼Œå‰©ä½™ç©ºé—´ä¸è¶³");
+							pcs_set_errmsg(handle, "%s%s", is_move ? "ÒÆ¶¯" : "¸´ÖÆ", "Ê§°Ü£¬Ê£Óà¿Õ¼ä²»×ã");
 						else if (err_target_not_exist)
-							pcs_set_errmsg(handle, "%s%s", is_move ? "ç§»åŠ¨" : "å¤åˆ¶", "å¤±è´¥ï¼Œæ–‡ä»¶å·²å­˜åœ¨äºç›®æ ‡æ–‡ä»¶å¤¹ä¸­");
+							pcs_set_errmsg(handle, "%s%s", is_move ? "ÒÆ¶¯" : "¸´ÖÆ", "Ê§°Ü£¬ÎÄ¼şÒÑ´æÔÚÓÚÄ¿±êÎÄ¼ş¼ĞÖĞ");
 						else if (err_src_file_not_exist)
-							pcs_set_errmsg(handle, "%s%s", is_move ? "ç§»åŠ¨" : "å¤åˆ¶", "å¤±è´¥ï¼Œå¾…å¤„ç†æ–‡ä»¶ä¸å­˜åœ¨");
+							pcs_set_errmsg(handle, "%s%s", is_move ? "ÒÆ¶¯" : "¸´ÖÆ", "Ê§°Ü£¬´ı´¦ÀíÎÄ¼ş²»´æÔÚ");
 					}
 					else {
 						if (err_no_space)
-							pcs_set_errmsg(handle, "%s%s", is_move ? "ç§»åŠ¨" : "å¤åˆ¶", "å¤±è´¥ï¼Œå‰©ä½™ç©ºé—´ä¸è¶³");
+							pcs_set_errmsg(handle, "%s%s", is_move ? "ÒÆ¶¯" : "¸´ÖÆ", "Ê§°Ü£¬Ê£Óà¿Õ¼ä²»×ã");
 						else if (err_target_not_exist)
-							pcs_set_errmsg(handle, "%s%s", is_move ? "ç§»åŠ¨" : "å¤åˆ¶", "å¤±è´¥ï¼Œéƒ¨åˆ†æ–‡ä»¶å·²å­˜åœ¨äºç›®æ ‡æ–‡ä»¶å¤¹ä¸­");
+							pcs_set_errmsg(handle, "%s%s", is_move ? "ÒÆ¶¯" : "¸´ÖÆ", "Ê§°Ü£¬²¿·ÖÎÄ¼şÒÑ´æÔÚÓÚÄ¿±êÎÄ¼ş¼ĞÖĞ");
 						else if (err_src_file_not_exist)
-							pcs_set_errmsg(handle, "%s%s", is_move ? "ç§»åŠ¨" : "å¤åˆ¶", "å¤±è´¥ï¼Œéƒ¨åˆ†å¾…å¤„ç†æ–‡ä»¶ä¸å­˜åœ¨");
+							pcs_set_errmsg(handle, "%s%s", is_move ? "ÒÆ¶¯" : "¸´ÖÆ", "Ê§°Ü£¬²¿·Ö´ı´¦ÀíÎÄ¼ş²»´æÔÚ");
 					}
 				}
 			}
 			else {
-				pcs_set_errmsg(handle, "%s%s", is_move ? "ç§»åŠ¨" : "å¤åˆ¶", "å¤±è´¥ï¼ŒæœªçŸ¥é”™è¯¯");
+				pcs_set_errmsg(handle, "%s%s", is_move ? "ÒÆ¶¯" : "¸´ÖÆ", "Ê§°Ü£¬Î´Öª´íÎó");
 			}
 		}
 		else if (strcmp(opera, "delete") == 0) {
-			pcs_set_errmsg(handle, "åˆ é™¤æ–‡ä»¶å¤±è´¥ï¼Œè¯·ç¨å€™é‡è¯•");
+			pcs_set_errmsg(handle, "É¾³ıÎÄ¼şÊ§°Ü£¬ÇëÉÔºòÖØÊÔ");
 		}
 		else if (strcmp(opera, "rename") == 0) {
 			if (res->error == -8 || res->error == -9 || (cnt > 0 && (res->info_list->info.error == -8 || res->info_list->info.error == -9)))
-				pcs_set_errmsg(handle, "åç§°å·²åœ¨ä½¿ç”¨ï¼Œè¯·ä½¿ç”¨å…¶ä»–åç§°");
+				pcs_set_errmsg(handle, "Ãû³ÆÒÑÔÚÊ¹ÓÃ£¬ÇëÊ¹ÓÃÆäËûÃû³Æ");
 			else if (res->error == 12 && cnt > 0 && res->info_list->info.error == -9)
-				pcs_set_errmsg(handle, "é‡å‘½åå¤±è´¥ï¼Œæ–‡ä»¶å·²è¢«åˆ é™¤æˆ–ç§»èµ°");
+				pcs_set_errmsg(handle, "ÖØÃüÃûÊ§°Ü£¬ÎÄ¼şÒÑ±»É¾³ı»òÒÆ×ß");
 			else
-				pcs_set_errmsg(handle, "æ–‡ä»¶(å¤¹)é‡å‘½åå¤±è´¥, ç½‘ç»œé”™è¯¯");
+				pcs_set_errmsg(handle, "ÎÄ¼ş(¼Ğ)ÖØÃüÃûÊ§°Ü, ÍøÂç´íÎó");
 		}
 	}
 	return res;
@@ -1079,7 +1079,7 @@ static PcsFileInfo *pcs_upload_slice_form(Pcs handle, PcsHttpForm form, curl_off
 	return meta;
 }
 
-/*ç§»é™¤å­—ç¬¦ä¸²ä¸­çš„æ¢è¡Œç¬¦*/
+/*ÒÆ³ı×Ö·û´®ÖĞµÄ»»ĞĞ·û*/
 //static char * remove_enter(char *str)
 //{
 //	char *p1, *p2;
@@ -1094,7 +1094,7 @@ static PcsFileInfo *pcs_upload_slice_form(Pcs handle, PcsHttpForm form, curl_off
 //}
 
 /**
-* ç™»å½•æ—¶ï¼Œè½¬æ¢å­—èŠ‚ä¸²ä¸ºå…¶base64ç¼–ç 
+* µÇÂ¼Ê±£¬×ª»»×Ö½Ú´®ÎªÆäbase64±àÂë
 * Use EVP to Base64 encode the input byte array to readable text
 */
 //static char* base64(const char *inputBuffer, int inputLen)
@@ -1110,7 +1110,7 @@ static PcsFileInfo *pcs_upload_slice_form(Pcs handle, PcsHttpForm form, curl_off
 //	return remove_enter(base64);
 //}
 
-/*ç™»å½•æ—¶ç¼–ç å¯†ç å¯†æ–‡ä¸­çš„ç¬¦å·*/
+/*µÇÂ¼Ê±±àÂëÃÜÂëÃÜÎÄÖĞµÄ·ûºÅ*/
 //static char * escape_symbol(const char *buf)
 //{
 //	static char tb[] = "0123456789ABCDEF";
@@ -1145,7 +1145,7 @@ static PcsFileInfo *pcs_upload_slice_form(Pcs handle, PcsHttpForm form, curl_off
 //	return tmp;
 //}
 
-/*ç™»å½•æ—¶åŠ å¯†ç”¨æˆ·å¯†ç */
+/*µÇÂ¼Ê±¼ÓÃÜÓÃ»§ÃÜÂë*/
 //static char *rsa_encrypt(const char *str, const char *pub_key){
 //	char *p_en, *b64;
 //	int rsa_len;
@@ -1710,7 +1710,7 @@ static PcsRes pcs_dologin(__in Pcs handle,
 		if (out_html != NULL)
 			*out_html = pcs_utils_strdup(html);
 
-		/* TODO: åº”è¯¥ä¸éœ€è¦å«ä¸€æ¬¡ jump_url çš„ï¼Œå¾…éªŒè¯ï¼Ÿ */
+		/* TODO: Ó¦¸Ã²»ĞèÒª½ĞÒ»´Î jump_url µÄ£¬´ıÑéÖ¤£¿ */
 		jump_url = pcs_get_pass_v3_jump_url(handle, html);
 		html = pcs_http_get(pcs->http, jump_url, PcsTrue);
 		pcs_free(jump_url);
@@ -2033,7 +2033,7 @@ PCS_API PcsRes pcs_login(Pcs handle)
 		return res;
 	}
 
-	starttime = pcs_jstime() - 20000; /* è®¾ç½®ä¸º 20ç§’ å‰æ‰“å¼€çš„é¡µé¢ */
+	starttime = pcs_jstime() - 20000; /* ÉèÖÃÎª 20Ãë Ç°´ò¿ªµÄÒ³Ãæ */
 
 	retry_times = 0;
 

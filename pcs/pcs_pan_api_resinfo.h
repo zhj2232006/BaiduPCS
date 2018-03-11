@@ -1,7 +1,7 @@
 #ifndef _PCS_PAN_API_RESINFO_H
 #define _PCS_PAN_API_RESINFO_H
 
-/*缃戠洏API杩斿洖鏁版嵁鏍煎紡*/
+/*网盘API返回数据格式*/
 typedef struct PcsPanApiResInfo {
 	char	*path;
 	int		error;

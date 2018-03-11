@@ -7,9 +7,9 @@
 extern "C" {
 #endif
 
-/* äº§ç”Ÿ dv
- *   pdv       - ç”¨äºæ¥æ”¶äº§ç”Ÿçš„ dvï¼Œéœ€è¦ free(*pdv)
- *   starttime - ç™»å½•é¡µé¢æ‰“å¼€çš„æ—¶é—´
+/* ²úÉú dv
+ *   pdv       - ÓÃÓÚ½ÓÊÕ²úÉúµÄ dv£¬ĞèÒª free(*pdv)
+ *   starttime - µÇÂ¼Ò³Ãæ´ò¿ªµÄÊ±¼ä
  */
 int passport_build_dv(char **pdv, int64_t starttime, const char *username);
 

@@ -6,63 +6,63 @@
 #include "pcs_defs.h"
 #include "pcs_slist.h"
 
-/*è¿”å›å½“å‰å¤„ç†å™¨æ˜¯å¦æ˜¯å¤§ç«¯æ¨¡å¼*/
+/*·µ»Øµ±Ç°´¦ÀíÆ÷ÊÇ·ñÊÇ´ó¶ËÄ£Ê½*/
 PCS_API PcsBool pcs_isLittleEndian();
-/*è¿”å›å½“å‰å¤„ç†å™¨æ˜¯å¦æ˜¯å°ç«¯æ¨¡å¼*/
+/*·µ»Øµ±Ç°´¦ÀíÆ÷ÊÇ·ñÊÇĞ¡¶ËÄ£Ê½*/
 PCS_API PcsBool pcs_isBigEndian();
 
-/*åŸå› å¤åˆ¶ä¸€ä»½å­—ç¬¦ä¸²ã€‚è¿”å›å€¼éœ€è¦è°ƒç”¨pcs_free()*/
+/*Ô­Òò¸´ÖÆÒ»·İ×Ö·û´®¡£·µ»ØÖµĞèÒªµ÷ÓÃpcs_free()*/
 PCS_API char *pcs_utils_strdup(const char *str);
-/* æŠŠ src æ·»åŠ åˆ° dst åè¾¹ï¼Œè‡ªåŠ¨é‡å»º dstã€‚
- * è¿”å› æ–°å»ºç«‹çš„ å­—ç¬¦ä¸²æŒ‡é’ˆã€‚
- * free_dst è®¾ç½®ä¸º TRUEï¼Œè¡¨ç¤ºå»ºç«‹æ–°çš„å­—ç¬¦ä¸²åï¼Œé‡Šæ”¾æ‰ dst çš„å†…å­˜ç©ºé—´ã€‚
+/* °Ñ src Ìí¼Óµ½ dst ºó±ß£¬×Ô¶¯ÖØ½¨ dst¡£
+ * ·µ»Ø ĞÂ½¨Á¢µÄ ×Ö·û´®Ö¸Õë¡£
+ * free_dst ÉèÖÃÎª TRUE£¬±íÊ¾½¨Á¢ĞÂµÄ×Ö·û´®ºó£¬ÊÍ·Åµô dst µÄÄÚ´æ¿Õ¼ä¡£
  */
 PCS_API char *pcs_utils_strcat(char *dst, const char *src, int src_len, int free_dst);
-/*pcs_utils_sprintfçš„çŸ¢é‡æ¨¡å¼*/
+/*pcs_utils_sprintfµÄÊ¸Á¿Ä£Ê½*/
 PCS_API char *pcs_utils_vsprintf(const char *fmt, va_list ap);
-/*è¾“å‡ºå­—ç¬¦ä¸²åˆ°å†…å­˜ï¼Œå¹¶è¿”å›è¯¥å†…å­˜ã€‚*/
+/*Êä³ö×Ö·û´®µ½ÄÚ´æ£¬²¢·µ»Ø¸ÃÄÚ´æ¡£*/
 PCS_API char *pcs_utils_sprintf(const char *fmt, ...);
-/*æ ¼å¼åŒ–sizeä¸ºå®¹æ˜“è¯»å†™æ¨¡å¼*/
+/*¸ñÊ½»¯sizeÎªÈİÒ×¶ÁĞ´Ä£Ê½*/
 PCS_API char *pcs_utils_readable_size(double size/*in bytes*/, char *buf, int buf_size, char *sp);
 PCS_API char* pcs_utils_readable_left_time(int64_t second, char *buf, int buf_size, char *sp);
-/*è·å–pathçš„çˆ¶ç›®å½•*/
+/*»ñÈ¡pathµÄ¸¸Ä¿Â¼*/
 PCS_API char *pcs_utils_basedir(const char *path);
-/*è·å–pathä¸­æ–‡ä»¶åéƒ¨åˆ†*/
+/*»ñÈ¡pathÖĞÎÄ¼şÃû²¿·Ö*/
 PCS_API char *pcs_utils_filename(const char *path);
-/*å¿½ç•¥å¤§å°å†™æ¯”è¾ƒä¸¤ä¸ªå­—ç¬¦ä¸²ã€‚ str1 < str2æ—¶è¿”å›è´Ÿæ•°ï¼›str1 == str2æ—¶è¿”å›0ï¼›str1 > str2æ—¶è¿”å›æ­£æ•°ã€‚*/
+/*ºöÂÔ´óĞ¡Ğ´±È½ÏÁ½¸ö×Ö·û´®¡£ str1 < str2Ê±·µ»Ø¸ºÊı£»str1 == str2Ê±·µ»Ø0£»str1 > str2Ê±·µ»ØÕıÊı¡£*/
 PCS_API int pcs_utils_strcmpi(const char *str1, const char *str2);
-/*åˆ¤æ–­ä¸¤å­—ç¬¦ä¸²æ˜¯å¦ç›¸ç­‰ã€‚ç›¸ç­‰è¿”å›PcsTrueï¼Œå¦åˆ™è¿”å›PcsFalseã€‚åªæ¯”è¾ƒlenæŒ‡å®šçš„é•¿åº¦ã€‚*/
+/*ÅĞ¶ÏÁ½×Ö·û´®ÊÇ·ñÏàµÈ¡£ÏàµÈ·µ»ØPcsTrue£¬·ñÔò·µ»ØPcsFalse¡£Ö»±È½ÏlenÖ¸¶¨µÄ³¤¶È¡£*/
 PCS_API PcsBool pcs_utils_streq(const char *str1, const char *str2, int len);
 
-/*è®¡ç®—å­—èŠ‚çš„MD5å€¼*/
+/*¼ÆËã×Ö½ÚµÄMD5Öµ*/
 PCS_API const unsigned char *pcs_md5_bytes_raw(const unsigned char* bytes, int len);
 
-/*è®¡ç®—å­—èŠ‚çš„MD5å€¼*/
+/*¼ÆËã×Ö½ÚµÄMD5Öµ*/
 PCS_API const char *pcs_md5_bytes(const unsigned char* bytes, int len);
 
 /**
-* å­—ç¬¦ä¸²md5
+* ×Ö·û´®md5
 */
 PCS_API const char *pcs_md5_string(const char *str);
 /**
-* å­—ç¬¦ä¸²md5ã€‚è¿”å›16å­—èŠ‚çš„MD5å€¼
+* ×Ö·û´®md5¡£·µ»Ø16×Ö½ÚµÄMD5Öµ
 */
 PCS_API const unsigned char *pcs_md5_string_raw(const char *str);
 /**
-* æ–‡ä»¶ md5
+* ÎÄ¼ş md5
 */
 PCS_API const char *pcs_md5_file_s(const char *file_name);
 
-/*æŠŠ32ä½æ•´æ•°æŒ‰ä»é«˜ä½åˆ°ä½ä½é¡ºåºå¡«å……åˆ°bufçš„4ä¸ªå­—èŠ‚ä¸­ã€‚
-* ä¾‹ï¼š0xF1E2D3C4 å¡«å……å buf[0] = 0xF1, buf[1] = 0xE2, buf[2] = 0xD3, buf[3] = 0xC4.bufä¸­å…¶ä»–é¡¹æ— æ”¹åŠ¨
+/*°Ñ32Î»ÕûÊı°´´Ó¸ßÎ»µ½µÍÎ»Ë³ĞòÌî³äµ½bufµÄ4¸ö×Ö½ÚÖĞ¡£
+* Àı£º0xF1E2D3C4 Ìî³äºó buf[0] = 0xF1, buf[1] = 0xE2, buf[2] = 0xD3, buf[3] = 0xC4.bufÖĞÆäËûÏîÎŞ¸Ä¶¯
 */
 void int2Buffer(int v, char *buf);
 
-/*int2Bufferçš„é€†è¿‡ç¨‹*/
+/*int2BufferµÄÄæ¹ı³Ì*/
 int readInt(const char *buf);
 
 /*
-* æå–å‡ºå­—ç¬¦ callback({...}) ä¸­çš„ {...} éƒ¨åˆ†
+* ÌáÈ¡³ö×Ö·û callback({...}) ÖĞµÄ {...} ²¿·Ö
 */
 char *extract_json_from_callback(char *callback);
 
@@ -70,7 +70,7 @@ PCS_API int pcs_strlen(const char *s);
 
 PCS_API const char *pcs_time2str(time_t time);
 
-/* ç­‰åŒ javascript ä¸­çš„ '(new Date()).getTime()'ã€‚ */
+/* µÈÍ¬ javascript ÖĞµÄ '(new Date()).getTime()'¡£ */
 PCS_API int64_t pcs_jstime();
 
 PCS_API char *pcs_js_timestr();

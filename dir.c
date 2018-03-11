@@ -87,9 +87,9 @@ static char *path_dup(const char *path, const char **pName)
 	strcpy(result, path);
 	p = result;
 	p += len - 1;
-	if (*p == '/' || *p == '\\') *p = '\0'; //å¦‚æžœæœ€åŽä¸€ä¸ªå­—ç¬¦æ˜¯'/'æˆ–è€…'\\'çš„è¯ï¼Œåˆ™æ¸…æŽ‰
+	if (*p == '/' || *p == '\\') *p = '\0'; //Èç¹û×îºóÒ»¸ö×Ö·ûÊÇ'/'»òÕß'\\'µÄ»°£¬ÔòÇåµô
 	if (pName) {
-		while (p > result && *p != '/' && *p != '\\') p--; /*æ‰¾åˆ°ç¬¬ä¸€ä¸ª'/'æˆ–'\\'çš„åœ°æ–¹ï¼Œç”¨äºŽè®¾å®špNameå€¼*/
+		while (p > result && *p != '/' && *p != '\\') p--; /*ÕÒµ½µÚÒ»¸ö'/'»ò'\\'µÄµØ·½£¬ÓÃÓÚÉè¶¨pNameÖµ*/
 		if (*p == '/' || *p == '\\') {
 			p++;
 			(*pName) = p;
@@ -99,7 +99,7 @@ static char *path_dup(const char *path, const char **pName)
 		}
 	}
 #ifdef WIN32
-	while (p >= result) { if (*p == '/') *p = '\\'; p--; } /*ç»§ç»­ä¿®æ­£æ–œæ */
+	while (p >= result) { if (*p == '/') *p = '\\'; p--; } /*¼ÌÐøÐÞÕýÐ±¸Ü*/
 #else
 	while (p >= result) { if (*p == '\\') *p = '/'; p--; }
 #endif
@@ -171,9 +171,9 @@ LocalFileInfo *GetLocalFileInfo(const char *file)
 	HANDLE hFind = FindFirstFile(file, &fd);
 	FindClose(hFind);
 	if (hFind != INVALID_HANDLE_VALUE) {
-		if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) /*ä¸ºç›®å½•*/
+		if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) /*ÎªÄ¿Â¼*/
 			info = CreateLocalFileInfo(file, NULL, 1, FileTimeToTime_t(fd.ftLastWriteTime, NULL), 0, NULL);
-		else { /*ä¸ºæ–‡ä»¶*/
+		else { /*ÎªÎÄ¼þ*/
 			int64_t fsize = fd.nFileSizeHigh;
 			fsize <<= 32;
 			fsize |= fd.nFileSizeLow;
@@ -184,9 +184,9 @@ LocalFileInfo *GetLocalFileInfo(const char *file)
 	struct stat st;
 	if (stat(file, &st))
 		return NULL;
-	if (S_ISDIR(st.st_mode)) /*ä¸ºç›®å½•*/
+	if (S_ISDIR(st.st_mode)) /*ÎªÄ¿Â¼*/
 		info = CreateLocalFileInfo(file, NULL, 1, st.st_mtime, 0, NULL);
-	else if (S_ISREG(st.st_mode)) /*ä¸ºæ–‡ä»¶*/
+	else if (S_ISREG(st.st_mode)) /*ÎªÎÄ¼þ*/
 		info = CreateLocalFileInfo(file, NULL, 0, st.st_mtime, st.st_size, NULL);
 #endif
 	return info;
@@ -356,9 +356,9 @@ int SetFileLastModifyTime(const char *file, time_t mtime)
 
 
 /*
-* é€’å½’åˆ›å»ºç›®å½•
-*    path - å¾…åˆ›å»ºçš„ç›®å½•
-* å¦‚æžœæˆåŠŸåˆ™è¿”å›ž0ï¼Œå¦åˆ™è¿”å›žé”™è¯¯ç ã€‚
+* µÝ¹é´´½¨Ä¿Â¼
+*    path - ´ý´´½¨µÄÄ¿Â¼
+* Èç¹û³É¹¦Ôò·µ»Ø0£¬·ñÔò·µ»Ø´íÎóÂë¡£
 *
 */
 int CreateDirectoryRecursive(const char *path)
@@ -441,8 +441,8 @@ int CreateDirectoryRecursive(const char *path)
 	return MKDIR_OK;
 }
 
-/*é€’å½’åˆ é™¤æ–‡ä»¶æˆ–ç›®å½•
-æˆåŠŸè¿”å›ž0ï¼Œå¦åˆ™è¿”å›žéž0å€¼
+/*µÝ¹éÉ¾³ýÎÄ¼þ»òÄ¿Â¼
+³É¹¦·µ»Ø0£¬·ñÔò·µ»Ø·Ç0Öµ
 */
 int DeleteFileRecursive(const char *path)
 {
