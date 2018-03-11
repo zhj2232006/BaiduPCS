@@ -7,22 +7,22 @@
 #include <time.h>
 #include <locale.h>
 #ifdef WIN32
-# include <conio.h>
-# include <direct.h>
-# include <WinSock2.h>
-# include <Windows.h>
-# include "pcs/openssl_aes.h"
-# include "pcs/openssl_md5.h"
+    #include <conio.h>
+    #include <direct.h>
+    #include <WinSock2.h>
+    #include <Windows.h>
+    #include "pcs/openssl_aes.h"
+    #include "pcs/openssl_md5.h"
 
-# define snprintf _snprintf
-# define vsnprintf _vsnprintf
+    #define snprintf _snprintf
+    #define vsnprintf _vsnprintf
 
 #else
-# include <unistd.h>
-# include <termios.h>
-# include <pthread.h>
-# include <openssl/aes.h>
-# include <openssl/md5.h>
+    #include <unistd.h>
+    #include <termios.h>
+    #include <pthread.h>
+    #include <openssl/aes.h>
+    #include <openssl/md5.h>
 #endif
 
 #include "pcs/pcs_mem.h"
@@ -36,1574 +36,1625 @@
 #include "arg.h"
 #include "cache.h"
 #ifdef WIN32
-# include "pcs/utf8.h"
-#ifndef __MINGW32__
-# define lseek _lseek
-# define fileno _fileno
-# define fseeko _fseeki64
-# define ftello _ftelli64
-#endif
+    #include "pcs/utf8.h"
+    #ifndef __MINGW32__
+        #define lseek _lseek
+        #define fileno _fileno
+        #define fseeko _fseeki64
+        #define ftello _ftelli64
+    #endif
 #endif
 #include "shell.h"
 
 #define USAGE "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
-#define TIMEOUT						60
-#define CONNECTTIMEOUT				1
-#define DEFAULT_THREAD_NUM			5
-#define MAX_THREAD_NUM				10000
-#define MIN_SLICE_SIZE				(512 * 1024) /*ÊúÄÂ∞èÂàÜÁâáÂ§ßÂ∞è*/
-#define MAX_SLICE_SIZE				(10 * 1024 * 1024) /*ÊúÄÂ§ßÂàÜÁâáÂ§ßÂ∞è*/
-#define MAX_FFLUSH_SIZE				(10 * 1024 * 1024) /*ÊúÄÂ§ßÁºìÂ≠òÂ§ßÂ∞è*/
-#define MIN_UPLOAD_SLICE_SIZE		(512 * 1024) /*ÊúÄÂ∞èÂàÜÁâáÂ§ßÂ∞è*/
-#define MAX_UPLOAD_SLICE_SIZE		(10 * 1024 * 1024) /*ÊúÄÂ§ßÂàÜÁâáÂ§ßÂ∞è*/
-#define MAX_UPLOAD_SLICE_COUNT		1024
+#define TIMEOUT                     60
+#define CONNECTTIMEOUT              1
+#define DEFAULT_THREAD_NUM          5
+#define MAX_THREAD_NUM              10000
+#define MIN_SLICE_SIZE              (512 * 1024) /*◊Ó–°∑÷∆¨¥Û–°*/
+#define MAX_SLICE_SIZE              (10 * 1024 * 1024) /*◊Ó¥Û∑÷∆¨¥Û–°*/
+#define MAX_FFLUSH_SIZE             (10 * 1024 * 1024) /*◊Ó¥Ûª∫¥Ê¥Û–°*/
+#define MIN_UPLOAD_SLICE_SIZE       (512 * 1024) /*◊Ó–°∑÷∆¨¥Û–°*/
+#define MAX_UPLOAD_SLICE_SIZE       (10 * 1024 * 1024) /*◊Ó¥Û∑÷∆¨¥Û–°*/
+#define MAX_UPLOAD_SLICE_COUNT      1024
 
 #define convert_to_real_speed(speed) ((speed) * 1024)
 
 #define convert_to_real_cache_size(size) ((size) * 1024)
 
-#define PCS_CONTEXT_ENV				"PCS_CONTEXT"
-#define PCS_COOKIE_ENV				"PCS_COOKIE"
-#define PCS_CAPTCHA_ENV				"PCS_CAPTCHA"
-#define TEMP_FILE_SUFFIX			".pcs_temp"
-#define DECRYPT_FILE_SUFFIX			".decrypt"
-#define ENCRYPT_FILE_SUFFIX			".encrypt"
-#define SLICE_FILE_SUFFIX			".slice"
-//#define PCS_DEFAULT_CONTEXT_FILE	"/tmp/pcs_context.json"
+#define PCS_CONTEXT_ENV             "PCS_CONTEXT"
+#define PCS_COOKIE_ENV              "PCS_COOKIE"
+#define PCS_CAPTCHA_ENV             "PCS_CAPTCHA"
+#define TEMP_FILE_SUFFIX            ".pcs_temp"
+#define DECRYPT_FILE_SUFFIX         ".decrypt"
+#define ENCRYPT_FILE_SUFFIX         ".encrypt"
+#define SLICE_FILE_SUFFIX           ".slice"
+//#define PCS_DEFAULT_CONTEXT_FILE  "/tmp/pcs_context.json"
 
-#define THREAD_STATE_MAGIC			(((int)'T' << 24) | ((int)'S' << 16) | ((int)'H' << 8) | ((int)'T'))
+#define THREAD_STATE_MAGIC          (((int)'T' << 24) | ((int)'S' << 16) | ((int)'H' << 8) | ((int)'T'))
 
 #ifndef PCS_BUFFER_SIZE
-#  define PCS_BUFFER_SIZE			(AES_BLOCK_SIZE * 1024)
+    #define PCS_BUFFER_SIZE         (AES_BLOCK_SIZE * 1024)
 #endif
 
 #ifdef _WIN32
-#  define NONE
-#  define RED
-#  define LIGHT_RED
-#  define GREEN
-#  define LIGHT_GREEN
-#  define BLUE
-#  define LIGHT_BLUE
-#  define DARY_GRAY
-#  define CYAN
-#  define LIGHT_CYAN
-#  define PURPLE
-#  define LIGHT_PURPLE
-#  define BROWN
-#  define YELLOW
-#  define LIGHT_GRAY
-#  define WHITE
+    #define NONE
+    #define RED
+    #define LIGHT_RED
+    #define GREEN
+    #define LIGHT_GREEN
+    #define BLUE
+    #define LIGHT_BLUE
+    #define DARY_GRAY
+    #define CYAN
+    #define LIGHT_CYAN
+    #define PURPLE
+    #define LIGHT_PURPLE
+    #define BROWN
+    #define YELLOW
+    #define LIGHT_GRAY
+    #define WHITE
 #else
-#  define NONE         "\033[m"
-#  define RED          "\033[0;32;31m"
-#  define LIGHT_RED    "\033[1;31m"
-#  define GREEN        "\033[0;32;32m"
-#  define LIGHT_GREEN  "\033[1;32m"
-#  define BLUE         "\033[0;32;34m"
-#  define LIGHT_BLUE   "\033[1;34m"
-#  define DARY_GRAY    "\033[1;30m"
-#  define CYAN         "\033[0;36m"
-#  define LIGHT_CYAN   "\033[1;36m"
-#  define PURPLE       "\033[0;35m"
-#  define LIGHT_PURPLE "\033[1;35m"
-#  define BROWN        "\033[0;33m"
-#  define YELLOW       "\033[1;33m"
-#  define LIGHT_GRAY   "\033[0;37m"
-#  define WHITE        "\033[1;37m"
+    #define NONE         "\033[m"
+    #define RED          "\033[0;32;31m"
+    #define LIGHT_RED    "\033[1;31m"
+    #define GREEN        "\033[0;32;32m"
+    #define LIGHT_GREEN  "\033[1;32m"
+    #define BLUE         "\033[0;32;34m"
+    #define LIGHT_BLUE   "\033[1;34m"
+    #define DARY_GRAY    "\033[1;30m"
+    #define CYAN         "\033[0;36m"
+    #define LIGHT_CYAN   "\033[1;36m"
+    #define PURPLE       "\033[0;35m"
+    #define LIGHT_PURPLE "\033[1;35m"
+    #define BROWN        "\033[0;33m"
+    #define YELLOW       "\033[1;33m"
+    #define LIGHT_GRAY   "\033[0;37m"
+    #define WHITE        "\033[1;37m"
 #endif
 
-#define PRINT_PAGE_SIZE			20		/*ÂàóÂá∫ÁõÆÂΩïÊàñÂàóÂá∫ÊØîËæÉÁªìÊûúÊó∂ÔºåÂàÜÈ°µÂ§ßÂ∞è*/
+#define PRINT_PAGE_SIZE         20      /*¡–≥ˆƒø¬ºªÚ¡–≥ˆ±»ΩœΩ·π˚ ±£¨∑÷“≥¥Û–°*/
 
-#define OP_NONE					0
-#define OP_EQ					1		/*Êñá‰ª∂Áõ∏Âêå*/
-#define OP_LEFT					2		/*Êñá‰ª∂Â∫îÊõ¥Êñ∞Âà∞Â∑¶Ëæπ*/
-#define OP_RIGHT				4		/*Êñá‰ª∂Â∫îÊõ¥Êñ∞Âà∞Âè≥Ëæπ*/
-#define OP_CONFUSE				8		/*Âõ∞ÊÉëÔºå‰∏çÁü•ÈÅìÂ¶Ç‰ΩïÊõ¥Êñ∞*/
+#define OP_NONE                 0
+#define OP_EQ                   1       /*Œƒº˛œ‡Õ¨*/
+#define OP_LEFT                 2       /*Œƒº˛”¶∏¸–¬µΩ◊Û±ﬂ*/
+#define OP_RIGHT                4       /*Œƒº˛”¶∏¸–¬µΩ”“±ﬂ*/
+#define OP_CONFUSE              8       /*¿ßªÛ£¨≤ª÷™µ¿»Á∫Œ∏¸–¬*/
 
-#define OP_ST_NONE				0
-#define OP_ST_SUCC				1		/*Êìç‰ΩúÊàêÂäü*/
-#define OP_ST_FAIL				2		/*Êìç‰ΩúÂ§±Ë¥•*/
-#define OP_ST_SKIP				4		/*Ë∑≥ËøáÊú¨Êìç‰Ωú*/
-#define OP_ST_CONFUSE			8		/*Âõ∞ÊÉëÊìç‰Ωú*/
-#define OP_ST_PROCESSING		16		/*Ê≠£Âú®ÊâßË°åÊìç‰Ωú*/
+#define OP_ST_NONE              0
+#define OP_ST_SUCC              1       /*≤Ÿ◊˜≥…π¶*/
+#define OP_ST_FAIL              2       /*≤Ÿ◊˜ ß∞‹*/
+#define OP_ST_SKIP              4       /*Ã¯π˝±æ≤Ÿ◊˜*/
+#define OP_ST_CONFUSE           8       /*¿ßªÛ≤Ÿ◊˜*/
+#define OP_ST_PROCESSING        16      /*’˝‘⁄÷¥––≤Ÿ◊˜*/
 
-#define FLAG_NONE				0
-#define FLAG_ON_LOCAL			1
-#define FLAG_ON_REMOTE			2
+#define FLAG_NONE               0
+#define FLAG_ON_LOCAL           1
+#define FLAG_ON_REMOTE          2
 #define FLAG_PARENT_NOT_ON_REMOTE 4
 
-#define PCS_SECURE_NONE				((int)0)
-#define PCS_SECURE_PLAINTEXT		((int)1)
-#define PCS_SECURE_AES_CBC_128		((int)128)
-#define PCS_SECURE_AES_CBC_192		((int)192)
-#define PCS_SECURE_AES_CBC_256		((int)256)
+#define PCS_SECURE_NONE             ((int)0)
+#define PCS_SECURE_PLAINTEXT        ((int)1)
+#define PCS_SECURE_AES_CBC_128      ((int)128)
+#define PCS_SECURE_AES_CBC_192      ((int)192)
+#define PCS_SECURE_AES_CBC_256      ((int)256)
 
-#define PCS_AES_MAGIC				(0x41455300)
+#define PCS_AES_MAGIC               (0x41455300)
 
-#define DOWNLOAD_STATUS_OK				0
-#define DOWNLOAD_STATUS_PENDDING		1
-#define DOWNLOAD_STATUS_WRITE_FILE_FAIL	2
-#define DOWNLOAD_STATUS_FAIL			3
-#define DOWNLOAD_STATUS_DOWNLOADING		4
+#define DOWNLOAD_STATUS_OK              0
+#define DOWNLOAD_STATUS_PENDDING        1
+#define DOWNLOAD_STATUS_WRITE_FILE_FAIL 2
+#define DOWNLOAD_STATUS_FAIL            3
+#define DOWNLOAD_STATUS_DOWNLOADING     4
 
-#define UPLOAD_STATUS_OK				0
-#define UPLOAD_STATUS_PENDDING			1
-#define UPLOAD_STATUS_WRITE_FILE_FAIL	2
-#define UPLOAD_STATUS_FAIL				3
-#define UPLOAD_STATUS_UPLOADING			4
+#define UPLOAD_STATUS_OK                0
+#define UPLOAD_STATUS_PENDDING          1
+#define UPLOAD_STATUS_WRITE_FILE_FAIL   2
+#define UPLOAD_STATUS_FAIL              3
+#define UPLOAD_STATUS_UPLOADING         4
 
-/* Êñá‰ª∂ÂÖÉÊï∞ÊçÆ*/
+/* Œƒº˛‘™ ˝æ›*/
 typedef struct MyMeta MyMeta;
-struct MyMeta
-{
-	char		*path;			/*Êñá‰ª∂Ë∑ØÂæÑ*/
+struct MyMeta {
+    char*        path;          /*Œƒº˛¬∑æ∂*/
 
-	time_t		local_mtime;	/*Êú¨Âú∞Êñá‰ª∂ÁöÑ‰øÆÊîπÊó∂Èó¥*/
-	int			local_isdir;	/*Êú¨Âú∞Êñá‰ª∂ÊòØÂê¶ÊòØÁõÆÂΩï„ÄÇ0Ë°®Á§∫‰∏çÊòØÁõÆÂΩïÔºõÈùû0ÂÄºË°®Á§∫Êú¨Âú∞Êñá‰ª∂ÊòØÁõÆÂΩï*/
-	int			local_filecount; /*ÂΩìÊú¨Âú∞ÊòØÁõÆÂΩïÊó∂ÔºåÂ≠òÂÇ®ÁõÆÂΩï‰∏ãÊñá‰ª∂ÁöÑÊï∞ÁõÆ„ÄÇÈÄíÂΩíÁªüËÆ°„ÄÇ*/
+    time_t      local_mtime;    /*±æµÿŒƒº˛µƒ–ﬁ∏ƒ ±º‰*/
+    int         local_isdir;    /*±æµÿŒƒº˛ «∑Ò «ƒø¬º°£0±Ì æ≤ª «ƒø¬º£ª∑«0÷µ±Ì æ±æµÿŒƒº˛ «ƒø¬º*/
+    int         local_filecount; /*µ±±æµÿ «ƒø¬º ±£¨¥Ê¥¢ƒø¬ºœ¬Œƒº˛µƒ ˝ƒø°£µ›πÈÕ≥º∆°£*/
 
-	char		*remote_path;	/*Êñá‰ª∂Ë∑ØÂæÑ*/
-	time_t		remote_mtime;	/*Êñá‰ª∂Âú®ÁΩëÁõò‰∏≠ÁöÑÊúÄÂêé‰øÆÊîπÊó∂Èó¥*/
-	int			remote_isdir;	/*Êñá‰ª∂Âú®ÁΩëÁõò‰∏≠ÊòØ‰ª•Êñá‰ª∂Â≠òÂú®ËøòÊòØ‰ª•ÁõÆÂΩïÂ≠òÂú®„ÄÇ0Ë°®Á§∫‰ª•Êñá‰ª∂Â≠òÂú®ÔºõÈùû0ÂÄºË°®Á§∫‰ª•ÁõÆÂΩïÂ≠òÂú®*/
-	char		*md5;
+    char*        remote_path;   /*Œƒº˛¬∑æ∂*/
+    time_t      remote_mtime;   /*Œƒº˛‘⁄Õ¯≈Ã÷–µƒ◊Ó∫Û–ﬁ∏ƒ ±º‰*/
+    int         remote_isdir;   /*Œƒº˛‘⁄Õ¯≈Ã÷– «“‘Œƒº˛¥Ê‘⁄ªπ «“‘ƒø¬º¥Ê‘⁄°£0±Ì æ“‘Œƒº˛¥Ê‘⁄£ª∑«0÷µ±Ì æ“‘ƒø¬º¥Ê‘⁄*/
+    char*        md5;
 
-	int			flag;
+    int         flag;
 
-	int			op;				/*ÈúÄË¶ÅÊâßË°åÁöÑÊìç‰Ωú*/
-	int			op_st;			/*Êìç‰ΩúÁöÑÁªìÊûú*/
-	char		*msg;			/*Êìç‰ΩúÂ§±Ë¥•Êó∂ÁöÑÈîôËØØÊ∂àÊÅØ*/
+    int         op;             /*–Ë“™÷¥––µƒ≤Ÿ◊˜*/
+    int         op_st;          /*≤Ÿ◊˜µƒΩ·π˚*/
+    char*        msg;           /*≤Ÿ◊˜ ß∞‹ ±µƒ¥ÌŒÛœ˚œ¢*/
 
-	MyMeta		*parent;		/*Áà∂ÁõÆÂΩïÁöÑÂÖÉÊï∞ÊçÆ*/
-	void		*userdata;		/*Áî®Êà∑Êï∞ÊçÆ*/
+    MyMeta*      parent;        /*∏∏ƒø¬ºµƒ‘™ ˝æ›*/
+    void*        userdata;      /*”√ªß ˝æ›*/
 };
 
 struct DownloadThreadState;
 
-struct DownloadState
-{
-	FILE *pf;
-	int64_t downloaded_size; /*Â∑≤Áªè‰∏ãËΩΩÁöÑÂ≠óËäÇÊï∞*/
-	curl_off_t resume_from; /*Êñ≠ÁÇπÁª≠‰º†Êó∂Ôºå‰ªéËøô‰∏™‰ΩçÁΩÆÂºÄÂßãÁª≠‰º†*/
-	time_t time; /*ÊúÄÂêé‰∏ÄÊ¨°Âú®Â±èÂπïÊâìÂç∞‰ø°ÊÅØÁöÑÊó∂Èó¥*/
-	size_t speed; /*Áî®‰∫éÁªüËÆ°‰∏ãËΩΩÈÄüÂ∫¶*/
-	int64_t file_size; /*ÂÆåÊï¥ÁöÑÊñá‰ª∂ÁöÑÂ≠óËäÇÂ§ßÂ∞è*/
-	ShellContext *context;
-	void *mutex;
-	int	num_of_running_thread; /*Â∑≤ÁªèÂêØÂä®ÁöÑÁ∫øÁ®ãÊï∞Èáè*/
-	int num_of_slice; /*ÂàÜÁâáÊï∞Èáè*/
-	char **pErrMsg;
-	int	status;
-	const char *remote_file;
-	struct DownloadThreadState *threads;
-	cathe_t cache;
+struct DownloadState {
+    FILE* pf;
+    int64_t downloaded_size; /*“—æ≠œ¬‘ÿµƒ◊÷Ω⁄ ˝*/
+    curl_off_t resume_from; /*∂œµ„–¯¥´ ±£¨¥”’‚∏ˆŒª÷√ø™ º–¯¥´*/
+    time_t time; /*◊Ó∫Û“ª¥Œ‘⁄∆¡ƒª¥Ú”°–≈œ¢µƒ ±º‰*/
+    size_t speed; /*”√”⁄Õ≥º∆œ¬‘ÿÀŸ∂»*/
+    int64_t file_size; /*ÕÍ’˚µƒŒƒº˛µƒ◊÷Ω⁄¥Û–°*/
+    ShellContext* context;
+    void* mutex;
+    int num_of_running_thread; /*“—æ≠∆Ù∂Øµƒœﬂ≥Ã ˝¡ø*/
+    int num_of_slice; /*∑÷∆¨ ˝¡ø*/
+    char** pErrMsg;
+    int status;
+    const char* remote_file;
+    struct DownloadThreadState* threads;
+    cathe_t cache;
 };
 
-struct DownloadThreadState
-{
-	struct DownloadState *ds;
-	curl_off_t	start;
-	curl_off_t	end;
-	int		status;
-	Pcs		*pcs;
-	int		tid;
-	struct DownloadThreadState *next;
+struct DownloadThreadState {
+    struct DownloadState* ds;
+    curl_off_t  start;
+    curl_off_t  end;
+    int     status;
+    Pcs*     pcs;
+    int     tid;
+    struct DownloadThreadState* next;
 };
 
-struct RBEnumerateState
-{
-	int		first, second, other;
-	int		print_op;	/* ÂÖÅËÆ∏ÊâìÂç∞ÁöÑ OP Ê†áËÆ∞„ÄÇ
-						 * ‰æãÂ¶ÇÔºö"OP_EQ | OP_LEFT | OP_RIGHT" 
-						 * Â∞ÜÂè™ÊâìÂç∞ op ‰∏∫ OP_EQ, OP_LEFT Âíå OP_RIGHT ‰∏âÈ°πÁöÑËäÇÁÇπ
-						 */
-	int		print_flag;
-	int		print_fail;
+struct RBEnumerateState {
+    int     first, second, other;
+    int     print_op;   /* ‘ –Ì¥Ú”°µƒ OP ±Íº«°£
+                         * ¿˝»Á£∫"OP_EQ | OP_LEFT | OP_RIGHT"
+                         * Ω´÷ª¥Ú”° op Œ™ OP_EQ, OP_LEFT ∫Õ OP_RIGHT »˝œÓµƒΩ⁄µ„
+                         */
+    int     print_flag;
+    int     print_fail;
 
-	int		no_print_op;
-	int		no_print_flag;
+    int     no_print_op;
+    int     no_print_flag;
 
-	rb_red_blk_tree *tree;
-	ShellContext   *context;
+    rb_red_blk_tree* tree;
+    ShellContext*   context;
 
-	int		page_size;
+    int     page_size;
 
-	int		cnt_total;
-	int		cnt_valid_total;
-	int		cnt_left;
-	int		cnt_right;
-	int		cnt_eq;
-	int		cnt_confuse;
-	int		cnt_none;
+    int     cnt_total;
+    int     cnt_valid_total;
+    int     cnt_left;
+    int     cnt_right;
+    int     cnt_eq;
+    int     cnt_confuse;
+    int     cnt_none;
 
-	int		cnt_fail;
+    int     cnt_fail;
 
-	int		printed_count;
-	int		page_index;
-	int		page_enable;
+    int     printed_count;
+    int     page_index;
+    int     page_enable;
 
-	const char	*local_basedir;
-	const char	*remote_basedir;
+    const char*  local_basedir;
+    const char*  remote_basedir;
 
-	/*Âú®ÊâìÂç∞metaÂêéË∞ÉÁî®‰∏ÄÊ¨°*/
-	int (*process)(MyMeta *meta, struct RBEnumerateState *s, void *state);
-	void *processState;
+    /*‘⁄¥Ú”°meta∫Ûµ˜”√“ª¥Œ*/
+    int (*process)(MyMeta* meta, struct RBEnumerateState* s, void* state);
+    void* processState;
 
-	int dry_run;
+    int dry_run;
 
-	const char *prefixion;
+    const char* prefixion;
 };
 
-struct PcsAesHead
-{
-	int					magic; /*Should be AES*/
-	int					bits;
-	int					polish;
-	int					reserve;
+struct PcsAesHead {
+    int                 magic; /*Should be AES*/
+    int                 bits;
+    int                 polish;
+    int                 reserve;
 };
 
-struct ScanLocalFileState
-{
-	rb_red_blk_tree *rb;
-	int				total;
+struct ScanLocalFileState {
+    rb_red_blk_tree* rb;
+    int             total;
 };
 
 struct UploadThreadState;
 struct UploadState {
-	FILE *pf;
-	char *path;
-	char *slice_file;
-	int64_t uploaded_size; /*Â∑≤Áªè‰∏ãËΩΩÁöÑÂ≠óËäÇÊï∞*/
-	time_t time; /*ÊúÄÂêé‰∏ÄÊ¨°Âú®Â±èÂπïÊâìÂç∞‰ø°ÊÅØÁöÑÊó∂Èó¥*/
-	size_t speed; /*Áî®‰∫éÁªüËÆ°‰∏ãËΩΩÈÄüÂ∫¶*/
-	int64_t file_size; /*ÂÆåÊï¥ÁöÑÊñá‰ª∂ÁöÑÂ≠óËäÇÂ§ßÂ∞è*/
-	ShellContext *context;
-	void *mutex;
-	int	num_of_running_thread; /*Â∑≤ÁªèÂêØÂä®ÁöÑÁ∫øÁ®ãÊï∞Èáè*/
-	int num_of_slice; /*ÂàÜÁâáÊï∞Èáè*/
-	char **pErrMsg;
-	int	status;
-	struct UploadThreadState *threads;
+    FILE* pf;
+    char* path;
+    char* slice_file;
+    int64_t uploaded_size; /*“—æ≠œ¬‘ÿµƒ◊÷Ω⁄ ˝*/
+    time_t time; /*◊Ó∫Û“ª¥Œ‘⁄∆¡ƒª¥Ú”°–≈œ¢µƒ ±º‰*/
+    size_t speed; /*”√”⁄Õ≥º∆œ¬‘ÿÀŸ∂»*/
+    int64_t file_size; /*ÕÍ’˚µƒŒƒº˛µƒ◊÷Ω⁄¥Û–°*/
+    ShellContext* context;
+    void* mutex;
+    int num_of_running_thread; /*“—æ≠∆Ù∂Øµƒœﬂ≥Ã ˝¡ø*/
+    int num_of_slice; /*∑÷∆¨ ˝¡ø*/
+    char** pErrMsg;
+    int status;
+    struct UploadThreadState* threads;
 };
 
 struct UploadThreadState {
-	struct UploadState *us;
-	curl_off_t	start;
-	curl_off_t	end;
-	int		status;
-	size_t  uploaded_size;
-	Pcs		*pcs;
-	char	md5[33]; /*‰∏ä‰º†ÊàêÂäüÂêéÁöÑÂàÜÁâáMD5ÂÄº*/
-	int		tid;
-	struct UploadThreadState *next;
+    struct UploadState* us;
+    curl_off_t  start;
+    curl_off_t  end;
+    int     status;
+    size_t  uploaded_size;
+    Pcs*     pcs;
+    char    md5[33]; /*…œ¥´≥…π¶∫Ûµƒ∑÷∆¨MD5÷µ*/
+    int     tid;
+    struct UploadThreadState* next;
 };
 
-static const char *app_name = NULL;
+static const char* app_name = NULL;
 
 /*
-* Ê£ÄÊü•ÊòØÂê¶ÁôªÂΩï
-*   msg   - Ê£ÄÊµãÂà∞Êú™ÁôªÂΩïÊó∂ÁöÑÊâìÂç∞Ê∂àÊÅØ„ÄÇ‰º†ÂÖ•NULLÁöÑËØùÔºåÂàô‰ΩøÁî®ÈªòËÆ§Ê∂àÊÅØ„ÄÇ
+* ºÏ≤È «∑Òµ«¬º
+*   msg   - ºÏ≤‚µΩŒ¥µ«¬º ±µƒ¥Ú”°œ˚œ¢°£¥´»ÎNULLµƒª∞£¨‘Ú π”√ƒ¨»œœ˚œ¢°£
 */
-static PcsBool is_login(ShellContext *context, const char *msg);
+static PcsBool is_login(ShellContext* context, const char* msg);
 
 #ifdef WIN32
 
-/*Âà§Êñ≠ÂΩìÂâçÊìç‰ΩúÁ≥ªÁªüÁºñÁ†ÅÊòØÂê¶ÊòØUTF-8ÁºñÁ†Å*/
+/*≈–∂œµ±«∞≤Ÿ◊˜œµÕ≥±‡¬Î «∑Ò «UTF-8±‡¬Î*/
 int u8_is_utf8_sys()
 {
-	UINT codepage = GetConsoleCP();
-	return codepage == 65001;
+    UINT codepage = GetConsoleCP();
+    return codepage == 65001;
 }
 
-/*Â§öÂ≠óËäÇÂ≠óÁ¨¶ËΩ¨Êç¢ÊàêUTF-8ÁºñÁ†Å*/
-int u8_mbs_toutf8(char *dest, int sz, const char *src, int srcsz)
+/*∂‡◊÷Ω⁄◊÷∑˚◊™ªª≥…UTF-8±‡¬Î*/
+int u8_mbs_toutf8(char* dest, int sz, const char* src, int srcsz)
 {
-	wchar_t *unicode;
-	int wchars, err;
+    wchar_t* unicode;
+    int wchars, err;
 
-	wchars = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, src, srcsz, NULL, 0);
-	if (wchars == 0) {
-		fprintf(stderr, "Unicode translation error %d\n", GetLastError());
-		return -1;
-	}
+    wchars = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, src, srcsz, NULL, 0);
+    if (wchars == 0) {
+        fprintf(stderr, "Unicode translation error %d\n", GetLastError());
+        return -1;
+    }
 
-	unicode = (wchar_t *)alloca((wchars + 1) * sizeof(unsigned short));
-	err = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, src, srcsz, unicode, wchars);
-	if (err != wchars) {
-		fprintf(stderr, "Unicode translation error %d\n", GetLastError());
-		return -1;
-	}
-	unicode[wchars] = L'\0';
-	return u8_toutf8(dest, sz, unicode, wchars);
+    unicode = (wchar_t*)alloca((wchars + 1) * sizeof(unsigned short));
+    err = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, src, srcsz, unicode, wchars);
+    if (err != wchars) {
+        fprintf(stderr, "Unicode translation error %d\n", GetLastError());
+        return -1;
+    }
+    unicode[wchars] = L'\0';
+    return u8_toutf8(dest, sz, unicode, wchars);
 }
 
-int u8_mbs_toutf8_size(const char *src, int srcsz)
+int u8_mbs_toutf8_size(const char* src, int srcsz)
 {
-	wchar_t *unicode;
-	int wchars, err;
+    wchar_t* unicode;
+    int wchars, err;
 
-	wchars = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, src, srcsz, NULL, 0);
-	if (wchars == 0) {
-		fprintf(stderr, "Unicode translation error %d\n", GetLastError());
-		return -1;
-	}
+    wchars = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, src, srcsz, NULL, 0);
+    if (wchars == 0) {
+        fprintf(stderr, "Unicode translation error %d\n", GetLastError());
+        return -1;
+    }
 
-	unicode = (wchar_t *)alloca((wchars + 1) * sizeof(unsigned short));
-	err = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, src, srcsz, unicode, wchars);
-	if (err != wchars) {
-		fprintf(stderr, "Unicode translation error %d\n", GetLastError());
-		return -1;
-	}
-	unicode[wchars] = L'\0';
-	//wprintf(L"UNICODE: %ls\n", unicode);
-	return u8_size(unicode, wchars);
+    unicode = (wchar_t*)alloca((wchars + 1) * sizeof(unsigned short));
+    err = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, src, srcsz, unicode, wchars);
+    if (err != wchars) {
+        fprintf(stderr, "Unicode translation error %d\n", GetLastError());
+        return -1;
+    }
+    unicode[wchars] = L'\0';
+    //wprintf(L"UNICODE: %ls\n", unicode);
+    return u8_size(unicode, wchars);
 }
 
-int u8_tombs(char *dest, int sz, const char *src, int srcsz)
+int u8_tombs(char* dest, int sz, const char* src, int srcsz)
 {
-	int unicode_size;
-	wchar_t *unicode;
-	//int unicode_len;
-	int /*chars,*/ err;
+    int unicode_size;
+    wchar_t* unicode;
+    //int unicode_len;
+    int /*chars,*/ err;
 
-	unicode_size = u8_wc_size(src, srcsz);
-	unicode = (wchar_t *)alloca((unicode_size + 1) * sizeof(unsigned short));
-	unicode[unicode_size] = L'\0';
-	u8_toucs(unicode, unicode_size, src, srcsz);
+    unicode_size = u8_wc_size(src, srcsz);
+    unicode = (wchar_t*)alloca((unicode_size + 1) * sizeof(unsigned short));
+    unicode[unicode_size] = L'\0';
+    u8_toucs(unicode, unicode_size, src, srcsz);
 
-	err = WideCharToMultiByte(GetConsoleCP(), WC_COMPOSITECHECK, unicode, unicode_size, dest, sz, NULL, NULL);
-	if (err < 1)
-	{
-		fprintf(stderr, "Unicode translation error %d\n", GetLastError());
-		return -1;
-	}
+    err = WideCharToMultiByte(GetConsoleCP(), WC_COMPOSITECHECK, unicode, unicode_size, dest, sz, NULL, NULL);
+    if (err < 1) {
+        fprintf(stderr, "Unicode translation error %d\n", GetLastError());
+        return -1;
+    }
 
-	return err;
+    return err;
 }
 
-int u8_tombs_size(const char *src, int srcsz)
+int u8_tombs_size(const char* src, int srcsz)
 {
-	int unicode_size;
-	wchar_t *unicode;
-	//int unicode_len;
-	int /*chars,*/ err;
+    int unicode_size;
+    wchar_t* unicode;
+    //int unicode_len;
+    int /*chars,*/ err;
 
-	unicode_size = u8_wc_size(src, srcsz);
-	unicode = (wchar_t *)alloca((unicode_size + 1) * sizeof(unsigned short));
-	unicode[unicode_size] = L'\0';
-	u8_toucs(unicode, unicode_size, src, srcsz);
+    unicode_size = u8_wc_size(src, srcsz);
+    unicode = (wchar_t*)alloca((unicode_size + 1) * sizeof(unsigned short));
+    unicode[unicode_size] = L'\0';
+    u8_toucs(unicode, unicode_size, src, srcsz);
 
-	err = WideCharToMultiByte(GetConsoleCP(), WC_COMPOSITECHECK, unicode, unicode_size, NULL, 0, NULL, NULL);
-	return err;
+    err = WideCharToMultiByte(GetConsoleCP(), WC_COMPOSITECHECK, unicode, unicode_size, NULL, 0, NULL, NULL);
+    return err;
 }
 
-char *mbs2utf8(const char *s)
+char* mbs2utf8(const char* s)
 {
-	int sl = strlen(s);
-	int sz = u8_mbs_toutf8_size(s, sl);
-	char *res = 0;
-	res = (char *)pcs_malloc(sz + 1);
-	if (!res)
-		return 0;
-	memset(res, 0, sz + 1);
-	u8_mbs_toutf8(res, sz, s, sl);
-	return res;
+    int sl = strlen(s);
+    int sz = u8_mbs_toutf8_size(s, sl);
+    char* res = 0;
+    res = (char*)pcs_malloc(sz + 1);
+    if (!res) {
+        return 0;
+    }
+    memset(res, 0, sz + 1);
+    u8_mbs_toutf8(res, sz, s, sl);
+    return res;
 }
 
-char *utf82mbs(const char *s)
+char* utf82mbs(const char* s)
 {
-	int sl = strlen(s);
-	int sz = u8_tombs_size(s, sl);
-	char *res = 0;
-	res = (char *)pcs_malloc(sz + 1);
-	if (!res)
-		return 0;
-	memset(res, 0, sz + 1);
-	u8_tombs(res, sz, s, sl);
-	return res;
+    int sl = strlen(s);
+    int sz = u8_tombs_size(s, sl);
+    char* res = 0;
+    res = (char*)pcs_malloc(sz + 1);
+    if (!res) {
+        return 0;
+    }
+    memset(res, 0, sz + 1);
+    u8_tombs(res, sz, s, sl);
+    return res;
 }
 
 # define printf u8_printf
 
 # define sleep(s) Sleep((s) * 1000)
 
-int truncate(const char *file, int64_t size)
+int truncate(const char* file, int64_t size)
 {
-	HANDLE hFile;
-	hFile = CreateFile(file, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	if (hFile) {
-		LARGE_INTEGER li = {0};
-		li.QuadPart = (LONGLONG)size;
-		SetFilePointer(hFile, li.LowPart, &li.HighPart, FILE_BEGIN);
-		SetEndOfFile(hFile);
-		CloseHandle(hFile);
-		return 0;
-	}
-	return -1;
+    HANDLE hFile;
+    hFile = CreateFile(file, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hFile) {
+        LARGE_INTEGER li = {0};
+        li.QuadPart = (LONGLONG)size;
+        SetFilePointer(hFile, li.LowPart, &li.HighPart, FILE_BEGIN);
+        SetEndOfFile(hFile);
+        CloseHandle(hFile);
+        return 0;
+    }
+    return -1;
 }
 
 #else
-/*Âà§Êñ≠ÂΩìÂâçÊìç‰ΩúÁ≥ªÁªüÁºñÁ†ÅÊòØÂê¶ÊòØUTF-8ÁºñÁ†Å*/
+/*≈–∂œµ±«∞≤Ÿ◊˜œµÕ≥±‡¬Î «∑Ò «UTF-8±‡¬Î*/
 int u8_is_utf8_sys()
 {
-	return 1;
+    return 1;
 }
 
-char *mbs2utf8(const char *s)
+char* mbs2utf8(const char* s)
 {
-	return pcs_utils_strdup(s);
+    return pcs_utils_strdup(s);
 }
 
-char *utf82mbs(const char *s)
+char* utf82mbs(const char* s)
 {
-	return pcs_utils_strdup(s);
+    return pcs_utils_strdup(s);
 }
 
 #endif
 
-#pragma region Âä†Ëß£ÂØÜÊñá‰ª∂
+#pragma region º”Ω‚√‹Œƒº˛
 
-static inline int get_secure_method(ShellContext *context)
+static inline int get_secure_method(ShellContext* context)
 {
-	if (!context->secure_method) return -1;
-	if (!strcmp(context->secure_method, "aes-cbc-128")) return PCS_SECURE_AES_CBC_128;
-	if (!strcmp(context->secure_method, "aes-cbc-192")) return PCS_SECURE_AES_CBC_192;
-	if (!strcmp(context->secure_method, "aes-cbc-256")) return PCS_SECURE_AES_CBC_256;
-	return -1;
+    if (!context->secure_method) {
+        return -1;
+    }
+    if (!strcmp(context->secure_method, "aes-cbc-128")) {
+        return PCS_SECURE_AES_CBC_128;
+    }
+    if (!strcmp(context->secure_method, "aes-cbc-192")) {
+        return PCS_SECURE_AES_CBC_192;
+    }
+    if (!strcmp(context->secure_method, "aes-cbc-256")) {
+        return PCS_SECURE_AES_CBC_256;
+    }
+    return -1;
 }
 
-static inline void readToAesHead(const char *buf, struct PcsAesHead *head)
+static inline void readToAesHead(const char* buf, struct PcsAesHead* head)
 {
-	head->magic = readInt(buf);
-	head->bits = readInt(&buf[4]);
-	head->polish = readInt(&buf[8]);
-	head->reserve = readInt(&buf[12]);
+    head->magic = readInt(buf);
+    head->bits = readInt(&buf[4]);
+    head->polish = readInt(&buf[8]);
+    head->reserve = readInt(&buf[12]);
 }
 
-static int get_file_secure_method(const char *src)
+static int get_file_secure_method(const char* src)
 {
-	FILE *srcFile;
-	int64_t file_sz;
-	size_t sz;
-	unsigned char buf[PCS_BUFFER_SIZE];
-	struct PcsAesHead head = { 0 };
+    FILE* srcFile;
+    int64_t file_sz;
+    size_t sz;
+    unsigned char buf[PCS_BUFFER_SIZE];
+    struct PcsAesHead head = { 0 };
 
-	srcFile = fopen(src, "rb");
-	if (!srcFile) {
-		//fprintf(stderr, "Error: Can't open the source file: %s\n", src);
-		return -1;
-	}
-	fseeko(srcFile, 0, SEEK_END);
-	file_sz = ftello(srcFile);
-	fseeko(srcFile, 0, SEEK_SET);
+    srcFile = fopen(src, "rb");
+    if (!srcFile) {
+        //fprintf(stderr, "Error: Can't open the source file: %s\n", src);
+        return -1;
+    }
+    fseeko(srcFile, 0, SEEK_END);
+    file_sz = ftello(srcFile);
+    fseeko(srcFile, 0, SEEK_SET);
 
-	if (file_sz < 32) {
-		fclose(srcFile);
-		return PCS_SECURE_PLAINTEXT;
-	}
+    if (file_sz < 32) {
+        fclose(srcFile);
+        return PCS_SECURE_PLAINTEXT;
+    }
 
-	sz = fread(buf, 1, 16, srcFile);
-	if (sz != 16) {
-		//fprintf(stderr, "Error: Can't read the source file: %s\n", src);
-		fclose(srcFile);
-		return -1;
-	}
+    sz = fread(buf, 1, 16, srcFile);
+    if (sz != 16) {
+        //fprintf(stderr, "Error: Can't read the source file: %s\n", src);
+        fclose(srcFile);
+        return -1;
+    }
 
-	readToAesHead(buf, &head);
-	if (head.magic != PCS_AES_MAGIC || (head.bits != PCS_SECURE_AES_CBC_128 && head.bits != PCS_SECURE_AES_CBC_192 && head.bits != PCS_SECURE_AES_CBC_256)) {
-		fclose(srcFile);
-		return PCS_SECURE_PLAINTEXT;
-	}
-	fclose(srcFile);
+    readToAesHead(buf, &head);
+    if (head.magic != PCS_AES_MAGIC || (head.bits != PCS_SECURE_AES_CBC_128 && head.bits != PCS_SECURE_AES_CBC_192 && head.bits != PCS_SECURE_AES_CBC_256)) {
+        fclose(srcFile);
+        return PCS_SECURE_PLAINTEXT;
+    }
+    fclose(srcFile);
 
-	if (((file_sz - 32) % AES_BLOCK_SIZE) != 0) {
-		//fprintf(stderr, "Error: The file is not a encrypt file or is broken.\n");
-		return -1;
-	}
-	return head.bits;
+    if (((file_sz - 32) % AES_BLOCK_SIZE) != 0) {
+        //fprintf(stderr, "Error: The file is not a encrypt file or is broken.\n");
+        return -1;
+    }
+    return head.bits;
 }
 
-static int encrypt_file(const char *src, const char *dst, int secure_method, const char *secure_key, char **pErrMsg)
+static int encrypt_file(const char* src, const char* dst, int secure_method, const char* secure_key, char** pErrMsg)
 {
-	MD5_CTX md5;
-	unsigned char md5_value[16], buf[PCS_BUFFER_SIZE], out_buf[PCS_BUFFER_SIZE];
-	FILE *srcFile, *dstFile;
-	char *tmp_local_path;
-	int64_t file_sz;
-	size_t buf_sz, sz;
-	int polish;
-	AES_KEY				aes = { 0 };
-	unsigned char		key[AES_BLOCK_SIZE] = { 0 };
-	unsigned char		iv[AES_BLOCK_SIZE] = { 0 };
-	int rc;
-	rc = AES_set_encrypt_key(pcs_md5_string_raw(secure_key), secure_method, &aes);
-	if (rc < 0) {
-		fprintf(stderr, "Error: Can't set encrypt key.\n");
-		return -1;
-	}
-	MD5_Init(&md5);
-	srcFile = fopen(src, "rb");
-	if (!srcFile) {
-		fprintf(stderr, "Error: Can't open the source file: %s\n", src);
-		return -1;
-	}
-	tmp_local_path = (char *)pcs_malloc(strlen(src) + strlen(ENCRYPT_FILE_SUFFIX) + 1);
-	strcpy(tmp_local_path, src);
-	strcat(tmp_local_path, ENCRYPT_FILE_SUFFIX);
-	dstFile = fopen(tmp_local_path, "wb");
-	if (!dstFile) {
-		fprintf(stderr, "Error: Can't create the temp file: %s\n", tmp_local_path);
-		fclose(srcFile);
-		pcs_free(tmp_local_path);
-		return -1;
-	}
+    MD5_CTX md5;
+    unsigned char md5_value[16], buf[PCS_BUFFER_SIZE], out_buf[PCS_BUFFER_SIZE];
+    FILE* srcFile, *dstFile;
+    char* tmp_local_path;
+    int64_t file_sz;
+    size_t buf_sz, sz;
+    int polish;
+    AES_KEY             aes = { 0 };
+    unsigned char       key[AES_BLOCK_SIZE] = { 0 };
+    unsigned char       iv[AES_BLOCK_SIZE] = { 0 };
+    int rc;
+    rc = AES_set_encrypt_key(pcs_md5_string_raw(secure_key), secure_method, &aes);
+    if (rc < 0) {
+        fprintf(stderr, "Error: Can't set encrypt key.\n");
+        return -1;
+    }
+    MD5_Init(&md5);
+    srcFile = fopen(src, "rb");
+    if (!srcFile) {
+        fprintf(stderr, "Error: Can't open the source file: %s\n", src);
+        return -1;
+    }
+    tmp_local_path = (char*)pcs_malloc(strlen(src) + strlen(ENCRYPT_FILE_SUFFIX) + 1);
+    strcpy(tmp_local_path, src);
+    strcat(tmp_local_path, ENCRYPT_FILE_SUFFIX);
+    dstFile = fopen(tmp_local_path, "wb");
+    if (!dstFile) {
+        fprintf(stderr, "Error: Can't create the temp file: %s\n", tmp_local_path);
+        fclose(srcFile);
+        pcs_free(tmp_local_path);
+        return -1;
+    }
 
-	fseeko(srcFile, 0, SEEK_END);
-	file_sz = ftello(srcFile);
-	fseeko(srcFile, 0, SEEK_SET);
+    fseeko(srcFile, 0, SEEK_END);
+    file_sz = ftello(srcFile);
+    fseeko(srcFile, 0, SEEK_SET);
 
-	polish = 0;
-	if (file_sz % AES_BLOCK_SIZE == 0) {
-		polish = 0;
-	}
-	else {
-		polish = (int)((file_sz / AES_BLOCK_SIZE + 1) * AES_BLOCK_SIZE - file_sz);
-	}
-	int2Buffer(PCS_AES_MAGIC, buf);
-	int2Buffer(secure_method, &buf[4]);
-	int2Buffer(polish, &buf[8]);
-	int2Buffer(0, &buf[12]);
-	sz = fwrite(buf, 1, 16, dstFile);
-	if (sz != 16) {
-		fprintf(stderr, "Error: Write data to %s error. \n", dst);
-		fclose(srcFile);
-		fclose(dstFile);
-		DeleteFileRecursive(tmp_local_path);
-		pcs_free(tmp_local_path);
-		return -1;
-	}
+    polish = 0;
+    if (file_sz % AES_BLOCK_SIZE == 0) {
+        polish = 0;
+    } else {
+        polish = (int)((file_sz / AES_BLOCK_SIZE + 1) * AES_BLOCK_SIZE - file_sz);
+    }
+    int2Buffer(PCS_AES_MAGIC, buf);
+    int2Buffer(secure_method, &buf[4]);
+    int2Buffer(polish, &buf[8]);
+    int2Buffer(0, &buf[12]);
+    sz = fwrite(buf, 1, 16, dstFile);
+    if (sz != 16) {
+        fprintf(stderr, "Error: Write data to %s error. \n", dst);
+        fclose(srcFile);
+        fclose(dstFile);
+        DeleteFileRecursive(tmp_local_path);
+        pcs_free(tmp_local_path);
+        return -1;
+    }
 
-	while ((sz = fread(buf, 1, PCS_BUFFER_SIZE, srcFile)) > 0) {
-		MD5_Update(&md5, buf, sz);
-		if ((sz % AES_BLOCK_SIZE) != 0) {
-			buf_sz = (size_t)((sz / AES_BLOCK_SIZE + 1) * AES_BLOCK_SIZE);
-			memset(&buf[sz], 0, buf_sz - sz);
-		}
-		else {
-			buf_sz = sz;
-		}
-		// encrypt (iv will change)
-		AES_cbc_encrypt(buf, out_buf, buf_sz, &aes, iv, AES_ENCRYPT);
-		sz = fwrite(out_buf, 1, buf_sz, dstFile);
-		if (sz != buf_sz) {
-			fprintf(stderr, "Error: Write data to %s error. \n", dst);
-			fclose(srcFile);
-			fclose(dstFile);
-			DeleteFileRecursive(tmp_local_path);
-			pcs_free(tmp_local_path);
-			return -1;
-		}
-	}
-	MD5_Final(md5_value, &md5);
-	sz = fwrite(md5_value, 1, 16, dstFile);
-	if (sz != 16) {
-		fprintf(stderr, "Error: Write data to %s error. \n", dst);
-		fclose(srcFile);
-		fclose(dstFile);
-		DeleteFileRecursive(tmp_local_path);
-		pcs_free(tmp_local_path);
-		return -1;
-	}
-	fclose(srcFile);
-	fclose(dstFile);
-	DeleteFileRecursive(dst);
-	if (rename(tmp_local_path, dst)) {
-		fprintf(stderr, "Error: The file have been encrypted at %s, but can't rename to %s.\n You should be rename manual.\n", tmp_local_path, dst);
-		DeleteFileRecursive(tmp_local_path);
-		pcs_free(tmp_local_path);
-		return -1;
-	}
-	pcs_free(tmp_local_path);
-	//printf("Success\n");
-	return 0;
+    while ((sz = fread(buf, 1, PCS_BUFFER_SIZE, srcFile)) > 0) {
+        MD5_Update(&md5, buf, sz);
+        if ((sz % AES_BLOCK_SIZE) != 0) {
+            buf_sz = (size_t)((sz / AES_BLOCK_SIZE + 1) * AES_BLOCK_SIZE);
+            memset(&buf[sz], 0, buf_sz - sz);
+        } else {
+            buf_sz = sz;
+        }
+        // encrypt (iv will change)
+        AES_cbc_encrypt(buf, out_buf, buf_sz, &aes, iv, AES_ENCRYPT);
+        sz = fwrite(out_buf, 1, buf_sz, dstFile);
+        if (sz != buf_sz) {
+            fprintf(stderr, "Error: Write data to %s error. \n", dst);
+            fclose(srcFile);
+            fclose(dstFile);
+            DeleteFileRecursive(tmp_local_path);
+            pcs_free(tmp_local_path);
+            return -1;
+        }
+    }
+    MD5_Final(md5_value, &md5);
+    sz = fwrite(md5_value, 1, 16, dstFile);
+    if (sz != 16) {
+        fprintf(stderr, "Error: Write data to %s error. \n", dst);
+        fclose(srcFile);
+        fclose(dstFile);
+        DeleteFileRecursive(tmp_local_path);
+        pcs_free(tmp_local_path);
+        return -1;
+    }
+    fclose(srcFile);
+    fclose(dstFile);
+    DeleteFileRecursive(dst);
+    if (rename(tmp_local_path, dst)) {
+        fprintf(stderr, "Error: The file have been encrypted at %s, but can't rename to %s.\n You should be rename manual.\n", tmp_local_path, dst);
+        DeleteFileRecursive(tmp_local_path);
+        pcs_free(tmp_local_path);
+        return -1;
+    }
+    pcs_free(tmp_local_path);
+    //printf("Success\n");
+    return 0;
 }
 
-static int decrypt_file(const char *src, const char *dst, const char *secure_key, char **pErrMsg)
+static int decrypt_file(const char* src, const char* dst, const char* secure_key, char** pErrMsg)
 {
-	struct PcsAesHead head = { 0 };
-	MD5_CTX md5;
-	unsigned char md5_value[16], buf[PCS_BUFFER_SIZE], out_buf[PCS_BUFFER_SIZE];
-	char *tmp_local_path;
-	FILE *srcFile, *dstFile;
-	int64_t file_sz;
-	size_t sz, buf_sz;
-	AES_KEY				aes = { 0 };
-	unsigned char		key[AES_BLOCK_SIZE] = { 0 };
-	unsigned char		iv[AES_BLOCK_SIZE] = { 0 };
-	int rc, i;
-	MD5_Init(&md5);
-	srcFile = fopen(src, "rb");
-	if (!srcFile) {
-		if (pErrMsg) {
-			if (*pErrMsg) pcs_free(*pErrMsg);
-			(*pErrMsg) = pcs_utils_sprintf("Error: Can't open the source file: %s\n", src);
-		}
-		return -1;
-	}
-	tmp_local_path = (char *)pcs_malloc(strlen(src) + strlen(DECRYPT_FILE_SUFFIX) + 1);
-	strcpy(tmp_local_path, src);
-	strcat(tmp_local_path, DECRYPT_FILE_SUFFIX);
-	dstFile = fopen(tmp_local_path, "wb");
-	if (!dstFile) {
-		if (pErrMsg) {
-			if (*pErrMsg) pcs_free(*pErrMsg);
-			(*pErrMsg) = pcs_utils_sprintf("Error: Can't create the temp file: %s\n", tmp_local_path);
-		}
-		fclose(srcFile);
-		pcs_free(tmp_local_path);
-		return -1;
-	}
+    struct PcsAesHead head = { 0 };
+    MD5_CTX md5;
+    unsigned char md5_value[16], buf[PCS_BUFFER_SIZE], out_buf[PCS_BUFFER_SIZE];
+    char* tmp_local_path;
+    FILE* srcFile, *dstFile;
+    int64_t file_sz;
+    size_t sz, buf_sz;
+    AES_KEY             aes = { 0 };
+    unsigned char       key[AES_BLOCK_SIZE] = { 0 };
+    unsigned char       iv[AES_BLOCK_SIZE] = { 0 };
+    int rc, i;
+    MD5_Init(&md5);
+    srcFile = fopen(src, "rb");
+    if (!srcFile) {
+        if (pErrMsg) {
+            if (*pErrMsg) {
+                pcs_free(*pErrMsg);
+            }
+            (*pErrMsg) = pcs_utils_sprintf("Error: Can't open the source file: %s\n", src);
+        }
+        return -1;
+    }
+    tmp_local_path = (char*)pcs_malloc(strlen(src) + strlen(DECRYPT_FILE_SUFFIX) + 1);
+    strcpy(tmp_local_path, src);
+    strcat(tmp_local_path, DECRYPT_FILE_SUFFIX);
+    dstFile = fopen(tmp_local_path, "wb");
+    if (!dstFile) {
+        if (pErrMsg) {
+            if (*pErrMsg) {
+                pcs_free(*pErrMsg);
+            }
+            (*pErrMsg) = pcs_utils_sprintf("Error: Can't create the temp file: %s\n", tmp_local_path);
+        }
+        fclose(srcFile);
+        pcs_free(tmp_local_path);
+        return -1;
+    }
 
-	fseeko(srcFile, 0, SEEK_END);
-	file_sz = ftello(srcFile);
-	fseeko(srcFile, 0, SEEK_SET);
+    fseeko(srcFile, 0, SEEK_END);
+    file_sz = ftello(srcFile);
+    fseeko(srcFile, 0, SEEK_SET);
 
-	if (file_sz < 32 || ((file_sz - 32) % AES_BLOCK_SIZE) != 0) {
-		if (pErrMsg) {
-			if (*pErrMsg) pcs_free(*pErrMsg);
-			(*pErrMsg) = pcs_utils_sprintf("Error: The file is not a encrypt file or is broken.\n");
-		}
-		fclose(srcFile);
-		fclose(dstFile);
-		DeleteFileRecursive(tmp_local_path);
-		pcs_free(tmp_local_path);
-		return -1;
-	}
+    if (file_sz < 32 || ((file_sz - 32) % AES_BLOCK_SIZE) != 0) {
+        if (pErrMsg) {
+            if (*pErrMsg) {
+                pcs_free(*pErrMsg);
+            }
+            (*pErrMsg) = pcs_utils_sprintf("Error: The file is not a encrypt file or is broken.\n");
+        }
+        fclose(srcFile);
+        fclose(dstFile);
+        DeleteFileRecursive(tmp_local_path);
+        pcs_free(tmp_local_path);
+        return -1;
+    }
 
-	sz = fread(buf, 1, 16, srcFile);
-	if (sz != 16) {
-		if (pErrMsg) {
-			if (*pErrMsg) pcs_free(*pErrMsg);
-			(*pErrMsg) = pcs_utils_sprintf("Error: Can't read the source file: %s\n", src);
-		}
-		fclose(srcFile);
-		fclose(dstFile);
-		DeleteFileRecursive(tmp_local_path);
-		pcs_free(tmp_local_path);
-		return -1;
-	}
+    sz = fread(buf, 1, 16, srcFile);
+    if (sz != 16) {
+        if (pErrMsg) {
+            if (*pErrMsg) {
+                pcs_free(*pErrMsg);
+            }
+            (*pErrMsg) = pcs_utils_sprintf("Error: Can't read the source file: %s\n", src);
+        }
+        fclose(srcFile);
+        fclose(dstFile);
+        DeleteFileRecursive(tmp_local_path);
+        pcs_free(tmp_local_path);
+        return -1;
+    }
 
-	readToAesHead(buf, &head);
-	if (head.magic != PCS_AES_MAGIC || (head.bits != 128 && head.bits != 192 && head.bits != 256)) {
-		if (pErrMsg) {
-			if (*pErrMsg) pcs_free(*pErrMsg);
-			(*pErrMsg) = pcs_utils_sprintf("Error: The file is not a encrypt file or is broken.\n");
-		}
-		fclose(srcFile);
-		fclose(dstFile);
-		DeleteFileRecursive(tmp_local_path);
-		pcs_free(tmp_local_path);
-		return -1;
-	}
+    readToAesHead(buf, &head);
+    if (head.magic != PCS_AES_MAGIC || (head.bits != 128 && head.bits != 192 && head.bits != 256)) {
+        if (pErrMsg) {
+            if (*pErrMsg) {
+                pcs_free(*pErrMsg);
+            }
+            (*pErrMsg) = pcs_utils_sprintf("Error: The file is not a encrypt file or is broken.\n");
+        }
+        fclose(srcFile);
+        fclose(dstFile);
+        DeleteFileRecursive(tmp_local_path);
+        pcs_free(tmp_local_path);
+        return -1;
+    }
 
-	rc = AES_set_decrypt_key(pcs_md5_string_raw(secure_key), head.bits, &aes);
-	if (rc < 0) {
-		if (pErrMsg) {
-			if (*pErrMsg) pcs_free(*pErrMsg);
-			(*pErrMsg) = pcs_utils_sprintf("Error: Can't set decrypt key.\n");
-		}
-		fclose(srcFile);
-		fclose(dstFile);
-		DeleteFileRecursive(tmp_local_path);
-		pcs_free(tmp_local_path);
-		return -1;
-	}
-	file_sz -= 32;
-	if (file_sz < PCS_BUFFER_SIZE) {
-		buf_sz = (size_t)file_sz;
-	}
-	else {
-		buf_sz = PCS_BUFFER_SIZE;
-	}
-	while ((sz = fread(buf, 1, buf_sz, srcFile)) > 0) {
-		if (sz != buf_sz) {
-			if (pErrMsg) {
-				if (*pErrMsg) pcs_free(*pErrMsg);
-				(*pErrMsg) = pcs_utils_sprintf("Error: Can't read the source file: %s\n", src);
-			}
-			fclose(srcFile);
-			fclose(dstFile);
-			DeleteFileRecursive(tmp_local_path);
-			pcs_free(tmp_local_path);
-			return -1;
-		}
-		AES_cbc_encrypt(buf, out_buf, buf_sz, &aes, iv, AES_DECRYPT);
-		if (file_sz == (int64_t)buf_sz) {
-			buf_sz -= head.polish;
-			file_sz = (int64_t)buf_sz;
-		}
-		MD5_Update(&md5, out_buf, buf_sz);
-		sz = fwrite(out_buf, 1, buf_sz, dstFile);
-		if (sz != buf_sz) {
-			if (pErrMsg) {
-				if (*pErrMsg) pcs_free(*pErrMsg);
-				(*pErrMsg) = pcs_utils_sprintf("Error: Write data to %s error. \n", dst);
-			}
-			fclose(srcFile);
-			fclose(dstFile);
-			DeleteFileRecursive(tmp_local_path);
-			pcs_free(tmp_local_path);
-			return -1;
-		}
-		file_sz -= (int64_t)buf_sz;
-		if (file_sz == 0) break;
-		if (file_sz < PCS_BUFFER_SIZE) {
-			buf_sz = (size_t)file_sz;
-		}
-		else {
-			buf_sz = PCS_BUFFER_SIZE;
-		}
-	}
-	MD5_Final(md5_value, &md5);
-	sz = fread(buf, 1, 16, srcFile);
-	if (sz != 16) {
-		if (pErrMsg) {
-			if (*pErrMsg) pcs_free(*pErrMsg);
-			(*pErrMsg) = pcs_utils_sprintf("Error: Can't read the source file: %s\n", src);
-		}
-		fclose(srcFile);
-		fclose(dstFile);
-		DeleteFileRecursive(tmp_local_path);
-		pcs_free(tmp_local_path);
-		return -1;
-	}
-	for (i = 0; i < 16; i++) {
-		if (md5_value[i] != buf[i]) {
-			if (pErrMsg) {
-				if (*pErrMsg) pcs_free(*pErrMsg);
-				(*pErrMsg) = pcs_utils_sprintf("Error: Wrong key or broken file\n");
-			}
-			fclose(srcFile);
-			fclose(dstFile);
-			DeleteFileRecursive(tmp_local_path);
-			pcs_free(tmp_local_path);
-			return -1;
-		}
-	}
-	fclose(srcFile);
-	fclose(dstFile);
-	DeleteFileRecursive(dst);
-	if (rename(tmp_local_path, dst)) {
-		if (pErrMsg) {
-			if (*pErrMsg) pcs_free(*pErrMsg);
-			(*pErrMsg) = pcs_utils_sprintf(
-				"Error: The file have been decrypted at %s, but can't rename to %s.\n You should be rename manual.\n", tmp_local_path, dst);
-		}
-		//DeleteFileRecursive(tmp_local_path);
-		pcs_free(tmp_local_path);
-		return -1;
-	}
-	pcs_free(tmp_local_path);
-	//printf("Success\n");
-	return 0;
+    rc = AES_set_decrypt_key(pcs_md5_string_raw(secure_key), head.bits, &aes);
+    if (rc < 0) {
+        if (pErrMsg) {
+            if (*pErrMsg) {
+                pcs_free(*pErrMsg);
+            }
+            (*pErrMsg) = pcs_utils_sprintf("Error: Can't set decrypt key.\n");
+        }
+        fclose(srcFile);
+        fclose(dstFile);
+        DeleteFileRecursive(tmp_local_path);
+        pcs_free(tmp_local_path);
+        return -1;
+    }
+    file_sz -= 32;
+    if (file_sz < PCS_BUFFER_SIZE) {
+        buf_sz = (size_t)file_sz;
+    } else {
+        buf_sz = PCS_BUFFER_SIZE;
+    }
+    while ((sz = fread(buf, 1, buf_sz, srcFile)) > 0) {
+        if (sz != buf_sz) {
+            if (pErrMsg) {
+                if (*pErrMsg) {
+                    pcs_free(*pErrMsg);
+                }
+                (*pErrMsg) = pcs_utils_sprintf("Error: Can't read the source file: %s\n", src);
+            }
+            fclose(srcFile);
+            fclose(dstFile);
+            DeleteFileRecursive(tmp_local_path);
+            pcs_free(tmp_local_path);
+            return -1;
+        }
+        AES_cbc_encrypt(buf, out_buf, buf_sz, &aes, iv, AES_DECRYPT);
+        if (file_sz == (int64_t)buf_sz) {
+            buf_sz -= head.polish;
+            file_sz = (int64_t)buf_sz;
+        }
+        MD5_Update(&md5, out_buf, buf_sz);
+        sz = fwrite(out_buf, 1, buf_sz, dstFile);
+        if (sz != buf_sz) {
+            if (pErrMsg) {
+                if (*pErrMsg) {
+                    pcs_free(*pErrMsg);
+                }
+                (*pErrMsg) = pcs_utils_sprintf("Error: Write data to %s error. \n", dst);
+            }
+            fclose(srcFile);
+            fclose(dstFile);
+            DeleteFileRecursive(tmp_local_path);
+            pcs_free(tmp_local_path);
+            return -1;
+        }
+        file_sz -= (int64_t)buf_sz;
+        if (file_sz == 0) {
+            break;
+        }
+        if (file_sz < PCS_BUFFER_SIZE) {
+            buf_sz = (size_t)file_sz;
+        } else {
+            buf_sz = PCS_BUFFER_SIZE;
+        }
+    }
+    MD5_Final(md5_value, &md5);
+    sz = fread(buf, 1, 16, srcFile);
+    if (sz != 16) {
+        if (pErrMsg) {
+            if (*pErrMsg) {
+                pcs_free(*pErrMsg);
+            }
+            (*pErrMsg) = pcs_utils_sprintf("Error: Can't read the source file: %s\n", src);
+        }
+        fclose(srcFile);
+        fclose(dstFile);
+        DeleteFileRecursive(tmp_local_path);
+        pcs_free(tmp_local_path);
+        return -1;
+    }
+    for (i = 0; i < 16; i++) {
+        if (md5_value[i] != buf[i]) {
+            if (pErrMsg) {
+                if (*pErrMsg) {
+                    pcs_free(*pErrMsg);
+                }
+                (*pErrMsg) = pcs_utils_sprintf("Error: Wrong key or broken file\n");
+            }
+            fclose(srcFile);
+            fclose(dstFile);
+            DeleteFileRecursive(tmp_local_path);
+            pcs_free(tmp_local_path);
+            return -1;
+        }
+    }
+    fclose(srcFile);
+    fclose(dstFile);
+    DeleteFileRecursive(dst);
+    if (rename(tmp_local_path, dst)) {
+        if (pErrMsg) {
+            if (*pErrMsg) {
+                pcs_free(*pErrMsg);
+            }
+            (*pErrMsg) = pcs_utils_sprintf(
+                             "Error: The file have been decrypted at %s, but can't rename to %s.\n You should be rename manual.\n", tmp_local_path, dst);
+        }
+        //DeleteFileRecursive(tmp_local_path);
+        pcs_free(tmp_local_path);
+        return -1;
+    }
+    pcs_free(tmp_local_path);
+    //printf("Success\n");
+    return 0;
 }
 
-static int get_data_secure_method(const char *buffer, size_t buffer_size)
+static int get_data_secure_method(const char* buffer, size_t buffer_size)
 {
-	struct PcsAesHead head = { 0 };
-	if (!buffer) {
-		return -1;
-	}
-	if (buffer_size < 32) {
-		return PCS_SECURE_PLAINTEXT;
-	}
+    struct PcsAesHead head = { 0 };
+    if (!buffer) {
+        return -1;
+    }
+    if (buffer_size < 32) {
+        return PCS_SECURE_PLAINTEXT;
+    }
 
-	readToAesHead((char *)buffer, &head);
-	if (head.magic != PCS_AES_MAGIC || (head.bits != PCS_SECURE_AES_CBC_128 && head.bits != PCS_SECURE_AES_CBC_192 && head.bits != PCS_SECURE_AES_CBC_256)) {
-		return PCS_SECURE_PLAINTEXT;
-	}
+    readToAesHead((char*)buffer, &head);
+    if (head.magic != PCS_AES_MAGIC || (head.bits != PCS_SECURE_AES_CBC_128 && head.bits != PCS_SECURE_AES_CBC_192 && head.bits != PCS_SECURE_AES_CBC_256)) {
+        return PCS_SECURE_PLAINTEXT;
+    }
 
-	if (((buffer_size - 32) % AES_BLOCK_SIZE) != 0) {
-		//fprintf(stderr, "Error: The file is not a encrypt file or is broken.\n");
-		return -1;
-	}
-	return head.bits;
+    if (((buffer_size - 32) % AES_BLOCK_SIZE) != 0) {
+        //fprintf(stderr, "Error: The file is not a encrypt file or is broken.\n");
+        return -1;
+    }
+    return head.bits;
 }
 
-static int encrypt_data(const char *src, size_t src_size, char **dst, size_t *dst_size,
-	int secure_method, const char *secure_key)
+static int encrypt_data(const char* src, size_t src_size, char** dst, size_t* dst_size,
+                        int secure_method, const char* secure_key)
 {
-	int rc;
-	MD5_CTX md5;
-	AES_KEY				aes = { 0 };
-	unsigned char		key[AES_BLOCK_SIZE] = { 0 };
-	unsigned char		iv[AES_BLOCK_SIZE] = { 0 };
-	int blockCount;
-	size_t outsz;
-	char *out_buf, *md5_value;
-	int i;
-	const char *pin;
-	char *pout, buf[32];
+    int rc;
+    MD5_CTX md5;
+    AES_KEY             aes = { 0 };
+    unsigned char       key[AES_BLOCK_SIZE] = { 0 };
+    unsigned char       iv[AES_BLOCK_SIZE] = { 0 };
+    int blockCount;
+    size_t outsz;
+    char* out_buf, *md5_value;
+    int i;
+    const char* pin;
+    char* pout, buf[32];
 
-	rc = AES_set_encrypt_key(pcs_md5_string_raw(secure_key), secure_method, &aes);
-	if (rc < 0) {
-		fprintf(stderr, "Error: Can't set encrypt key.\n");
-		return -1;
-	}
+    rc = AES_set_encrypt_key(pcs_md5_string_raw(secure_key), secure_method, &aes);
+    if (rc < 0) {
+        fprintf(stderr, "Error: Can't set encrypt key.\n");
+        return -1;
+    }
 
-	blockCount = src_size / AES_BLOCK_SIZE;
-	if ((src_size % AES_BLOCK_SIZE) != 0) {
-		blockCount++;
-	}
-	outsz = blockCount * AES_BLOCK_SIZE + 32;
-	out_buf = (unsigned char *)pcs_malloc(outsz);
-	if (!out_buf) {
-		fprintf(stderr, "Error: can't alloc memory.\n");
-		return -1;
-	}
-	pout = out_buf;
-	int2Buffer(PCS_AES_MAGIC, pout);
-	int2Buffer(secure_method, pout + 4);
-	int2Buffer((int)(outsz - src_size - 32), pout + 8);
-	int2Buffer(0, pout + 12);
-	pout += 16;
-	pin = src;
+    blockCount = src_size / AES_BLOCK_SIZE;
+    if ((src_size % AES_BLOCK_SIZE) != 0) {
+        blockCount++;
+    }
+    outsz = blockCount * AES_BLOCK_SIZE + 32;
+    out_buf = (unsigned char*)pcs_malloc(outsz);
+    if (!out_buf) {
+        fprintf(stderr, "Error: can't alloc memory.\n");
+        return -1;
+    }
+    pout = out_buf;
+    int2Buffer(PCS_AES_MAGIC, pout);
+    int2Buffer(secure_method, pout + 4);
+    int2Buffer((int)(outsz - src_size - 32), pout + 8);
+    int2Buffer(0, pout + 12);
+    pout += 16;
+    pin = src;
 
-	MD5_Init(&md5);
-	for (i = 0; i < blockCount; i++) {
-		if ((size_t)((i + 1) * AES_BLOCK_SIZE) > src_size) {
-			MD5_Update(&md5, pin, src_size - i * AES_BLOCK_SIZE);
-			memcpy(buf, pin, src_size - i * AES_BLOCK_SIZE);
-			memset(buf + src_size - i * AES_BLOCK_SIZE, 0, AES_BLOCK_SIZE - (src_size - i * AES_BLOCK_SIZE));
-			// encrypt (iv will change)
-			AES_cbc_encrypt(buf, pout, AES_BLOCK_SIZE, &aes, iv, AES_ENCRYPT);
-			pout += AES_BLOCK_SIZE;
-		}
-		else {
-			MD5_Update(&md5, pin, AES_BLOCK_SIZE);
-			// encrypt (iv will change)
-			AES_cbc_encrypt(pin, pout, AES_BLOCK_SIZE, &aes, iv, AES_ENCRYPT);
-			pin += AES_BLOCK_SIZE;
-			pout += AES_BLOCK_SIZE;
-		}
-	}
-	md5_value = pout;
-	MD5_Final(md5_value, &md5);
-	*dst = out_buf;
-	*dst_size = outsz;
-	return 0;
+    MD5_Init(&md5);
+    for (i = 0; i < blockCount; i++) {
+        if ((size_t)((i + 1) * AES_BLOCK_SIZE) > src_size) {
+            MD5_Update(&md5, pin, src_size - i * AES_BLOCK_SIZE);
+            memcpy(buf, pin, src_size - i * AES_BLOCK_SIZE);
+            memset(buf + src_size - i * AES_BLOCK_SIZE, 0, AES_BLOCK_SIZE - (src_size - i * AES_BLOCK_SIZE));
+            // encrypt (iv will change)
+            AES_cbc_encrypt(buf, pout, AES_BLOCK_SIZE, &aes, iv, AES_ENCRYPT);
+            pout += AES_BLOCK_SIZE;
+        } else {
+            MD5_Update(&md5, pin, AES_BLOCK_SIZE);
+            // encrypt (iv will change)
+            AES_cbc_encrypt(pin, pout, AES_BLOCK_SIZE, &aes, iv, AES_ENCRYPT);
+            pin += AES_BLOCK_SIZE;
+            pout += AES_BLOCK_SIZE;
+        }
+    }
+    md5_value = pout;
+    MD5_Final(md5_value, &md5);
+    *dst = out_buf;
+    *dst_size = outsz;
+    return 0;
 }
 
-static int decrypt_data(const char *src, size_t src_size, char **dst, size_t *dst_size,
-	const char *secure_key)
+static int decrypt_data(const char* src, size_t src_size, char** dst, size_t* dst_size,
+                        const char* secure_key)
 {
-	int rc;
-	struct PcsAesHead head = { 0 };
-	MD5_CTX md5;
-	AES_KEY				aes = { 0 };
-	unsigned char		key[AES_BLOCK_SIZE] = { 0 };
-	unsigned char		iv[AES_BLOCK_SIZE] = { 0 };
-	char md5_value[16], *pout, *outbuf;
-	const char *pin;
-	int blockCount;
-	int i;
-	size_t outsz;
+    int rc;
+    struct PcsAesHead head = { 0 };
+    MD5_CTX md5;
+    AES_KEY             aes = { 0 };
+    unsigned char       key[AES_BLOCK_SIZE] = { 0 };
+    unsigned char       iv[AES_BLOCK_SIZE] = { 0 };
+    char md5_value[16], *pout, *outbuf;
+    const char* pin;
+    int blockCount;
+    int i;
+    size_t outsz;
 
-	MD5_Init(&md5);
+    MD5_Init(&md5);
 
-	if (src_size < 32 || ((src_size - 32) % AES_BLOCK_SIZE) != 0) {
-		return -1;
-	}
+    if (src_size < 32 || ((src_size - 32) % AES_BLOCK_SIZE) != 0) {
+        return -1;
+    }
 
-	readToAesHead(src, &head);
-	if (head.magic != PCS_AES_MAGIC || (head.bits != 128 && head.bits != 192 && head.bits != 256)) {
-		return -1;
-	}
+    readToAesHead(src, &head);
+    if (head.magic != PCS_AES_MAGIC || (head.bits != 128 && head.bits != 192 && head.bits != 256)) {
+        return -1;
+    }
 
-	rc = AES_set_decrypt_key(pcs_md5_string_raw(secure_key), head.bits, &aes);
-	if (rc < 0) {
-		return -1;
-	}
+    rc = AES_set_decrypt_key(pcs_md5_string_raw(secure_key), head.bits, &aes);
+    if (rc < 0) {
+        return -1;
+    }
 
-	outsz = src_size - 32 - head.polish;
-	outbuf = (char *)pcs_malloc(src_size);
+    outsz = src_size - 32 - head.polish;
+    outbuf = (char*)pcs_malloc(src_size);
 
-	pin = src + 16;
-	pout = outbuf;
+    pin = src + 16;
+    pout = outbuf;
 
-	blockCount = (src_size - 32) / AES_BLOCK_SIZE;
+    blockCount = (src_size - 32) / AES_BLOCK_SIZE;
 
-	for (i = 0; i < blockCount;i++) {
-		AES_cbc_encrypt(pin, pout, AES_BLOCK_SIZE, &aes, iv, AES_DECRYPT);
-		if ((size_t)(i + 1) * AES_BLOCK_SIZE > outsz)
-			MD5_Update(&md5, pout, AES_BLOCK_SIZE - head.polish);
-		else
-			MD5_Update(&md5, pout, AES_BLOCK_SIZE);
-		pin += AES_BLOCK_SIZE;
-		pout += AES_BLOCK_SIZE;
-	}
-	MD5_Final(md5_value, &md5);
-	for (i = 0; i < 16; i++) {
-		if (md5_value[i] != pin[i]) {
-			pcs_free(outbuf);
-			return -1;
-		}
-	}
-	*dst = outbuf;
-	*dst_size = outsz;
-	return 0;
+    for (i = 0; i < blockCount; i++) {
+        AES_cbc_encrypt(pin, pout, AES_BLOCK_SIZE, &aes, iv, AES_DECRYPT);
+        if ((size_t)(i + 1) * AES_BLOCK_SIZE > outsz) {
+            MD5_Update(&md5, pout, AES_BLOCK_SIZE - head.polish);
+        } else {
+            MD5_Update(&md5, pout, AES_BLOCK_SIZE);
+        }
+        pin += AES_BLOCK_SIZE;
+        pout += AES_BLOCK_SIZE;
+    }
+    MD5_Final(md5_value, &md5);
+    for (i = 0; i < 16; i++) {
+        if (md5_value[i] != pin[i]) {
+            pcs_free(outbuf);
+            return -1;
+        }
+    }
+    *dst = outbuf;
+    *dst_size = outsz;
+    return 0;
 }
 
 #pragma endregion
 
-#pragma region Ëé∑ÂèñÈªòËÆ§Ë∑ØÂæÑ
+#pragma region ªÒ»°ƒ¨»œ¬∑æ∂
 
-/*Ëé∑Âèñ‰∏ä‰∏ãÊñáÂ≠òÂÇ®Êñá‰ª∂Ë∑ØÂæÑ*/
-static const char *contextfile()
+/*ªÒ»°…œœ¬Œƒ¥Ê¥¢Œƒº˛¬∑æ∂*/
+static const char* contextfile()
 {
-	static char filename[1024] = { 0 };
-	char *env_value = getenv(PCS_CONTEXT_ENV);
-	if (env_value) return env_value;
-	if (!filename[0]) {
+    static char filename[1024] = { 0 };
+    char* env_value = getenv(PCS_CONTEXT_ENV);
+    if (env_value) {
+        return env_value;
+    }
+    if (!filename[0]) {
 #ifdef WIN32
-		strcpy(filename, getenv("UserProfile"));
-		strcat(filename, "\\.pcs");
-		CreateDirectoryRecursive(filename);
-		strcat(filename, "\\pcs.context");
+        strcpy(filename, getenv("UserProfile"));
+        strcat(filename, "\\.pcs");
+        CreateDirectoryRecursive(filename);
+        strcat(filename, "\\pcs.context");
 #else
-		strcpy(filename, getenv("HOME"));
-		strcat(filename, "/.pcs");
-		CreateDirectoryRecursive(filename);
-		strcat(filename, "/pcs.context");
+        strcpy(filename, getenv("HOME"));
+        strcat(filename, "/.pcs");
+        CreateDirectoryRecursive(filename);
+        strcat(filename, "/pcs.context");
 #endif
-	}
-	return filename;
+    }
+    return filename;
 }
 
-/*ËøîÂõûCOOKIEÊñá‰ª∂Ë∑ØÂæÑ*/
-static const char *cookiefile()
+/*∑µªÿCOOKIEŒƒº˛¬∑æ∂*/
+static const char* cookiefile()
 {
-	static char filename[1024] = { 0 };
-	char *env_value = getenv(PCS_COOKIE_ENV);
-	if (env_value) return env_value;
-	if (!filename[0]){ /*Â¶ÇÊûúÂ∑≤ÁªèÂ§ÑÁêÜËøáÔºåÂàôÁõ¥Êé•ËøîÂõû*/
+    static char filename[1024] = { 0 };
+    char* env_value = getenv(PCS_COOKIE_ENV);
+    if (env_value) {
+        return env_value;
+    }
+    if (!filename[0]) { /*»Áπ˚“—æ≠¥¶¿Ìπ˝£¨‘Ú÷±Ω”∑µªÿ*/
 #ifdef WIN32
-		strcpy(filename, getenv("UserProfile"));
-		strcat(filename, "\\.pcs");
-		CreateDirectoryRecursive(filename);
-		strcat(filename, "\\");
-		strcat(filename, "default.cookie");
+        strcpy(filename, getenv("UserProfile"));
+        strcat(filename, "\\.pcs");
+        CreateDirectoryRecursive(filename);
+        strcat(filename, "\\");
+        strcat(filename, "default.cookie");
 #else
-		strcpy(filename, getenv("HOME"));
-		strcat(filename, "/.pcs");
-		CreateDirectoryRecursive(filename);
-		strcat(filename, "/");
-		strcat(filename, "default.cookie");
+        strcpy(filename, getenv("HOME"));
+        strcat(filename, "/.pcs");
+        CreateDirectoryRecursive(filename);
+        strcat(filename, "/");
+        strcat(filename, "default.cookie");
 #endif
-	}
-	return filename;
+    }
+    return filename;
 }
 
-/*ËøîÂõûÈ™åËØÅÁ†ÅÂõæÁâáÊñá‰ª∂Ë∑ØÂæÑ*/
-static const char *captchafile()
+/*∑µªÿ—È÷§¬ÎÕº∆¨Œƒº˛¬∑æ∂*/
+static const char* captchafile()
 {
-	static char filename[1024] = { 0 };
-	char *env_value = getenv(PCS_CAPTCHA_ENV);
-	if (env_value) return env_value;
-	if (!filename[0]){ /*Â¶ÇÊûúÂ∑≤ÁªèÂ§ÑÁêÜËøáÔºåÂàôÁõ¥Êé•ËøîÂõû*/
+    static char filename[1024] = { 0 };
+    char* env_value = getenv(PCS_CAPTCHA_ENV);
+    if (env_value) {
+        return env_value;
+    }
+    if (!filename[0]) { /*»Áπ˚“—æ≠¥¶¿Ìπ˝£¨‘Ú÷±Ω”∑µªÿ*/
 #ifdef WIN32
-		strcpy(filename, getenv("UserProfile"));
-		strcat(filename, "\\.pcs");
-		CreateDirectoryRecursive(filename);
-		strcat(filename, "\\");
-		strcat(filename, "captcha.gif");
+        strcpy(filename, getenv("UserProfile"));
+        strcat(filename, "\\.pcs");
+        CreateDirectoryRecursive(filename);
+        strcat(filename, "\\");
+        strcat(filename, "captcha.gif");
 #else
-		strcpy(filename, getenv("HOME"));
-		strcat(filename, "/.pcs");
-		CreateDirectoryRecursive(filename);
-		strcat(filename, "/");
-		strcat(filename, "captcha.gif");
+        strcpy(filename, getenv("HOME"));
+        strcat(filename, "/.pcs");
+        CreateDirectoryRecursive(filename);
+        strcat(filename, "/");
+        strcat(filename, "captcha.gif");
 #endif
-	}
-	return filename;
+    }
+    return filename;
 }
 
 #pragma endregion
 
-#pragma region Á∫øÁ®ã State Áõ∏ÂÖ≥
+#pragma region œﬂ≥Ã State œ‡πÿ
 
-static void init_download_state(struct DownloadState *ds)
+static void init_download_state(struct DownloadState* ds)
 {
-	memset(ds, 0, sizeof(struct DownloadState));
-	cache_init(&ds->cache);
+    memset(ds, 0, sizeof(struct DownloadState));
+    cache_init(&ds->cache);
 #ifdef _WIN32
-	ds->mutex = CreateMutex(NULL, FALSE, NULL);
+    ds->mutex = CreateMutex(NULL, FALSE, NULL);
 #else
-	ds->mutex = (pthread_mutex_t *)pcs_malloc(sizeof(pthread_mutex_t));
-	pthread_mutex_init((pthread_mutex_t *)ds->mutex, NULL);
+    ds->mutex = (pthread_mutex_t*)pcs_malloc(sizeof(pthread_mutex_t));
+    pthread_mutex_init((pthread_mutex_t*)ds->mutex, NULL);
 #endif
 }
 
-static void uninit_download_state(struct DownloadState *ds)
+static void uninit_download_state(struct DownloadState* ds)
 {
-	struct DownloadThreadState *ts = ds->threads, *ps = NULL;
+    struct DownloadThreadState* ts = ds->threads, *ps = NULL;
 #ifdef _WIN32
-	CloseHandle(ds->mutex);
+    CloseHandle(ds->mutex);
 #else
-	pthread_mutex_destroy((pthread_mutex_t *)ds->mutex);
-	pcs_free(ds->mutex);
+    pthread_mutex_destroy((pthread_mutex_t*)ds->mutex);
+    pcs_free(ds->mutex);
 #endif
-	while (ts) {
-		ps = ts;
-		ts = ts->next;
-		pcs_free(ps);
-	}
-	cache_uninit(&ds->cache);
+    while (ts) {
+        ps = ts;
+        ts = ts->next;
+        pcs_free(ps);
+    }
+    cache_uninit(&ds->cache);
 }
 
-static void lock_for_download(struct DownloadState *ds)
+static void lock_for_download(struct DownloadState* ds)
 {
 #ifdef _WIN32
-	WaitForSingleObject(ds->mutex, INFINITE);
+    WaitForSingleObject(ds->mutex, INFINITE);
 #else
-	pthread_mutex_lock((pthread_mutex_t *)ds->mutex);
-#endif
-}
-
-static void unlock_for_download(struct DownloadState *ds)
-{
-#ifdef _WIN32
-	ReleaseMutex(ds->mutex);
-#else
-	pthread_mutex_unlock((pthread_mutex_t *)ds->mutex);
+    pthread_mutex_lock((pthread_mutex_t*)ds->mutex);
 #endif
 }
 
-static void init_upload_state(struct UploadState *us)
+static void unlock_for_download(struct DownloadState* ds)
 {
-	memset(us, 0, sizeof(struct UploadState));
 #ifdef _WIN32
-	us->mutex = CreateMutex(NULL, FALSE, NULL);
+    ReleaseMutex(ds->mutex);
 #else
-	us->mutex = (pthread_mutex_t *)pcs_malloc(sizeof(pthread_mutex_t));
-	pthread_mutex_init((pthread_mutex_t *)us->mutex, NULL);
+    pthread_mutex_unlock((pthread_mutex_t*)ds->mutex);
 #endif
 }
 
-static void uninit_upload_state(struct UploadState *us)
+static void init_upload_state(struct UploadState* us)
 {
-	struct UploadThreadState *ts = us->threads, *ps = NULL;
+    memset(us, 0, sizeof(struct UploadState));
 #ifdef _WIN32
-	CloseHandle(us->mutex);
+    us->mutex = CreateMutex(NULL, FALSE, NULL);
 #else
-	pthread_mutex_destroy((pthread_mutex_t *)us->mutex);
-	pcs_free(us->mutex);
-#endif
-	while (ts) {
-		ps = ts;
-		ts = ts->next;
-		pcs_free(ps);
-	}
-}
-
-static void lock_for_upload(struct UploadState *us)
-{
-#ifdef _WIN32
-	WaitForSingleObject(us->mutex, INFINITE);
-#else
-	pthread_mutex_lock((pthread_mutex_t *)us->mutex);
+    us->mutex = (pthread_mutex_t*)pcs_malloc(sizeof(pthread_mutex_t));
+    pthread_mutex_init((pthread_mutex_t*)us->mutex, NULL);
 #endif
 }
 
-static void unlock_for_upload(struct UploadState *us)
+static void uninit_upload_state(struct UploadState* us)
+{
+    struct UploadThreadState* ts = us->threads, *ps = NULL;
+#ifdef _WIN32
+    CloseHandle(us->mutex);
+#else
+    pthread_mutex_destroy((pthread_mutex_t*)us->mutex);
+    pcs_free(us->mutex);
+#endif
+    while (ts) {
+        ps = ts;
+        ts = ts->next;
+        pcs_free(ps);
+    }
+}
+
+static void lock_for_upload(struct UploadState* us)
 {
 #ifdef _WIN32
-	ReleaseMutex(us->mutex);
+    WaitForSingleObject(us->mutex, INFINITE);
 #else
-	pthread_mutex_unlock((pthread_mutex_t *)us->mutex);
+    pthread_mutex_lock((pthread_mutex_t*)us->mutex);
+#endif
+}
+
+static void unlock_for_upload(struct UploadState* us)
+{
+#ifdef _WIN32
+    ReleaseMutex(us->mutex);
+#else
+    pthread_mutex_unlock((pthread_mutex_t*)us->mutex);
 #endif
 }
 
 #pragma endregion
 
-#pragma region ‰∏â‰∏™ÂõûË∞ÉÔºö ËæìÂÖ•È™åËØÅÁ†Å, ÊòæÁ§∫‰∏ä‰º†ËøõÂ∫¶, ÂÜô‰∏ãËΩΩÊñá‰ª∂
+#pragma region »˝∏ˆªÿµ˜£∫  ‰»Î—È÷§¬Î, œ‘ æ…œ¥´Ω¯∂», –¥œ¬‘ÿŒƒº˛
 
-static int save_thread_states_to_file(FILE *pf, int64_t offset, struct DownloadThreadState *state_link)
+static int save_thread_states_to_file(FILE* pf, int64_t offset, struct DownloadThreadState* state_link)
 {
-	static int magic = THREAD_STATE_MAGIC;
-	int rc;
-	struct DownloadThreadState *pts;
-	//lseek(fileno(pf), ds->file_size, SEEK_SET);
-	rc = fseeko((pf), offset, SEEK_SET);
-	if (rc) {
-		return -1;
-	}
-	rc = fwrite(&magic, 4, 1, pf);
-	if (rc != 1) return -1;
-	pts = state_link;
-	while (pts) {
-		rc = fwrite(pts, sizeof(struct DownloadThreadState), 1, pf);
-		if (rc != 1) return -1;
-		pts = pts->next;
-	}
-	return 0;
+    static int magic = THREAD_STATE_MAGIC;
+    int rc;
+    struct DownloadThreadState* pts;
+    //lseek(fileno(pf), ds->file_size, SEEK_SET);
+    rc = fseeko((pf), offset, SEEK_SET);
+    if (rc) {
+        return -1;
+    }
+    rc = fwrite(&magic, 4, 1, pf);
+    if (rc != 1) {
+        return -1;
+    }
+    pts = state_link;
+    while (pts) {
+        rc = fwrite(pts, sizeof(struct DownloadThreadState), 1, pf);
+        if (rc != 1) {
+            return -1;
+        }
+        pts = pts->next;
+    }
+    return 0;
 }
 
-static int save_upload_thread_states_to_file(const char *filename, struct UploadThreadState *state_link)
+static int save_upload_thread_states_to_file(const char* filename, struct UploadThreadState* state_link)
 {
-	static int magic = THREAD_STATE_MAGIC;
-	FILE *pf;
-	int rc;
-	struct UploadThreadState *pts;
-	pf = fopen(filename, "wb");
-	if (!pf) return -1;
-	rc = fwrite(&magic, 4, 1, pf);
-	if (rc != 1) {
-		fclose(pf);
-		return -1;
-	}
-	pts = state_link;
-	while (pts) {
-		rc = fwrite(pts, sizeof(struct UploadThreadState), 1, pf);
-		if (rc != 1) {
-			fclose(pf);
-			return -1;
-		}
-		pts = pts->next;
-	}
-	fclose(pf);
-	return 0;
+    static int magic = THREAD_STATE_MAGIC;
+    FILE* pf;
+    int rc;
+    struct UploadThreadState* pts;
+    pf = fopen(filename, "wb");
+    if (!pf) {
+        return -1;
+    }
+    rc = fwrite(&magic, 4, 1, pf);
+    if (rc != 1) {
+        fclose(pf);
+        return -1;
+    }
+    pts = state_link;
+    while (pts) {
+        rc = fwrite(pts, sizeof(struct UploadThreadState), 1, pf);
+        if (rc != 1) {
+            fclose(pf);
+            return -1;
+        }
+        pts = pts->next;
+    }
+    fclose(pf);
+    return 0;
 }
 
-/*ËæìÂá∫È™åËØÅÁ†ÅÂõæÁâáÔºåÂπ∂Á≠âÂæÖÁî®Êà∑ËæìÂÖ•ËØÜÂà´ÁªìÊûú*/
-static PcsBool verifycode(unsigned char *ptr, size_t size, char *captcha, size_t captchaSize, void *state)
+/* ‰≥ˆ—È÷§¬ÎÕº∆¨£¨≤¢µ»¥˝”√ªß ‰»Î ∂±Ω·π˚*/
+static PcsBool verifycode(unsigned char* ptr, size_t size, char* captcha, size_t captchaSize, void* state)
 {
-	static char filename[1024] = { 0 };
-	ShellContext *context = (ShellContext *)state;
-	const char *savedfile;
-	FILE *pf;
+    static char filename[1024] = { 0 };
+    ShellContext* context = (ShellContext*)state;
+    const char* savedfile;
+    FILE* pf;
 
-	if (!filename[0]) {
+    if (!filename[0]) {
 #ifdef WIN32
-		strcpy(filename, getenv("UserProfile"));
-		strcat(filename, "\\.pcs");
-		CreateDirectoryRecursive(filename);
-		strcat(filename, "\\vc.gif");
+        strcpy(filename, getenv("UserProfile"));
+        strcat(filename, "\\.pcs");
+        CreateDirectoryRecursive(filename);
+        strcat(filename, "\\vc.gif");
 #else
-		strcpy(filename, getenv("HOME"));
-		strcat(filename, "/.pcs");
-		CreateDirectoryRecursive(filename);
-		strcat(filename, "/vc.gif");
+        strcpy(filename, getenv("HOME"));
+        strcat(filename, "/.pcs");
+        CreateDirectoryRecursive(filename);
+        strcat(filename, "/vc.gif");
 #endif
-	}
+    }
 
-	if (context->captchafile)
-		savedfile = context->captchafile;
-	else
-		savedfile = filename;
+    if (context->captchafile) {
+        savedfile = context->captchafile;
+    } else {
+        savedfile = filename;
+    }
 
-	pf = fopen(savedfile, "wb");
-	if (!pf) {
-		printf("Can't save the captcha image to %s.\n", savedfile);
-		return PcsFalse;
-	}
-	fwrite(ptr, 1, size, pf);
-	fclose(pf);
+    pf = fopen(savedfile, "wb");
+    if (!pf) {
+        printf("Can't save the captcha image to %s.\n", savedfile);
+        return PcsFalse;
+    }
+    fwrite(ptr, 1, size, pf);
+    fclose(pf);
 
-	printf("The captcha image at %s.\nPlease input the captcha code: ", savedfile);
+    printf("The captcha image at %s.\nPlease input the captcha code: ", savedfile);
 #ifdef WIN32
-	{
-		char fmt[32];
-		memset(captcha, 0, captchaSize);
-		snprintf(fmt, sizeof(fmt), "%%%ds", captchaSize - 1);
-		scanf(fmt, captcha);
-	}
-	if (!u8_is_utf8_sys()) {
-		char *u8s = mbs2utf8(captcha);
-		strncpy(captcha, u8s, captchaSize);
-		pcs_free(u8s);
-	}
+    {
+        char fmt[32];
+        memset(captcha, 0, captchaSize);
+        snprintf(fmt, sizeof(fmt), "%%%ds", captchaSize - 1);
+        scanf(fmt, captcha);
+    }
+    if (!u8_is_utf8_sys()) {
+        char* u8s = mbs2utf8(captcha);
+        strncpy(captcha, u8s, captchaSize);
+        pcs_free(u8s);
+    }
 #else
-	std_string(captcha, captchaSize);
+    std_string(captcha, captchaSize);
 #endif
-	return PcsTrue;
+    return PcsTrue;
 }
 
 
-static PcsBool input_str(const char *tips, char *value, size_t valueSize, void *state)
+static PcsBool input_str(const char* tips, char* value, size_t valueSize, void* state)
 {
     printf("%s", tips);
     std_string(value, valueSize);
     return PcsTrue;
 }
 
-/*ÊòæÁ§∫‰∏ä‰º†ËøõÂ∫¶*/
-static int upload_progress(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow)
+/*œ‘ æ…œ¥´Ω¯∂»*/
+static int upload_progress(void* clientp, double dltotal, double dlnow, double ultotal, double ulnow)
 {
-	char *path = (char *)clientp;
-	static char tmp[64];
+    char* path = (char*)clientp;
+    static char tmp[64];
 
-	tmp[63] = '\0';
-	if (path)
-		printf("Upload %s ", path);
-	printf("%s", pcs_utils_readable_size(ulnow, tmp, 63, NULL));
-	printf("/%s      \r", pcs_utils_readable_size(ultotal, tmp, 63, NULL));
-	fflush(stdout);
+    tmp[63] = '\0';
+    if (path) {
+        printf("Upload %s ", path);
+    }
+    printf("%s", pcs_utils_readable_size(ulnow, tmp, 63, NULL));
+    printf("/%s      \r", pcs_utils_readable_size(ultotal, tmp, 63, NULL));
+    fflush(stdout);
 
-	return 0;
+    return 0;
 }
 
-/*‰∏ãËΩΩÊñá‰ª∂Êó∂ÔºåÂÜôÂÖ•Êñá‰ª∂Âπ∂ÊòæÁ§∫ËøõÂ∫¶*/
-static int download_write(char *ptr, size_t size, size_t contentlength, void *userdata)
+/*œ¬‘ÿŒƒº˛ ±£¨–¥»ÎŒƒº˛≤¢œ‘ æΩ¯∂»*/
+static int download_write(char* ptr, size_t size, size_t contentlength, void* userdata)
 {
-	struct DownloadState *ds = (struct DownloadState *)userdata;
-	FILE *pf = ds->pf;
-	time_t tm;
-	char tmp[64];
-	int rc;
-	tmp[63] = '\0';
-	rc = cache_add(&ds->cache, ds->downloaded_size, ptr, size);
-	if (rc)
-		return 0;
-	ds->downloaded_size += size;
-	ds->speed += size;
-	if (ds->cache.total_size >= convert_to_real_cache_size(ds->context->cache_size)) {
-		rc = cache_flush(&ds->cache);
-		if (rc)
-			return 0;
-	}
+    struct DownloadState* ds = (struct DownloadState*)userdata;
+    FILE* pf = ds->pf;
+    time_t tm;
+    char tmp[64];
+    int rc;
+    tmp[63] = '\0';
+    rc = cache_add(&ds->cache, ds->downloaded_size, ptr, size);
+    if (rc) {
+        return 0;
+    }
+    ds->downloaded_size += size;
+    ds->speed += size;
+    if (ds->cache.total_size >= convert_to_real_cache_size(ds->context->cache_size)) {
+        rc = cache_flush(&ds->cache);
+        if (rc) {
+            return 0;
+        }
+    }
 
-	tm = time(&tm);
-	if (tm != ds->time) {
-		int64_t left_size = ds->file_size - ds->downloaded_size;
-		int64_t remain_tm = (ds->speed > 0) ? (left_size / ds->speed) : 0;
-		ds->time = tm;
-		printf("%s", pcs_utils_readable_size((double)ds->downloaded_size + (double)ds->resume_from, tmp, 63, NULL));
-		printf("/%s \t", pcs_utils_readable_size((double)contentlength + (double)ds->resume_from, tmp, 63, NULL));
-		printf("%s/s \t", pcs_utils_readable_size((double)ds->speed, tmp, 63, NULL));
-		printf("%s            ", pcs_utils_readable_left_time(remain_tm, tmp, 63, NULL));
-		printf("\r");
-		fflush(stdout);
-		ds->speed = 0;
-	}
-	return size;
+    tm = time(&tm);
+    if (tm != ds->time) {
+        int64_t left_size = ds->file_size - ds->downloaded_size;
+        int64_t remain_tm = (ds->speed > 0) ? (left_size / ds->speed) : 0;
+        ds->time = tm;
+        printf("%s", pcs_utils_readable_size((double)ds->downloaded_size + (double)ds->resume_from, tmp, 63, NULL));
+        printf("/%s \t", pcs_utils_readable_size((double)contentlength + (double)ds->resume_from, tmp, 63, NULL));
+        printf("%s/s \t", pcs_utils_readable_size((double)ds->speed, tmp, 63, NULL));
+        printf("%s            ", pcs_utils_readable_left_time(remain_tm, tmp, 63, NULL));
+        printf("\r");
+        fflush(stdout);
+        ds->speed = 0;
+    }
+    return size;
 }
 
-static int download_write_for_multy_thread(char *ptr, size_t size, size_t contentlength, void *userdata)
+static int download_write_for_multy_thread(char* ptr, size_t size, size_t contentlength, void* userdata)
 {
-	struct DownloadThreadState *ts = (struct DownloadThreadState *)userdata;
-	ShellContext *context = ts->ds->context;
-	struct DownloadState *ds = ts->ds;
-	FILE *pf = ds->pf;
-	time_t tm;
-	char tmp[64];
-	int rc;
-	tmp[63] = '\0';
-	lock_for_download(ds);
-	if (ts->start + size > ts->end) {
-		size = (size_t)(ts->end - ts->start);
-		ts->status = DOWNLOAD_STATUS_OK;
-	}
-	if (size > 0) {
-		rc = cache_add(&ds->cache, ts->start, ptr, size);
-		if (rc) {
-			if (ds->pErrMsg) {
-				if (*(ds->pErrMsg)) pcs_free(*(ds->pErrMsg));
-				(*(ds->pErrMsg)) = pcs_utils_sprintf("cache_add() error.");
-			}
-			ds->status = DOWNLOAD_STATUS_WRITE_FILE_FAIL;
-			unlock_for_download(ds);
-			return 0;
-		}
-	}
-	ds->downloaded_size += size;
-	ts->start += size;
-	ds->speed += size;
-	if (ts->start == ts->end) {
-		ts->status = DOWNLOAD_STATUS_OK;
-		size = 0;
-	}
+    struct DownloadThreadState* ts = (struct DownloadThreadState*)userdata;
+    ShellContext* context = ts->ds->context;
+    struct DownloadState* ds = ts->ds;
+    FILE* pf = ds->pf;
+    time_t tm;
+    char tmp[64];
+    int rc;
+    tmp[63] = '\0';
+    lock_for_download(ds);
+    if (ts->start + size > ts->end) {
+        size = (size_t)(ts->end - ts->start);
+        ts->status = DOWNLOAD_STATUS_OK;
+    }
+    if (size > 0) {
+        rc = cache_add(&ds->cache, ts->start, ptr, size);
+        if (rc) {
+            if (ds->pErrMsg) {
+                if (*(ds->pErrMsg)) {
+                    pcs_free(*(ds->pErrMsg));
+                }
+                (*(ds->pErrMsg)) = pcs_utils_sprintf("cache_add() error.");
+            }
+            ds->status = DOWNLOAD_STATUS_WRITE_FILE_FAIL;
+            unlock_for_download(ds);
+            return 0;
+        }
+    }
+    ds->downloaded_size += size;
+    ts->start += size;
+    ds->speed += size;
+    if (ts->start == ts->end) {
+        ts->status = DOWNLOAD_STATUS_OK;
+        size = 0;
+    }
 
-	if (ds->cache.total_size >= convert_to_real_cache_size(context->cache_size)) {
-		rc = cache_flush(&ds->cache);
-		if (rc) {
-			if (ds->pErrMsg) {
-				if (*(ds->pErrMsg)) pcs_free(*(ds->pErrMsg));
-				(*(ds->pErrMsg)) = pcs_utils_sprintf("cache_flush() error.");
-			}
-			ds->status = DOWNLOAD_STATUS_WRITE_FILE_FAIL;
-			unlock_for_download(ds);
-			return 0;
-		}
-		rc = save_thread_states_to_file(pf, ds->file_size, ds->threads);
-		if (rc) {
-			if (ds->pErrMsg) {
-				if (*(ds->pErrMsg)) pcs_free(*(ds->pErrMsg));
-				(*(ds->pErrMsg)) = pcs_utils_sprintf("save slices error.");
-			}
-			ds->status = DOWNLOAD_STATUS_WRITE_FILE_FAIL;
-			unlock_for_download(ds);
-			return 0;
-		}
-		cache_reset(&ds->cache);
-	}
+    if (ds->cache.total_size >= convert_to_real_cache_size(context->cache_size)) {
+        rc = cache_flush(&ds->cache);
+        if (rc) {
+            if (ds->pErrMsg) {
+                if (*(ds->pErrMsg)) {
+                    pcs_free(*(ds->pErrMsg));
+                }
+                (*(ds->pErrMsg)) = pcs_utils_sprintf("cache_flush() error.");
+            }
+            ds->status = DOWNLOAD_STATUS_WRITE_FILE_FAIL;
+            unlock_for_download(ds);
+            return 0;
+        }
+        rc = save_thread_states_to_file(pf, ds->file_size, ds->threads);
+        if (rc) {
+            if (ds->pErrMsg) {
+                if (*(ds->pErrMsg)) {
+                    pcs_free(*(ds->pErrMsg));
+                }
+                (*(ds->pErrMsg)) = pcs_utils_sprintf("save slices error.");
+            }
+            ds->status = DOWNLOAD_STATUS_WRITE_FILE_FAIL;
+            unlock_for_download(ds);
+            return 0;
+        }
+        cache_reset(&ds->cache);
+    }
 
-	tm = time(&tm);
-	if (tm != ds->time) {
-		int64_t left_size = ds->file_size - ds->downloaded_size;
-		int64_t remain_tm = (ds->speed > 0) ? (left_size / ds->speed) : 0;
-		double percent = (ds->file_size > 0) ?
-			(double)(100 * (ds->downloaded_size + ds->resume_from)) / (double)ds->file_size :
-			0;
-		ds->time = tm;
-		printf("\r                                                \r");
-		printf("%s", pcs_utils_readable_size((double)ds->downloaded_size + (double)ds->resume_from, tmp, 63, NULL));
-		printf("/%s (%.2f%%)\t", pcs_utils_readable_size((double)ds->file_size, tmp, 63, NULL), (float)percent);
-		printf("%s/s \t", pcs_utils_readable_size((double)ds->speed, tmp, 63, NULL));
-		printf(" %s        ", pcs_utils_readable_left_time(remain_tm, tmp, 63, NULL));
-		printf("\r");
-		fflush(stdout);
-		ds->speed = 0;
-	}
-	unlock_for_download(ds);
-	return size;
+    tm = time(&tm);
+    if (tm != ds->time) {
+        int64_t left_size = ds->file_size - ds->downloaded_size;
+        int64_t remain_tm = (ds->speed > 0) ? (left_size / ds->speed) : 0;
+        double percent = (ds->file_size > 0) ?
+                         (double)(100 * (ds->downloaded_size + ds->resume_from)) / (double)ds->file_size :
+                         0;
+        ds->time = tm;
+        printf("\r                                                \r");
+        printf("%s", pcs_utils_readable_size((double)ds->downloaded_size + (double)ds->resume_from, tmp, 63, NULL));
+        printf("/%s (%.2f%%)\t", pcs_utils_readable_size((double)ds->file_size, tmp, 63, NULL), (float)percent);
+        printf("%s/s \t", pcs_utils_readable_size((double)ds->speed, tmp, 63, NULL));
+        printf(" %s        ", pcs_utils_readable_left_time(remain_tm, tmp, 63, NULL));
+        printf("\r");
+        fflush(stdout);
+        ds->speed = 0;
+    }
+    unlock_for_download(ds);
+    return size;
 }
 
-/*ÊòæÁ§∫‰∏ä‰º†ËøõÂ∫¶*/
-static int upload_progress_for_multy_thread(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow)
+/*œ‘ æ…œ¥´Ω¯∂»*/
+static int upload_progress_for_multy_thread(void* clientp, double dltotal, double dlnow, double ultotal, double ulnow)
 {
-	static char tmp[64];
-	struct UploadThreadState *ts = (struct UploadThreadState*)clientp;
-	struct UploadState *us = ts->us;
-	time_t tm;
+    static char tmp[64];
+    struct UploadThreadState* ts = (struct UploadThreadState*)clientp;
+    struct UploadState* us = ts->us;
+    time_t tm;
 
-	lock_for_upload(us);
+    lock_for_upload(us);
 
-	tmp[63] = '\0';
-	if ((((size_t)ulnow) > 0) && (((size_t)ulnow) > ts->uploaded_size)) {
-		us->speed += ((size_t)ulnow - ts->uploaded_size);
-		us->uploaded_size += ((size_t)ulnow - ts->uploaded_size);
-		ts->uploaded_size = (size_t)ulnow;
-	}
-	else {
-		unlock_for_upload(us);
-		return 0;
-	}
+    tmp[63] = '\0';
+    if ((((size_t)ulnow) > 0) && (((size_t)ulnow) > ts->uploaded_size)) {
+        us->speed += ((size_t)ulnow - ts->uploaded_size);
+        us->uploaded_size += ((size_t)ulnow - ts->uploaded_size);
+        ts->uploaded_size = (size_t)ulnow;
+    } else {
+        unlock_for_upload(us);
+        return 0;
+    }
 
-	tm = time(&tm);
-	if (tm != us->time) {
-		int64_t left_size = us->file_size - us->uploaded_size;
-		int64_t remain_tm = (us->speed > 0) ? (left_size / us->speed) : 0;
-		us->time = tm;
-		printf("\r                                                \r");
-		printf("%s", pcs_utils_readable_size((double)us->uploaded_size, tmp, 63, NULL));
-		printf("/%s \t", pcs_utils_readable_size((double)us->file_size, tmp, 63, NULL));
-		printf("%s/s \t", pcs_utils_readable_size((double)us->speed, tmp, 63, NULL));
-		printf(" %s        ", pcs_utils_readable_left_time(remain_tm, tmp, 63, NULL));
-		printf("\r");
-		fflush(stdout);
-		us->speed = 0;
-	}
+    tm = time(&tm);
+    if (tm != us->time) {
+        int64_t left_size = us->file_size - us->uploaded_size;
+        int64_t remain_tm = (us->speed > 0) ? (left_size / us->speed) : 0;
+        us->time = tm;
+        printf("\r                                                \r");
+        printf("%s", pcs_utils_readable_size((double)us->uploaded_size, tmp, 63, NULL));
+        printf("/%s \t", pcs_utils_readable_size((double)us->file_size, tmp, 63, NULL));
+        printf("%s/s \t", pcs_utils_readable_size((double)us->speed, tmp, 63, NULL));
+        printf(" %s        ", pcs_utils_readable_left_time(remain_tm, tmp, 63, NULL));
+        printf("\r");
+        fflush(stdout);
+        us->speed = 0;
+    }
 
-	unlock_for_upload(us);
-	return 0;
+    unlock_for_upload(us);
+    return 0;
 }
 
 #pragma endregion
 
-#pragma region ÂÖ¨Áî®ÂáΩÊï∞
+#pragma region π´”√∫Ø ˝
 
-/*ÊâæÂà∞strÁ¨¨‰∏ÄÊ¨°Âá∫Áé∞chÁöÑ‰ΩçÁΩÆ*/
-static inline char *findchar(char *str, int ch)
+/*’“µΩstrµ⁄“ª¥Œ≥ˆœ÷chµƒŒª÷√*/
+static inline char* findchar(char* str, int ch)
 {
-	char *p = str;
-	while (*p && ((int)((unsigned int)(*p))) != ch) p++;
-	return p;
+    char* p = str;
+    while (*p && ((int)((unsigned int)(*p))) != ch) {
+        p++;
+    }
+    return p;
 }
 
-/*ÂõûÂà∞‰∏ä‰∏ÄË°å*/
+/*ªÿµΩ…œ“ª––*/
 static inline void clear_current_print_line()
 {
 #ifdef _WIN32
-	printf("\r");  //Ê∏ÖÈô§ËØ•Ë°å
+    printf("\r");  //«Â≥˝∏√––
 #else
-	//printf("\033[1A"); //ÂÖàÂõûÂà∞‰∏ä‰∏ÄË°å
-	printf("\033[K");  //Ê∏ÖÈô§ËØ•Ë°å
+    //printf("\033[1A"); //œ»ªÿµΩ…œ“ª––
+    printf("\033[K");  //«Â≥˝∏√––
 #endif
 }
 
-/*ÂõûÂà∞‰∏ä‰∏ÄË°å*/
+/*ªÿµΩ…œ“ª––*/
 static inline void back_prev_print_line()
 {
 #ifdef _WIN32
-	printf("\r"); //ÂÖàÂõûÂà∞‰∏ä‰∏ÄË°å
-	printf("                                        ");  //Ê∏ÖÈô§ËØ•Ë°å
-	printf("\r"); //ÂÖàÂõûÂà∞‰∏ä‰∏ÄË°å
+    printf("\r"); //œ»ªÿµΩ…œ“ª––
+    printf("                                        ");  //«Â≥˝∏√––
+    printf("\r"); //œ»ªÿµΩ…œ“ª––
 #else
-	printf("\033[1A"); //ÂÖàÂõûÂà∞‰∏ä‰∏ÄË°å
-	printf("\033[K");  //Ê∏ÖÈô§ËØ•Ë°å
+    printf("\033[1A"); //œ»ªÿµΩ…œ“ª––
+    printf("\033[K");  //«Â≥˝∏√––
 #endif
 }
 
-/*ÊääÊñá‰ª∂Â§ßÂ∞èËΩ¨Êç¢ÊàêÂ≠óÁ¨¶‰∏≤*/
-static const char *size_tostr(size_t size, int *fix_width, char ch)
+/*∞—Œƒº˛¥Û–°◊™ªª≥…◊÷∑˚¥Æ*/
+static const char* size_tostr(size_t size, int* fix_width, char ch)
 {
-	static char str[128], *p;
-	int i;
-	int j, cn, mod;
-	size_t sz;
+    static char str[128], *p;
+    int i;
+    int j, cn, mod;
+    size_t sz;
 
-	if (size == 0) {
-		i = 0;
-		if (*fix_width > 0) {
-			for (; i < *fix_width - 1; i++) {
-				str[i] = ch;
-			}
-		}
-		str[i] = '0';
-		str[i + 1] = '\0';
-		if (*fix_width < 0)
-			*fix_width = 1;
-		return str;
-	}
+    if (size == 0) {
+        i = 0;
+        if (*fix_width > 0) {
+            for (; i < *fix_width - 1; i++) {
+                str[i] = ch;
+            }
+        }
+        str[i] = '0';
+        str[i + 1] = '\0';
+        if (*fix_width < 0) {
+            *fix_width = 1;
+        }
+        return str;
+    }
 
-	sz = size;
-	j = 127;
-	str[j] = '\0';
-	cn = 0;
-	while (sz != 0) {
-		mod = sz % 10;
-		sz = sz / 10;
-		str[--j] = (char)('0' + mod);
-		cn++;
-	}
+    sz = size;
+    j = 127;
+    str[j] = '\0';
+    cn = 0;
+    while (sz != 0) {
+        mod = sz % 10;
+        sz = sz / 10;
+        str[--j] = (char)('0' + mod);
+        cn++;
+    }
 
-	i = 0;
-	if (*fix_width > 0) {
-		for (; i < *fix_width - cn; i++) {
-			str[i] = ch;
-		}
-	}
-	p = &str[j];
-	while (*p){
-		str[i++] = *p++;
-	}
-	str[i] = '\0';
-	if (*fix_width < 0)
-		*fix_width = (int)i;
-	return str;
+    i = 0;
+    if (*fix_width > 0) {
+        for (; i < *fix_width - cn; i++) {
+            str[i] = ch;
+        }
+    }
+    p = &str[j];
+    while (*p) {
+        str[i++] = *p++;
+    }
+    str[i] = '\0';
+    if (*fix_width < 0) {
+        *fix_width = (int)i;
+    }
+    return str;
 }
 
-static const char *uint64_tostr(int64_t size, int *fix_width, char ch)
+static const char* uint64_tostr(int64_t size, int* fix_width, char ch)
 {
-	static char str[128], *p;
-	int i;
-	int j, cn, mod;
-	int64_t sz;
+    static char str[128], *p;
+    int i;
+    int j, cn, mod;
+    int64_t sz;
 
-	if (size == 0) {
-		i = 0;
-		if (*fix_width > 0) {
-			for (; i < *fix_width - 1; i++) {
-				str[i] = ch;
-			}
-		}
-		str[i] = '0';
-		str[i + 1] = '\0';
-		if (*fix_width < 0)
-			*fix_width = 1;
-		return str;
-	}
+    if (size == 0) {
+        i = 0;
+        if (*fix_width > 0) {
+            for (; i < *fix_width - 1; i++) {
+                str[i] = ch;
+            }
+        }
+        str[i] = '0';
+        str[i + 1] = '\0';
+        if (*fix_width < 0) {
+            *fix_width = 1;
+        }
+        return str;
+    }
 
-	sz = size;
-	j = 127;
-	str[j] = '\0';
-	cn = 0;
-	while (sz != 0) {
-		mod = sz % 10;
-		sz = sz / 10;
-		str[--j] = (char)('0' + mod);
-		cn++;
-	}
+    sz = size;
+    j = 127;
+    str[j] = '\0';
+    cn = 0;
+    while (sz != 0) {
+        mod = sz % 10;
+        sz = sz / 10;
+        str[--j] = (char)('0' + mod);
+        cn++;
+    }
 
-	i = 0;
-	if (*fix_width > 0) {
-		for (; i < *fix_width - cn; i++) {
-			str[i] = ch;
-		}
-	}
-	p = &str[j];
-	while (*p){
-		str[i++] = *p++;
-	}
-	str[i] = '\0';
-	if (*fix_width < 0)
-		*fix_width = (int)i;
-	return str;
+    i = 0;
+    if (*fix_width > 0) {
+        for (; i < *fix_width - cn; i++) {
+            str[i] = ch;
+        }
+    }
+    p = &str[j];
+    while (*p) {
+        str[i++] = *p++;
+    }
+    str[i] = '\0';
+    if (*fix_width < 0) {
+        *fix_width = (int)i;
+    }
+    return str;
 }
 
-/*ÊâìÂç∞Êñá‰ª∂Êó∂Èó¥*/
-static void print_time(const char *format, time_t time)
+/*¥Ú”°Œƒº˛ ±º‰*/
+static void print_time(const char* format, time_t time)
 {
-	struct tm *tm = NULL;
-	time_t t = time;
-	char tmp[64];
+    struct tm* tm = NULL;
+    time_t t = time;
+    char tmp[64];
 
-	if (time)
-		tm = localtime(&t);
+    if (time) {
+        tm = localtime(&t);
+    }
 
-	if (tm) {
-		sprintf(tmp, "%d-%02d-%02d %02d:%02d:%02d",
-			1900 + tm->tm_year,
-			tm->tm_mon + 1,
-			tm->tm_mday,
-			tm->tm_hour,
-			tm->tm_min,
-			tm->tm_sec);
-		printf(format, tmp);
-	}
-	else {
-		printf(format, "0000-00-00 00:00:00");
-	}
+    if (tm) {
+        sprintf(tmp, "%d-%02d-%02d %02d:%02d:%02d",
+                1900 + tm->tm_year,
+                tm->tm_mon + 1,
+                tm->tm_mday,
+                tm->tm_hour,
+                tm->tm_min,
+                tm->tm_sec);
+        printf(format, tmp);
+    } else {
+        printf(format, "0000-00-00 00:00:00");
+    }
 }
 
-/*ÊâìÂç∞ÂèØËØªÁöÑÊñá‰ª∂Â§ßÂ∞è*/
-static void print_size(const char *format, size_t size)
+/*¥Ú”°ø…∂¡µƒŒƒº˛¥Û–°*/
+static void print_size(const char* format, size_t size)
 {
-	char tmp[64];
-	tmp[63] = '\0';
-	pcs_utils_readable_size((double)size, tmp, 63, NULL);
-	printf(format, tmp);
+    char tmp[64];
+    tmp[63] = '\0';
+    pcs_utils_readable_size((double)size, tmp, 63, NULL);
+    printf(format, tmp);
 }
 
-static void print_uint64(const char *format, int64_t size)
+static void print_uint64(const char* format, int64_t size)
 {
-	char tmp[64];
-	tmp[63] = '\0';
-	pcs_utils_readable_size((double)size, tmp, 63, NULL);
-	printf(format, tmp);
+    char tmp[64];
+    tmp[63] = '\0';
+    pcs_utils_readable_size((double)size, tmp, 63, NULL);
+    printf(format, tmp);
 }
 
-/*ÊâìÂç∞Êñá‰ª∂ÂàóË°®ÁöÑÂ§¥*/
+/*¥Ú”°Œƒº˛¡–±ÌµƒÕ∑*/
 static void print_filelist_head(int size_width, int md5, int thumb)
 {
-	int i;
-	putchar('D');
-	putchar(' ');
-	for (i = 0; i < size_width - 4; i++)
-		putchar(' ');
-	printf("Size");
-	putchar(' ');
-	putchar(' ');
-	printf("Modify Date Time");
-	if (md5) {
-		putchar(' ');
-		putchar(' ');
-		printf("MD5");
-	}
-	putchar(' ');
-	putchar(' ');
-	printf("File Name");
+    int i;
+    putchar('D');
+    putchar(' ');
+    for (i = 0; i < size_width - 4; i++) {
+        putchar(' ');
+    }
+    printf("Size");
+    putchar(' ');
+    putchar(' ');
+    printf("Modify Date Time");
+    if (md5) {
+        putchar(' ');
+        putchar(' ');
+        printf("MD5");
+    }
+    putchar(' ');
+    putchar(' ');
+    printf("File Name");
     if (thumb) {
         putchar(' ');
         putchar(' ');
@@ -1612,105 +1663,117 @@ static void print_filelist_head(int size_width, int md5, int thumb)
     putchar('\n');
 }
 
-/*ÊâìÂç∞Êñá‰ª∂ÂàóË°®ÁöÑÊï∞ÊçÆË°å*/
-static void print_filelist_row(PcsFileInfo *f, int size_width, int md5, int thumb)
+/*¥Ú”°Œƒº˛¡–±Ìµƒ ˝æ›––*/
+static void print_filelist_row(PcsFileInfo* f, int size_width, int md5, int thumb)
 {
-	const char *p;
+    const char* p;
 
-	if (f->isdir)
-		putchar('d');
-	else
-		putchar('-');
-	putchar(' ');
+    if (f->isdir) {
+        putchar('d');
+    } else {
+        putchar('-');
+    }
+    putchar(' ');
 
-	p = uint64_tostr(f->size, &size_width, ' ');
-	while (*p) {
-		putchar(*p++);
-	}
-	putchar(' ');
-	putchar(' ');
-	print_time("%s", f->server_mtime);
-	if (md5) {
-		putchar(' ');
-		putchar(' ');
-		printf("%s", f->md5);
-	}
-	putchar(' ');
-	putchar(' ');
-	printf("%s", f->path);
+    p = uint64_tostr(f->size, &size_width, ' ');
+    while (*p) {
+        putchar(*p++);
+    }
+    putchar(' ');
+    putchar(' ');
+    print_time("%s", f->server_mtime);
+    if (md5) {
+        putchar(' ');
+        putchar(' ');
+        printf("%s", f->md5);
+    }
+    putchar(' ');
+    putchar(' ');
+    printf("%s", f->path);
     if (thumb && f->thumbs) {
         printf("  %s", f->thumbs->string2);
     }
     putchar('\n');
 }
 
-/*ÊâìÂç∞Êñá‰ª∂ÂàóË°®*/
-static void print_filelist(PcsFileInfoList *list, int *pFileCount, int *pDirCount, int64_t *pTotalSize,
-	int md5, int thumb)
+/*¥Ú”°Œƒº˛¡–±Ì*/
+static void print_filelist(PcsFileInfoList* list, int* pFileCount, int* pDirCount, int64_t* pTotalSize,
+                           int md5, int thumb)
 {
-	char tmp[64] = { 0 };
-	int cnt_file = 0,
-		cnt_dir = 0,
-		size_width = 1,
-		w;
-	PcsFileInfo *file = NULL;
-	int64_t total = 0;
-	PcsFileInfoListIterater iterater;
+    char tmp[64] = { 0 };
+    int cnt_file = 0,
+        cnt_dir = 0,
+        size_width = 1,
+        w;
+    PcsFileInfo* file = NULL;
+    int64_t total = 0;
+    PcsFileInfoListIterater iterater;
 
-	pcs_filist_iterater_init(list, &iterater, PcsFalse);
-	while (pcs_filist_iterater_next(&iterater)) {
-		file = iterater.current;
-		w = -1;
-		uint64_tostr(file->size, &w, ' ');
-		if (size_width < w)
-			size_width = w;
-		total += file->size;
-		if (file->isdir)
-			cnt_dir++;
-		else
-			cnt_file++;
-	}
+    pcs_filist_iterater_init(list, &iterater, PcsFalse);
+    while (pcs_filist_iterater_next(&iterater)) {
+        file = iterater.current;
+        w = -1;
+        uint64_tostr(file->size, &w, ' ');
+        if (size_width < w) {
+            size_width = w;
+        }
+        total += file->size;
+        if (file->isdir) {
+            cnt_dir++;
+        } else {
+            cnt_file++;
+        }
+    }
 
-	if (size_width < 4)
-		size_width = 4;
-	print_filelist_head(size_width, md5, thumb);
-	puts("------------------------------------------------------------------------------");
-	pcs_filist_iterater_init(list, &iterater, PcsFalse);
-	while (pcs_filist_iterater_next(&iterater)) {
-		file = iterater.current;
-		print_filelist_row(file, size_width, md5, thumb);
-	}
-	puts("------------------------------------------------------------------------------");
-	pcs_utils_readable_size((double)total, tmp, 63, NULL);
-	tmp[63] = '\0';
-	printf("Total: %s, File Count: %d, Directory Count: %d\n", tmp, cnt_file, cnt_dir);
-	putchar('\n');
-	if (pFileCount) *pFileCount += cnt_file;
-	if (pDirCount) *pDirCount += cnt_dir;
-	if (pTotalSize) *pTotalSize += total;
+    if (size_width < 4) {
+        size_width = 4;
+    }
+    print_filelist_head(size_width, md5, thumb);
+    puts("------------------------------------------------------------------------------");
+    pcs_filist_iterater_init(list, &iterater, PcsFalse);
+    while (pcs_filist_iterater_next(&iterater)) {
+        file = iterater.current;
+        print_filelist_row(file, size_width, md5, thumb);
+    }
+    puts("------------------------------------------------------------------------------");
+    pcs_utils_readable_size((double)total, tmp, 63, NULL);
+    tmp[63] = '\0';
+    printf("Total: %s, File Count: %d, Directory Count: %d\n", tmp, cnt_file, cnt_dir);
+    putchar('\n');
+    if (pFileCount) {
+        *pFileCount += cnt_file;
+    }
+    if (pDirCount) {
+        *pDirCount += cnt_dir;
+    }
+    if (pTotalSize) {
+        *pTotalSize += total;
+    }
 }
 
-/*ÊâìÂç∞Êñá‰ª∂ÊàñÁõÆÂΩïÁöÑÂÖÉÊï∞ÊçÆ*/
-static void print_fileinfo(PcsFileInfo *f, const char *prex)
+/*¥Ú”°Œƒº˛ªÚƒø¬ºµƒ‘™ ˝æ›*/
+static void print_fileinfo(PcsFileInfo* f, const char* prex)
 {
-	if (!prex) prex = "";
-	printf("%sfs_id:\t%"PRIu64"\n", prex, f->fs_id);
-	printf("%sCategory:\t%d\n", prex, f->category);
-	printf("%sPath:\t\t%s\n", prex, f->path);
-	printf("%sFilename:\t%s\n", prex, f->server_filename);
-	printf("%s", prex);
-	print_time("Create time:\t%s\n", f->server_ctime);
-	printf("%s", prex);
-	print_time("Modify time:\t%s\n", f->server_mtime);
-	printf("%sIs Dir:\t%s\n", prex, f->isdir ? "Yes" : "No");
-	if (!f->isdir) {
-		printf("%s", prex);
-		print_uint64("Size:\t\t%s\n", f->size);
-		printf("%smd5:\t\t%s\n", prex, f->md5);
-		printf("%sdlink:\t\t%s\n", prex, f->dlink);
-	}
+    if (!prex) {
+        prex = "";
+    }
+    printf("%sfs_id:\t%"PRIu64"\n", prex, f->fs_id);
+    printf("%sCategory:\t%d\n", prex, f->category);
+    printf("%sPath:\t\t%s\n", prex, f->path);
+    printf("%sFilename:\t%s\n", prex, f->server_filename);
+    printf("%s", prex);
+    print_time("Create time:\t%s\n", f->server_ctime);
+    printf("%s", prex);
+    print_time("Modify time:\t%s\n", f->server_mtime);
+    printf("%sIs Dir:\t%s\n", prex, f->isdir ? "Yes" : "No");
+    if (!f->isdir) {
+        printf("%s", prex);
+        print_uint64("Size:\t\t%s\n", f->size);
+        printf("%smd5:\t\t%s\n", prex, f->md5);
+        printf("%sdlink:\t\t%s\n", prex, f->dlink);
+    }
     if (f->thumbs) {
-        PcsSList2 *list = f->thumbs;
+        PcsSList2* list = f->thumbs;
         printf("%sthumbs:\n", prex);
         while (list) {
             printf("%s  %s: %s\n", prex, list->string1, list->string2);
@@ -1721,5295 +1784,5686 @@ static void print_fileinfo(PcsFileInfo *f, const char *prex)
 
 #pragma endregion
 
-#pragma region ÂàùÂßãÂåñÁõ∏ÂÖ≥ÂáΩÊï∞
+#pragma region ≥ı ºªØœ‡πÿ∫Ø ˝
 
-/*hood cJSON Â∫ì‰∏≠ÂàÜÈÖçÂÜÖÂ≠òÁöÑÊñπÊ≥ïÔºåÁî®‰∫éÊ£ÄÊü•ÂÜÖÂ≠òÊ≥ÑÊºè*/
+/*hood cJSON ø‚÷–∑÷≈‰ƒ⁄¥Êµƒ∑Ω∑®£¨”√”⁄ºÏ≤Èƒ⁄¥Ê–π¬©*/
 static void hook_cjson()
 {
-	cJSON_Hooks hooks = { 0 };
+    cJSON_Hooks hooks = { 0 };
 #if defined(DEBUG) || defined(_DEBUG)
-	hooks.malloc_fn = &pcs_mem_malloc_arg1;
-	hooks.free_fn = &pcs_mem_free;
+    hooks.malloc_fn = &pcs_mem_malloc_arg1;
+    hooks.free_fn = &pcs_mem_free;
 #else
 
 #endif
-	cJSON_InitHooks(&hooks);
+    cJSON_InitHooks(&hooks);
 }
 
-/*Êää‰∏ä‰∏ãÊñáËΩ¨Êç¢‰∏∫Â≠óÁ¨¶‰∏≤*/
-static char *context2str(ShellContext *context)
+/*∞—…œœ¬Œƒ◊™ªªŒ™◊÷∑˚¥Æ*/
+static char* context2str(ShellContext* context)
 {
-	char *json;
-	cJSON *root, *item;
+    char* json;
+    cJSON* root, *item;
 
-	root = cJSON_CreateObject();
-	assert(root);
+    root = cJSON_CreateObject();
+    assert(root);
 
-	item = cJSON_CreateString(context->cookiefile);
-	assert(item);
-	cJSON_AddItemToObject(root, "cookiefile", item);
+    item = cJSON_CreateString(context->cookiefile);
+    assert(item);
+    cJSON_AddItemToObject(root, "cookiefile", item);
 
-	item = cJSON_CreateString(context->captchafile);
-	assert(item);
-	cJSON_AddItemToObject(root, "captchafile", item);
+    item = cJSON_CreateString(context->captchafile);
+    assert(item);
+    cJSON_AddItemToObject(root, "captchafile", item);
 
-	item = cJSON_CreateString(context->workdir);
-	assert(item);
-	cJSON_AddItemToObject(root, "workdir", item);
+    item = cJSON_CreateString(context->workdir);
+    assert(item);
+    cJSON_AddItemToObject(root, "workdir", item);
 
-	item = cJSON_CreateNumber((double)context->list_page_size);
-	assert(item);
-	cJSON_AddItemToObject(root, "list_page_size", item);
+    item = cJSON_CreateNumber((double)context->list_page_size);
+    assert(item);
+    cJSON_AddItemToObject(root, "list_page_size", item);
 
-	item = cJSON_CreateString(context->list_sort_name);
-	assert(item);
-	cJSON_AddItemToObject(root, "list_sort_name", item);
+    item = cJSON_CreateString(context->list_sort_name);
+    assert(item);
+    cJSON_AddItemToObject(root, "list_sort_name", item);
 
-	item = cJSON_CreateString(context->list_sort_direction);
-	assert(item);
-	cJSON_AddItemToObject(root, "list_sort_direction", item);
+    item = cJSON_CreateString(context->list_sort_direction);
+    assert(item);
+    cJSON_AddItemToObject(root, "list_sort_direction", item);
 
-	item = cJSON_CreateString(context->secure_method);
-	assert(item);
-	cJSON_AddItemToObject(root, "secure_method", item);
+    item = cJSON_CreateString(context->secure_method);
+    assert(item);
+    cJSON_AddItemToObject(root, "secure_method", item);
 
-	item = cJSON_CreateString(context->secure_key);
-	assert(item);
-	cJSON_AddItemToObject(root, "secure_key", item);
+    item = cJSON_CreateString(context->secure_key);
+    assert(item);
+    cJSON_AddItemToObject(root, "secure_key", item);
 
-	item = cJSON_CreateBool(context->secure_enable);
-	assert(item);
-	cJSON_AddItemToObject(root, "secure_enable", item);
+    item = cJSON_CreateBool(context->secure_enable);
+    assert(item);
+    cJSON_AddItemToObject(root, "secure_enable", item);
 
-	item = cJSON_CreateBool(context->timeout_retry);
-	assert(item);
-	cJSON_AddItemToObject(root, "timeout_retry", item);
+    item = cJSON_CreateBool(context->timeout_retry);
+    assert(item);
+    cJSON_AddItemToObject(root, "timeout_retry", item);
 
-	item = cJSON_CreateNumber(context->max_thread);
-	assert(item);
-	cJSON_AddItemToObject(root, "max_thread", item);
+    item = cJSON_CreateNumber(context->max_thread);
+    assert(item);
+    cJSON_AddItemToObject(root, "max_thread", item);
 
-	item = cJSON_CreateNumber(context->max_speed_per_thread);
-	assert(item);
-	cJSON_AddItemToObject(root, "max_speed_per_thread", item);
+    item = cJSON_CreateNumber(context->max_speed_per_thread);
+    assert(item);
+    cJSON_AddItemToObject(root, "max_speed_per_thread", item);
 
-	item = cJSON_CreateNumber(context->max_upload_speed_per_thread);
-	assert(item);
-	cJSON_AddItemToObject(root, "max_upload_speed_per_thread", item);
+    item = cJSON_CreateNumber(context->max_upload_speed_per_thread);
+    assert(item);
+    cJSON_AddItemToObject(root, "max_upload_speed_per_thread", item);
 
-	item = cJSON_CreateString(context->user_agent);
-	assert(item);
-	cJSON_AddItemToObject(root, "user_agent", item);
+    item = cJSON_CreateString(context->user_agent);
+    assert(item);
+    cJSON_AddItemToObject(root, "user_agent", item);
 
-	item = cJSON_CreateNumber(context->cache_size);
-	assert(item);
-	cJSON_AddItemToObject(root, "cache_size", item);
+    item = cJSON_CreateNumber(context->cache_size);
+    assert(item);
+    cJSON_AddItemToObject(root, "cache_size", item);
 
-	json = cJSON_Print(root);
-	assert(json);
+    json = cJSON_Print(root);
+    assert(json);
 
-	cJSON_Delete(root);
-	return json;
+    cJSON_Delete(root);
+    return json;
 }
 
-/*‰øùÂ≠ò‰∏ä‰∏ãÊñá*/
-static void save_context(ShellContext *context)
+/*±£¥Ê…œœ¬Œƒ*/
+static void save_context(ShellContext* context)
 {
-	const char *filename;
-	char *json;
-	FILE *pf;
+    const char* filename;
+    char* json;
+    FILE* pf;
 
-	json = context2str(context);
-	assert(json);
+    json = context2str(context);
+    assert(json);
 
-	filename = context->contextfile;
-	pf = fopen(filename, "wb");
-	if (!pf) {
-		fprintf(stderr, "Error: Can't open the file: %s\n", filename);
-		pcs_free(json);
-		return;
-	}
-	fwrite(json, 1, strlen(json), pf);
-	fclose(pf);
-	pcs_free(json);
+    filename = context->contextfile;
+    pf = fopen(filename, "wb");
+    if (!pf) {
+        fprintf(stderr, "Error: Can't open the file: %s\n", filename);
+        pcs_free(json);
+        return;
+    }
+    fwrite(json, 1, strlen(json), pf);
+    fclose(pf);
+    pcs_free(json);
 }
 
-/*ËøòÂéü‰øùÂ≠òÁöÑ‰∏ä‰∏ãÊñá„ÄÇ
-ÊàêÂäüËøîÂõû0ÔºåÂ§±Ë¥•ËøîÂõûÈùû0ÂÄº„ÄÇ*/
-static int restore_context(ShellContext *context, const char *filename)
+/*ªπ‘≠±£¥Êµƒ…œœ¬Œƒ°£
+≥…π¶∑µªÿ0£¨ ß∞‹∑µªÿ∑«0÷µ°£*/
+static int restore_context(ShellContext* context, const char* filename)
 {
-	char *filecontent = NULL;
-	int filesize = 0;
-	cJSON *root, *item;
+    char* filecontent = NULL;
+    int filesize = 0;
+    cJSON* root, *item;
 
-	if (!filename) {
-		filename = context->contextfile;
-	}
-	else {
-		if (context->contextfile) pcs_free(context->contextfile);
+    if (!filename) {
+        filename = context->contextfile;
+    } else {
+        if (context->contextfile) {
+            pcs_free(context->contextfile);
+        }
 #ifdef WIN32
-		context->contextfile = pcs_utils_strdup(filename);
+        context->contextfile = pcs_utils_strdup(filename);
 #else
-		/* Can't open the path that start with '~/'. why? It's not good, but work. */
-		if (filename[0] == '~' && filename[1] == '/') {
-			static char tmp[1024] = { 0 };
-			strcpy(tmp, getenv("HOME"));
-			strcat(tmp, filename + 1);
-			context->contextfile = pcs_utils_strdup(tmp);
-		}
-		else {
-			context->contextfile = pcs_utils_strdup(filename);
-		}
+        /* Can't open the path that start with '~/'. why? It's not good, but work. */
+        if (filename[0] == '~' && filename[1] == '/') {
+            static char tmp[1024] = { 0 };
+            strcpy(tmp, getenv("HOME"));
+            strcat(tmp, filename + 1);
+            context->contextfile = pcs_utils_strdup(tmp);
+        } else {
+            context->contextfile = pcs_utils_strdup(filename);
+        }
 #endif
-	}
-	filesize = read_file(context->contextfile, &filecontent);
-	if (filesize <= 0) {
-		fprintf(stderr, "Error: Can't read the context file (%s).\n", context->contextfile);
-		if (filecontent) pcs_free(filecontent);
-		return -1;
-	}
-	root = cJSON_Parse(filecontent);
-	if (!root) {
-		fprintf(stderr, "Error: Broken context file (%s).\n", context->contextfile);
-		pcs_free(filecontent);
-		return -1;
-	}
+    }
+    filesize = read_file(context->contextfile, &filecontent);
+    if (filesize <= 0) {
+        fprintf(stderr, "Error: Can't read the context file (%s).\n", context->contextfile);
+        if (filecontent) {
+            pcs_free(filecontent);
+        }
+        return -1;
+    }
+    root = cJSON_Parse(filecontent);
+    if (!root) {
+        fprintf(stderr, "Error: Broken context file (%s).\n", context->contextfile);
+        pcs_free(filecontent);
+        return -1;
+    }
 
-	item = cJSON_GetObjectItem(root, "cookiefile");
-	if (item && item->valuestring && item->valuestring[0]) {
-		if (!is_absolute_path(item->valuestring)) {
-			printf("warning: Invalid context.cookiefile, the value should be absolute path, use default value: %s.\n", context->cookiefile);
-		}
-		else {
-			if (context->cookiefile) pcs_free(context->cookiefile);
-			context->cookiefile = pcs_utils_strdup(item->valuestring);
-		}
-	}
+    item = cJSON_GetObjectItem(root, "cookiefile");
+    if (item && item->valuestring && item->valuestring[0]) {
+        if (!is_absolute_path(item->valuestring)) {
+            printf("warning: Invalid context.cookiefile, the value should be absolute path, use default value: %s.\n", context->cookiefile);
+        } else {
+            if (context->cookiefile) {
+                pcs_free(context->cookiefile);
+            }
+            context->cookiefile = pcs_utils_strdup(item->valuestring);
+        }
+    }
 
-	item = cJSON_GetObjectItem(root, "captchafile");
-	if (item && item->valuestring && item->valuestring[0]) {
-		if (!is_absolute_path(item->valuestring)) {
-			printf("warning: Invalid context.captchafile, the value should be absolute path, use default value: %s.\n", context->captchafile);
-		}
-		else {
-			if (context->captchafile) pcs_free(context->captchafile);
-			context->captchafile = pcs_utils_strdup(item->valuestring);
-		}
-	}
+    item = cJSON_GetObjectItem(root, "captchafile");
+    if (item && item->valuestring && item->valuestring[0]) {
+        if (!is_absolute_path(item->valuestring)) {
+            printf("warning: Invalid context.captchafile, the value should be absolute path, use default value: %s.\n", context->captchafile);
+        } else {
+            if (context->captchafile) {
+                pcs_free(context->captchafile);
+            }
+            context->captchafile = pcs_utils_strdup(item->valuestring);
+        }
+    }
 
-	item = cJSON_GetObjectItem(root, "workdir");
-	if (item && item->valuestring && item->valuestring[0]) {
-		if (item->valuestring[0] != '/') {
-			printf("warning: Invalid context.workdir, the value should be absolute path, use default value: %s.\n", context->workdir);
-		}
-		else {
-			if (context->workdir) pcs_free(context->workdir);
-			context->workdir = pcs_utils_strdup(item->valuestring);
-		}
-	}
+    item = cJSON_GetObjectItem(root, "workdir");
+    if (item && item->valuestring && item->valuestring[0]) {
+        if (item->valuestring[0] != '/') {
+            printf("warning: Invalid context.workdir, the value should be absolute path, use default value: %s.\n", context->workdir);
+        } else {
+            if (context->workdir) {
+                pcs_free(context->workdir);
+            }
+            context->workdir = pcs_utils_strdup(item->valuestring);
+        }
+    }
 
-	item = cJSON_GetObjectItem(root, "list_page_size");
-	if (item) {
-		if (((int)item->valueint) < 1) {
-			printf("warning: Invalid context.list_page_size, the value should be great than 0, use default value: %d.\n", context->list_page_size);
-		}
-		else {
-			context->list_page_size = (int)item->valueint;
-		}
-	}
+    item = cJSON_GetObjectItem(root, "list_page_size");
+    if (item) {
+        if (((int)item->valueint) < 1) {
+            printf("warning: Invalid context.list_page_size, the value should be great than 0, use default value: %d.\n", context->list_page_size);
+        } else {
+            context->list_page_size = (int)item->valueint;
+        }
+    }
 
-	item = cJSON_GetObjectItem(root, "list_sort_name");
-	if (item && item->valuestring && item->valuestring[0]) {
-		if (strcmp(item->valuestring, "name") && strcmp(item->valuestring, "time") && strcmp(item->valuestring, "size")) {
-			printf("warning: Invalid context.list_sort_name, the value should be one of [name|time|size], use default value: %s.\n", context->list_sort_name);
-		}
-		else {
-			if (context->list_sort_name) pcs_free(context->list_sort_name);
-			context->list_sort_name = pcs_utils_strdup(item->valuestring);
-		}
-	}
+    item = cJSON_GetObjectItem(root, "list_sort_name");
+    if (item && item->valuestring && item->valuestring[0]) {
+        if (strcmp(item->valuestring, "name") && strcmp(item->valuestring, "time") && strcmp(item->valuestring, "size")) {
+            printf("warning: Invalid context.list_sort_name, the value should be one of [name|time|size], use default value: %s.\n", context->list_sort_name);
+        } else {
+            if (context->list_sort_name) {
+                pcs_free(context->list_sort_name);
+            }
+            context->list_sort_name = pcs_utils_strdup(item->valuestring);
+        }
+    }
 
-	item = cJSON_GetObjectItem(root, "list_sort_direction");
-	if (item && item->valuestring && item->valuestring[0]) {
-		if (strcmp(item->valuestring, "asc") && strcmp(item->valuestring, "desc")) {
-			printf("warning: Invalid context.list_sort_direction, the value should be one of [asc|desc], use default value: %s.\n", context->list_sort_direction);
-		}
-		else {
-			if (context->list_sort_direction) pcs_free(context->list_sort_direction);
-			context->list_sort_direction = pcs_utils_strdup(item->valuestring);
-		}
-	}
+    item = cJSON_GetObjectItem(root, "list_sort_direction");
+    if (item && item->valuestring && item->valuestring[0]) {
+        if (strcmp(item->valuestring, "asc") && strcmp(item->valuestring, "desc")) {
+            printf("warning: Invalid context.list_sort_direction, the value should be one of [asc|desc], use default value: %s.\n", context->list_sort_direction);
+        } else {
+            if (context->list_sort_direction) {
+                pcs_free(context->list_sort_direction);
+            }
+            context->list_sort_direction = pcs_utils_strdup(item->valuestring);
+        }
+    }
 
-	item = cJSON_GetObjectItem(root, "secure_method");
-	if (item && item->valuestring && item->valuestring[0]) {
-		if (strcmp(item->valuestring, "plaintext") && strcmp(item->valuestring, "aes-cbc-128") && strcmp(item->valuestring, "aes-cbc-192") && strcmp(item->valuestring, "aes-cbc-256")) {
-			printf("warning: Invalid context.secure_method, the value should be one of [plaintext|aes-cbc-128|aes-cbc-192|aes-cbc-256], use default value: %s.\n", context->secure_method);
-		}
-		else {
-			if (context->secure_method) pcs_free(context->secure_method);
-			context->secure_method = pcs_utils_strdup(item->valuestring);
-		}
-	}
+    item = cJSON_GetObjectItem(root, "secure_method");
+    if (item && item->valuestring && item->valuestring[0]) {
+        if (strcmp(item->valuestring, "plaintext") && strcmp(item->valuestring, "aes-cbc-128") && strcmp(item->valuestring, "aes-cbc-192") && strcmp(item->valuestring, "aes-cbc-256")) {
+            printf("warning: Invalid context.secure_method, the value should be one of [plaintext|aes-cbc-128|aes-cbc-192|aes-cbc-256], use default value: %s.\n", context->secure_method);
+        } else {
+            if (context->secure_method) {
+                pcs_free(context->secure_method);
+            }
+            context->secure_method = pcs_utils_strdup(item->valuestring);
+        }
+    }
 
-	item = cJSON_GetObjectItem(root, "secure_key");
-	if (item && item->valuestring && item->valuestring[0]) {
-		if (context->secure_key) pcs_free(context->secure_key);
-		context->secure_key = pcs_utils_strdup(item->valuestring);
-	}
+    item = cJSON_GetObjectItem(root, "secure_key");
+    if (item && item->valuestring && item->valuestring[0]) {
+        if (context->secure_key) {
+            pcs_free(context->secure_key);
+        }
+        context->secure_key = pcs_utils_strdup(item->valuestring);
+    }
 
-	item = cJSON_GetObjectItem(root, "secure_enable");
-	if (item) {
-		context->secure_enable = item->valueint ? 1 : 0;
-	}
+    item = cJSON_GetObjectItem(root, "secure_enable");
+    if (item) {
+        context->secure_enable = item->valueint ? 1 : 0;
+    }
 
-	item = cJSON_GetObjectItem(root, "timeout_retry");
-	if (item) {
-		context->timeout_retry = item->valueint ? 1 : 0;
-	}
+    item = cJSON_GetObjectItem(root, "timeout_retry");
+    if (item) {
+        context->timeout_retry = item->valueint ? 1 : 0;
+    }
 
-	item = cJSON_GetObjectItem(root, "max_thread");
-	if (item) {
-		if (((int)item->valueint) < 1) {
-			printf("warning: Invalid context.max_thread, the value should be great than 0, use default value: %d.\n", context->max_thread);
-		}
-		else {
-			context->max_thread = (int)item->valueint;
-		}
-	}
+    item = cJSON_GetObjectItem(root, "max_thread");
+    if (item) {
+        if (((int)item->valueint) < 1) {
+            printf("warning: Invalid context.max_thread, the value should be great than 0, use default value: %d.\n", context->max_thread);
+        } else {
+            context->max_thread = (int)item->valueint;
+        }
+    }
 
-	item = cJSON_GetObjectItem(root, "max_speed_per_thread");
-	if (item) {
-		if (((int)item->valueint) < 0) {
-			printf("warning: Invalid context.max_speed_per_thread, the value should be >= 0, use default value: %d.\n", context->max_speed_per_thread);
-		}
-		else {
-			context->max_speed_per_thread = (int)item->valueint;
-		}
-	}
+    item = cJSON_GetObjectItem(root, "max_speed_per_thread");
+    if (item) {
+        if (((int)item->valueint) < 0) {
+            printf("warning: Invalid context.max_speed_per_thread, the value should be >= 0, use default value: %d.\n", context->max_speed_per_thread);
+        } else {
+            context->max_speed_per_thread = (int)item->valueint;
+        }
+    }
 
-	item = cJSON_GetObjectItem(root, "max_upload_speed_per_thread");
-	if (item) {
-		if (((int)item->valueint) < 0) {
-			printf("warning: Invalid context.max_upload_speed_per_thread, the value should be >= 0, use default value: %d.\n", context->max_upload_speed_per_thread);
-		}
-		else {
-			context->max_upload_speed_per_thread = (int)item->valueint;
-		}
-	}
+    item = cJSON_GetObjectItem(root, "max_upload_speed_per_thread");
+    if (item) {
+        if (((int)item->valueint) < 0) {
+            printf("warning: Invalid context.max_upload_speed_per_thread, the value should be >= 0, use default value: %d.\n", context->max_upload_speed_per_thread);
+        } else {
+            context->max_upload_speed_per_thread = (int)item->valueint;
+        }
+    }
 
-	item = cJSON_GetObjectItem(root, "user_agent");
-	if (item && item->valuestring && item->valuestring[0]) {
-		if (context->user_agent) pcs_free(context->user_agent);
-		context->user_agent = pcs_utils_strdup(item->valuestring);
-	}
+    item = cJSON_GetObjectItem(root, "user_agent");
+    if (item && item->valuestring && item->valuestring[0]) {
+        if (context->user_agent) {
+            pcs_free(context->user_agent);
+        }
+        context->user_agent = pcs_utils_strdup(item->valuestring);
+    }
 
-	item = cJSON_GetObjectItem(root, "cache_size");
-	if (item) {
-		if (((int)item->valueint) < 0) {
-			printf("warning: Invalid context.cache_size, the value should be >= 0, use default value: %d.\n", context->cache_size);
-		}
-		else {
-			context->cache_size = (int)item->valueint;
-		}
-	}
+    item = cJSON_GetObjectItem(root, "cache_size");
+    if (item) {
+        if (((int)item->valueint) < 0) {
+            printf("warning: Invalid context.cache_size, the value should be >= 0, use default value: %d.\n", context->cache_size);
+        } else {
+            context->cache_size = (int)item->valueint;
+        }
+    }
 
-	cJSON_Delete(root);
-	pcs_free(filecontent);
-	return 0;
+    cJSON_Delete(root);
+    pcs_free(filecontent);
+    return 0;
 }
 
-/*ÂàùÂßãÂåñ‰∏ä‰∏ãÊñá*/
-static void init_context(ShellContext *context, struct args *arg)
+/*≥ı ºªØ…œœ¬Œƒ*/
+static void init_context(ShellContext* context, struct args* arg)
 {
-	memset(context, 0, sizeof(ShellContext));
-	context->contextfile = pcs_utils_strdup(contextfile());
-	context->cookiefile = pcs_utils_strdup(cookiefile());
-	context->captchafile = pcs_utils_strdup(captchafile());
-	context->workdir = pcs_utils_strdup("/");
-	context->list_page_size = PRINT_PAGE_SIZE;
-	context->list_sort_name = pcs_utils_strdup("name");
-	context->list_sort_direction = pcs_utils_strdup("asc");
-	
-	context->secure_method = pcs_utils_strdup("plaintext");
-	context->secure_key = pcs_utils_strdup("");
-	context->secure_enable = 0;
+    memset(context, 0, sizeof(ShellContext));
+    context->contextfile = pcs_utils_strdup(contextfile());
+    context->cookiefile = pcs_utils_strdup(cookiefile());
+    context->captchafile = pcs_utils_strdup(captchafile());
+    context->workdir = pcs_utils_strdup("/");
+    context->list_page_size = PRINT_PAGE_SIZE;
+    context->list_sort_name = pcs_utils_strdup("name");
+    context->list_sort_direction = pcs_utils_strdup("asc");
 
-	context->timeout_retry = 1;
-	context->max_thread = DEFAULT_THREAD_NUM;
-	context->max_speed_per_thread = 0;
-	context->max_upload_speed_per_thread = 0;
-	context->cache_size = MAX_CACHE_SIZE;
+    context->secure_method = pcs_utils_strdup("plaintext");
+    context->secure_key = pcs_utils_strdup("");
+    context->secure_enable = 0;
 
-	context->user_agent = pcs_utils_strdup(USAGE);
+    context->timeout_retry = 1;
+    context->max_thread = DEFAULT_THREAD_NUM;
+    context->max_speed_per_thread = 0;
+    context->max_upload_speed_per_thread = 0;
+    context->cache_size = MAX_CACHE_SIZE;
+
+    context->user_agent = pcs_utils_strdup(USAGE);
 }
 
-/*ÈáäÊîæ‰∏ä‰∏ãÊñá*/
-static void free_context(ShellContext *context)
+/* Õ∑≈…œœ¬Œƒ*/
+static void free_context(ShellContext* context)
 {
-	if (context->cookiefile) pcs_free(context->cookiefile);
-	if (context->captchafile) pcs_free(context->captchafile);
-	if (context->workdir) pcs_free(context->workdir);
-	if (context->list_sort_name) pcs_free(context->list_sort_name);
-	if (context->list_sort_direction) pcs_free(context->list_sort_direction);
-	if (context->secure_method) pcs_free(context->secure_method);
-	if (context->secure_key) pcs_free(context->secure_key);
-	if (context->contextfile) pcs_free(context->contextfile);
-	if (context->user_agent) pcs_free(context->user_agent);
-	memset(context, 0, sizeof(ShellContext));
+    if (context->cookiefile) {
+        pcs_free(context->cookiefile);
+    }
+    if (context->captchafile) {
+        pcs_free(context->captchafile);
+    }
+    if (context->workdir) {
+        pcs_free(context->workdir);
+    }
+    if (context->list_sort_name) {
+        pcs_free(context->list_sort_name);
+    }
+    if (context->list_sort_direction) {
+        pcs_free(context->list_sort_direction);
+    }
+    if (context->secure_method) {
+        pcs_free(context->secure_method);
+    }
+    if (context->secure_key) {
+        pcs_free(context->secure_key);
+    }
+    if (context->contextfile) {
+        pcs_free(context->contextfile);
+    }
+    if (context->user_agent) {
+        pcs_free(context->user_agent);
+    }
+    memset(context, 0, sizeof(ShellContext));
 }
 
-/*ÂàùÂßãÂåñPCS*/
-static Pcs *create_pcs(ShellContext *context)
+/*≥ı ºªØPCS*/
+static Pcs* create_pcs(ShellContext* context)
 {
-	Pcs *pcs = pcs_create(context->cookiefile);
-	if (!pcs) return NULL;
-	pcs_setopt(pcs, PCS_OPTION_CAPTCHA_FUNCTION, (void *)&verifycode);
-	pcs_setopt(pcs, PCS_OPTION_CAPTCHA_FUNCTION_DATA, (void *)context);
-    pcs_setopt(pcs, PCS_OPTION_INPUT_FUNCTION, (void *)&input_str);
-    pcs_setopt(pcs, PCS_OPTION_INPUT_FUNCTION_DATA, (void *)context);
-	pcs_setopts(pcs,
-		PCS_OPTION_PROGRESS_FUNCTION, (void *)&upload_progress,
-		PCS_OPTION_PROGRESS, (void *)((long)PcsFalse),
-		PCS_OPTION_USAGE, (void*)context->user_agent,
-		//PCS_OPTION_TIMEOUT, (void *)((long)TIMEOUT),
-		PCS_OPTION_CONNECTTIMEOUT, (void *)((long)CONNECTTIMEOUT),
-		PCS_OPTION_END);
-	return pcs;
+    Pcs* pcs = pcs_create(context->cookiefile);
+    if (!pcs) {
+        return NULL;
+    }
+    pcs_setopt(pcs, PCS_OPTION_CAPTCHA_FUNCTION, (void*)&verifycode);
+    pcs_setopt(pcs, PCS_OPTION_CAPTCHA_FUNCTION_DATA, (void*)context);
+    pcs_setopt(pcs, PCS_OPTION_INPUT_FUNCTION, (void*)&input_str);
+    pcs_setopt(pcs, PCS_OPTION_INPUT_FUNCTION_DATA, (void*)context);
+    pcs_setopts(pcs,
+                PCS_OPTION_PROGRESS_FUNCTION, (void*)&upload_progress,
+                PCS_OPTION_PROGRESS, (void*)((long)PcsFalse),
+                PCS_OPTION_USAGE, (void*)context->user_agent,
+                //PCS_OPTION_TIMEOUT, (void *)((long)TIMEOUT),
+                PCS_OPTION_CONNECTTIMEOUT, (void*)((long)CONNECTTIMEOUT),
+                PCS_OPTION_END);
+    return pcs;
 }
 
-static void destroy_pcs(Pcs *pcs)
+static void destroy_pcs(Pcs* pcs)
 {
-	pcs_destroy(pcs);
+    pcs_destroy(pcs);
 }
 
 #pragma endregion
 
-#pragma region ÊâìÂç∞Áî®Ê≥ïÁõ∏ÂÖ≥ÂáΩÊï∞
+#pragma region ¥Ú”°”√∑®œ‡πÿ∫Ø ˝
 
-/*ÊâìÂç∞ÁâàÊú¨*/
+/*¥Ú”°∞Ê±æ*/
 static void version()
 {
-	printf(program_full_name "%s\n", app_name);
+    printf(program_full_name "%s\n", app_name);
 }
 
-/*ÊâìÂç∞catÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°cat√¸¡Ó”√∑®*/
 static void usage_cat()
 {
-	version();
-	printf("\nUsage: %s cat [-h] <path>\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Print the file content\n");
-	printf("\nOptions:\n");
-	printf("  -h    Print the usage.\n");
-	printf("\nSamples:\n");
-	printf("  %s cat -h\n", app_name);
-	printf("  %s cat /music/list.txt\n", app_name);
-	printf("  %s cat list.txt\n", app_name);
-	printf("  %s cat \"/music/Europe and America/list.txt\"\n", app_name);
+    version();
+    printf("\nUsage: %s cat [-h] <path>\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Print the file content\n");
+    printf("\nOptions:\n");
+    printf("  -h    Print the usage.\n");
+    printf("\nSamples:\n");
+    printf("  %s cat -h\n", app_name);
+    printf("  %s cat /music/list.txt\n", app_name);
+    printf("  %s cat list.txt\n", app_name);
+    printf("  %s cat \"/music/Europe and America/list.txt\"\n", app_name);
 }
 
-/*ÊâìÂç∞cdÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°cd√¸¡Ó”√∑®*/
 static void usage_cd()
 {
-	version();
-	printf("\nUsage: %s cd [-h] <path>\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Change the work directory\n");
-	printf("\nOptions:\n");
-	printf("  -h    Print the usage.\n");
-	printf("\nSamples:\n");
-	printf("  %s cd -h\n", app_name);
-	printf("  %s cd /music\n", app_name);
-	printf("  %s cd subdir\n", app_name);
-	printf("  %s cd \"/music/Europe and America\"\n", app_name);
+    version();
+    printf("\nUsage: %s cd [-h] <path>\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Change the work directory\n");
+    printf("\nOptions:\n");
+    printf("  -h    Print the usage.\n");
+    printf("\nSamples:\n");
+    printf("  %s cd -h\n", app_name);
+    printf("  %s cd /music\n", app_name);
+    printf("  %s cd subdir\n", app_name);
+    printf("  %s cd \"/music/Europe and America\"\n", app_name);
 }
 
-/*ÊâìÂç∞copyÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°copy√¸¡Ó”√∑®*/
 static void usage_copy()
 {
-	version();
-	printf("\nUsage: %s copy [-h] <src> <dst>\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Copy the file|directory\n");
-	printf("\nOptions:\n");
-	printf("  -h    Print the usage.\n");
-	printf("\nSamples:\n");
-	printf("  %s copy -h\n", app_name);
-	printf("  %s copy src.txt dst.txt\n", app_name);
-	printf("  %s copy /music/src.mp3 /music/mp3/dst.mp3\n", app_name);
-	printf("  %s copy /music/src.mp3 \"/music/Europe and America/dst.mp3\"\n", app_name);
+    version();
+    printf("\nUsage: %s copy [-h] <src> <dst>\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Copy the file|directory\n");
+    printf("\nOptions:\n");
+    printf("  -h    Print the usage.\n");
+    printf("\nSamples:\n");
+    printf("  %s copy -h\n", app_name);
+    printf("  %s copy src.txt dst.txt\n", app_name);
+    printf("  %s copy /music/src.mp3 /music/mp3/dst.mp3\n", app_name);
+    printf("  %s copy /music/src.mp3 \"/music/Europe and America/dst.mp3\"\n", app_name);
 }
 
-/*ÊâìÂç∞compareÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°compare√¸¡Ó”√∑®*/
 static void usage_compare()
 {
-	version();
-	printf("\nUsage: %s compare [-cdehru] <local path> <net disk path>\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Print the differents between local and net disk. \n"
-		   "  Default options is '-cdu'. \n");
-	printf("\nOptions:\n");
-	printf("  -c    Print the files that confuse, which is don't know how to do.\n");
-	printf("  -d    Print the files that is old than the net disk.\n");
-	printf("  -e    Print the files that is same between local and net disk.\n");
-	printf("  -h    Print the usage.\n");
-	printf("  -r    Recursive compare the sub directories.\n");
-	printf("  -u    Print the files that is newer than the net disk.\n");
-	printf("\nSamples:\n");
-	printf("  %s compare -h\n", app_name);
-	printf("  %s compare ~/music /music\n", app_name);
-	printf("  %s compare music /music\n", app_name);
-	printf("  %s compare -r music /music\n", app_name);
+    version();
+    printf("\nUsage: %s compare [-cdehru] <local path> <net disk path>\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Print the differents between local and net disk. \n"
+           "  Default options is '-cdu'. \n");
+    printf("\nOptions:\n");
+    printf("  -c    Print the files that confuse, which is don't know how to do.\n");
+    printf("  -d    Print the files that is old than the net disk.\n");
+    printf("  -e    Print the files that is same between local and net disk.\n");
+    printf("  -h    Print the usage.\n");
+    printf("  -r    Recursive compare the sub directories.\n");
+    printf("  -u    Print the files that is newer than the net disk.\n");
+    printf("\nSamples:\n");
+    printf("  %s compare -h\n", app_name);
+    printf("  %s compare ~/music /music\n", app_name);
+    printf("  %s compare music /music\n", app_name);
+    printf("  %s compare -r music /music\n", app_name);
 }
 
-/*ÊâìÂç∞contextÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°context√¸¡Ó”√∑®*/
 static void usage_context()
 {
-	version();
-	printf("\nUsage: %s context [-h]\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Print the context\n");
-	printf("\nOptions:\n");
-	printf("  -h    Print the usage.\n");
-	printf("\nSamples:\n");
-	printf("  %s context -h\n", app_name);
-	printf("  %s context\n", app_name);
+    version();
+    printf("\nUsage: %s context [-h]\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Print the context\n");
+    printf("\nOptions:\n");
+    printf("  -h    Print the usage.\n");
+    printf("\nSamples:\n");
+    printf("  %s context -h\n", app_name);
+    printf("  %s context\n", app_name);
 }
 
-/*ÊâìÂç∞downloadÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°download√¸¡Ó”√∑®*/
 static void usage_download()
 {
-	version();
-	printf("\nUsage: %s download [-fh] <file> <local file>\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Download the file\n");
-	printf("\nOptions:\n");
-	printf("  -f    Force override the local file when the file exists on local file system.\n");
-	printf("  -h    Print the usage.\n");
-	printf("\nSamples:\n");
-	printf("  %s download -h\n", app_name);
-	printf("  %s download dst.txt ~/dst.txt\n", app_name);
-	printf("  %s download dst.txt dst.txt\n", app_name);
-	printf("  %s download -f dst.txt ~/dst.txt\n", app_name);
-	printf("  %s download \"/music/dst.mp3\" \"/home/pcs/music/dst.mp3\"\n", app_name);
+    version();
+    printf("\nUsage: %s download [-fh] <file> <local file>\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Download the file\n");
+    printf("\nOptions:\n");
+    printf("  -f    Force override the local file when the file exists on local file system.\n");
+    printf("  -h    Print the usage.\n");
+    printf("\nSamples:\n");
+    printf("  %s download -h\n", app_name);
+    printf("  %s download dst.txt ~/dst.txt\n", app_name);
+    printf("  %s download dst.txt dst.txt\n", app_name);
+    printf("  %s download -f dst.txt ~/dst.txt\n", app_name);
+    printf("  %s download \"/music/dst.mp3\" \"/home/pcs/music/dst.mp3\"\n", app_name);
 }
 
-/*ÊâìÂç∞echoÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°echo√¸¡Ó”√∑®*/
 static void usage_echo()
 {
-	version();
-	printf("\nUsage: %s echo [-ah] <path> <text>\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Write the text into net disk file\n");
-	printf("\nOptions:\n");
-	printf("  -a    Append the text.\n");
-	printf("  -h    Print the usage.\n");
-	printf("\nSamples:\n");
-	printf("  %s echo -h\n", app_name);
-	printf("  %s echo src.txt \"This is from 'echo' command.\" \n", app_name);
-	printf("  %s echo /docs/src.txt \"This is from 'echo' command.\"\n", app_name);
-	printf("  %s echo -a \"for test/src.txt\" \"This is from 'echo' command.\"\n", app_name);
+    version();
+    printf("\nUsage: %s echo [-ah] <path> <text>\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Write the text into net disk file\n");
+    printf("\nOptions:\n");
+    printf("  -a    Append the text.\n");
+    printf("  -h    Print the usage.\n");
+    printf("\nSamples:\n");
+    printf("  %s echo -h\n", app_name);
+    printf("  %s echo src.txt \"This is from 'echo' command.\" \n", app_name);
+    printf("  %s echo /docs/src.txt \"This is from 'echo' command.\"\n", app_name);
+    printf("  %s echo -a \"for test/src.txt\" \"This is from 'echo' command.\"\n", app_name);
 }
 
-/*ÊâìÂç∞encodeÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°encode√¸¡Ó”√∑®*/
 static void usage_encode()
 {
-	version();
-	printf("\nUsage: %s encode [-defh] <src> <dst>\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Encrypt/decrypt the file. Default option is '-d'\n");
-	printf("\nOptions:\n");
-	printf("  -d    Decrypt the file.\n");
-	printf("  -e    Encrypt the file.\n");
-	printf("  -f    Force override the dest file, if it's exist.\n");
-	printf("  -h    Print the usage.\n");
-	printf("\nSamples:\n");
-	printf("  %s encode -h\n", app_name);
-	printf("  %s encode plain.txt cipher.txt \n", app_name);
-	printf("  %s encode -d cipher.txt plain.txt\n", app_name);
+    version();
+    printf("\nUsage: %s encode [-defh] <src> <dst>\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Encrypt/decrypt the file. Default option is '-d'\n");
+    printf("\nOptions:\n");
+    printf("  -d    Decrypt the file.\n");
+    printf("  -e    Encrypt the file.\n");
+    printf("  -f    Force override the dest file, if it's exist.\n");
+    printf("  -h    Print the usage.\n");
+    printf("\nSamples:\n");
+    printf("  %s encode -h\n", app_name);
+    printf("  %s encode plain.txt cipher.txt \n", app_name);
+    printf("  %s encode -d cipher.txt plain.txt\n", app_name);
 }
 
-/*ÊâìÂç∞ fix ÂëΩ‰ª§Áî®Ê≥ï„ÄÇ*/
+/*¥Ú”° fix √¸¡Ó”√∑®°£*/
 static void usage_fix()
 {
-	version();
-	printf("\nUsage: %s fix [-fh] <md5> <length> <scrap> <remote path>\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Fix file base md5 and scrap.\n");
-	printf("  Some times, we download a file from foreign website, the speed is slow.\n");
-	printf("  In the case, if we know the actual size and md5 of the file, we can \n");
-	printf("  download first 256KB block from the foreign website, \n");
-	printf("  and then use the \"pcs fix\" command to try to repair the file.\n");
-	printf("  After success, the file will be saved in Baidu netdisk. \n");
-	printf("  If somebody have been uploaded the file to Baidu netdisk, \n");
-	printf("  it should be 100 % successful.\n");
-	printf("\nOptions:\n");
-	printf("  -f    Force override the remote file when the file exists on netdisk.\n");
-	printf("  -h    Print the usage.\n");
-	printf("\nSamples:\n");
-	printf("  %s fix -h\n", app_name);
-	printf("  %s fix 39d768542cd2420771f28b9a3652412f 5849513984 ~/xxx.iso xxx.iso\n", app_name);
+    version();
+    printf("\nUsage: %s fix [-fh] <md5> <length> <scrap> <remote path>\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Fix file base md5 and scrap.\n");
+    printf("  Some times, we download a file from foreign website, the speed is slow.\n");
+    printf("  In the case, if we know the actual size and md5 of the file, we can \n");
+    printf("  download first 256KB block from the foreign website, \n");
+    printf("  and then use the \"pcs fix\" command to try to repair the file.\n");
+    printf("  After success, the file will be saved in Baidu netdisk. \n");
+    printf("  If somebody have been uploaded the file to Baidu netdisk, \n");
+    printf("  it should be 100 % successful.\n");
+    printf("\nOptions:\n");
+    printf("  -f    Force override the remote file when the file exists on netdisk.\n");
+    printf("  -h    Print the usage.\n");
+    printf("\nSamples:\n");
+    printf("  %s fix -h\n", app_name);
+    printf("  %s fix 39d768542cd2420771f28b9a3652412f 5849513984 ~/xxx.iso xxx.iso\n", app_name);
 }
 
-/*ÊâìÂç∞helpÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°help√¸¡Ó”√∑®*/
 static void usage_help()
 {
-	version();
-	printf("\nUsage: %s help [-h] [command]\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Print the usage\n");
-	printf("\nOptions:\n");
-	printf("  -h    Print the usage.\n");
-	printf("\nSamples:\n");
-	printf("  %s help -h\n", app_name);
-	printf("  %s help\n", app_name);
-	printf("  %s help synch\n", app_name);
+    version();
+    printf("\nUsage: %s help [-h] [command]\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Print the usage\n");
+    printf("\nOptions:\n");
+    printf("  -h    Print the usage.\n");
+    printf("\nSamples:\n");
+    printf("  %s help -h\n", app_name);
+    printf("  %s help\n", app_name);
+    printf("  %s help synch\n", app_name);
 }
 
-/*ÊâìÂç∞listÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°list√¸¡Ó”√∑®*/
 static void usage_list()
 {
-	version();
-	printf("\nUsage: %s list [-h] [path]\n", app_name);
-	printf("\nDescription:\n");
-	printf("  List the directory\n");
-	printf("\nOptions:\n");
-	printf("  -md5   Print md5 if possiable.\n");
-	printf("  -thumb Print thumb url if possiable.\n");
-	printf("  -h     Print the usage.\n");
-	printf("\nSamples:\n");
-	printf("  %s list -h\n", app_name);
-	printf("  %s list\n", app_name);
-	printf("  %s list /music\n", app_name);
-	printf("  %s list \"/music/Europe and America\"\n", app_name);
+    version();
+    printf("\nUsage: %s list [-h] [path]\n", app_name);
+    printf("\nDescription:\n");
+    printf("  List the directory\n");
+    printf("\nOptions:\n");
+    printf("  -md5   Print md5 if possiable.\n");
+    printf("  -thumb Print thumb url if possiable.\n");
+    printf("  -h     Print the usage.\n");
+    printf("\nSamples:\n");
+    printf("  %s list -h\n", app_name);
+    printf("  %s list\n", app_name);
+    printf("  %s list /music\n", app_name);
+    printf("  %s list \"/music/Europe and America\"\n", app_name);
 }
 
-/*ÊâìÂç∞loginÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°login√¸¡Ó”√∑®*/
 static void usage_login()
 {
-	version();
-	printf("\nUsage: %s login [-h] [--username=<user name>] [--password=<password>]\n", app_name);
-	printf("\nDescription:\n");
-	printf("  The command maybe save captcha image into your local file system, \n"
-		   "  then you can see the captcha. You can use '%s set --captcha_file=<path>' \n"
-		   "  to change the save path, and use '%s context' command to view the path.\n"
-		   "  The cookie can reusable, so you can login in your pc, and then upload the \n"
-		   "  cookie file to your vps.\n"
-		   "  After login, you can use '%s who' to see the user id, \n"
-		   "  and use '%s pwd' to see your work directory.\n",
-		   app_name, app_name, app_name, app_name);
-	printf("\nOptions:\n");
-	printf("  -h            Print the usage.\n");
-	printf("  --username    Specify user name.\n");
-	printf("  --password    Specify password.\n");
-	printf("\nSamples:\n");
-	printf("  %s login -h\n", app_name);
-	printf("  %s login\n", app_name);
-	printf("  %s login --username=gang\n", app_name);
-	printf("  %s login --username=gang --password=\"password\"\n", app_name);
+    version();
+    printf("\nUsage: %s login [-h] [--username=<user name>] [--password=<password>]\n", app_name);
+    printf("\nDescription:\n");
+    printf("  The command maybe save captcha image into your local file system, \n"
+           "  then you can see the captcha. You can use '%s set --captcha_file=<path>' \n"
+           "  to change the save path, and use '%s context' command to view the path.\n"
+           "  The cookie can reusable, so you can login in your pc, and then upload the \n"
+           "  cookie file to your vps.\n"
+           "  After login, you can use '%s who' to see the user id, \n"
+           "  and use '%s pwd' to see your work directory.\n",
+           app_name, app_name, app_name, app_name);
+    printf("\nOptions:\n");
+    printf("  -h            Print the usage.\n");
+    printf("  --username    Specify user name.\n");
+    printf("  --password    Specify password.\n");
+    printf("\nSamples:\n");
+    printf("  %s login -h\n", app_name);
+    printf("  %s login\n", app_name);
+    printf("  %s login --username=gang\n", app_name);
+    printf("  %s login --username=gang --password=\"password\"\n", app_name);
 }
 
-/*ÊâìÂç∞logoutÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°logout√¸¡Ó”√∑®*/
 static void usage_logout()
 {
-	version();
-	printf("\nUsage: %s logout [-h]\n", app_name);
-	printf("\nDescription:\n");
-	printf("  \n");
-	printf("\nOptions:\n");
-	printf("  -h    Print the usage.\n");
-	printf("\nSamples:\n");
-	printf("  %s logout -h\n", app_name);
-	printf("  %s logout\n", app_name);
+    version();
+    printf("\nUsage: %s logout [-h]\n", app_name);
+    printf("\nDescription:\n");
+    printf("  \n");
+    printf("\nOptions:\n");
+    printf("  -h    Print the usage.\n");
+    printf("\nSamples:\n");
+    printf("  %s logout -h\n", app_name);
+    printf("  %s logout\n", app_name);
 }
 
-/*ÊâìÂç∞metaÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°meta√¸¡Ó”√∑®*/
 static void usage_meta()
 {
-	version();
-	printf("\nUsage: %s meta [-h] [path]\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Print the file|directory meta information\n");
-	printf("\nOptions:\n");
-	printf("  -h    Print the usage.\n");
-	printf("\nSamples:\n");
-	printf("  %s meta -h\n", app_name);
-	printf("  %s meta\n", app_name);
-	printf("  %s meta /music\n", app_name);
-	printf("  %s meta \"/music/Europe and America\"\n", app_name);
+    version();
+    printf("\nUsage: %s meta [-h] [path]\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Print the file|directory meta information\n");
+    printf("\nOptions:\n");
+    printf("  -h    Print the usage.\n");
+    printf("\nSamples:\n");
+    printf("  %s meta -h\n", app_name);
+    printf("  %s meta\n", app_name);
+    printf("  %s meta /music\n", app_name);
+    printf("  %s meta \"/music/Europe and America\"\n", app_name);
 }
 
-/*ÊâìÂç∞mkdirÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°mkdir√¸¡Ó”√∑®*/
 static void usage_mkdir()
 {
-	version();
-	printf("\nUsage: %s mkdir [-h] <path>\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Make a new directory\n");
-	printf("\nOptions:\n");
-	printf("  -h    Print the usage.\n");
-	printf("\nSamples:\n");
-	printf("  %s mkdir -h\n", app_name);
-	printf("  %s mkdir subdir\n", app_name);
-	printf("  %s mkdir /music\n", app_name);
-	printf("  %s mkdir \"/music/Europe and America\"\n", app_name);
+    version();
+    printf("\nUsage: %s mkdir [-h] <path>\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Make a new directory\n");
+    printf("\nOptions:\n");
+    printf("  -h    Print the usage.\n");
+    printf("\nSamples:\n");
+    printf("  %s mkdir -h\n", app_name);
+    printf("  %s mkdir subdir\n", app_name);
+    printf("  %s mkdir /music\n", app_name);
+    printf("  %s mkdir \"/music/Europe and America\"\n", app_name);
 }
 
-/*ÊâìÂç∞moveÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°move√¸¡Ó”√∑®*/
 static void usage_move()
 {
-	version();
-	printf("\nUsage: %s move [-h] <src> <dst>\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Move the file|directory into other file|directory\n");
-	printf("\nOptions:\n");
-	printf("  -h    Print the usage.\n");
-	printf("\nSamples:\n");
-	printf("  %s move -h\n", app_name);
-	printf("  %s move src.txt dst.txt\n", app_name);
-	printf("  %s move /music/src.mp3 /music/mp3/dst.mp3\n", app_name);
-	printf("  %s move /music/src.mp3 \"/music/Europe and America/dst.mp3\"\n", app_name);
+    version();
+    printf("\nUsage: %s move [-h] <src> <dst>\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Move the file|directory into other file|directory\n");
+    printf("\nOptions:\n");
+    printf("  -h    Print the usage.\n");
+    printf("\nSamples:\n");
+    printf("  %s move -h\n", app_name);
+    printf("  %s move src.txt dst.txt\n", app_name);
+    printf("  %s move /music/src.mp3 /music/mp3/dst.mp3\n", app_name);
+    printf("  %s move /music/src.mp3 \"/music/Europe and America/dst.mp3\"\n", app_name);
 }
 
-/*ÊâìÂç∞pwdÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°pwd√¸¡Ó”√∑®*/
 static void usage_pwd()
 {
-	version();
-	printf("\nUsage: %s pwd [-h]\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Print the current work directory\n");
-	printf("\nOptions:\n");
-	printf("  -h    Print the usage.\n");
-	printf("\nSamples:\n");
-	printf("  %s pwd -h\n", app_name);
-	printf("  %s pwd\n", app_name);
+    version();
+    printf("\nUsage: %s pwd [-h]\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Print the current work directory\n");
+    printf("\nOptions:\n");
+    printf("  -h    Print the usage.\n");
+    printf("\nSamples:\n");
+    printf("  %s pwd -h\n", app_name);
+    printf("  %s pwd\n", app_name);
 }
 
-/*ÊâìÂç∞quotaÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°quota√¸¡Ó”√∑®*/
 static void usage_quota()
 {
-	version();
-	printf("\nUsage: %s quota [-eh]\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Print the quota\n");
-	printf("\nOptions:\n");
-	printf("  -e    Print the exact size.\n");
-	printf("  -h    Print the usage.\n");
-	printf("\nSamples:\n");
-	printf("  %s quota -h\n", app_name);
-	printf("  %s quota\n", app_name);
-	printf("  %s quota -e\n", app_name);
+    version();
+    printf("\nUsage: %s quota [-eh]\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Print the quota\n");
+    printf("\nOptions:\n");
+    printf("  -e    Print the exact size.\n");
+    printf("  -h    Print the usage.\n");
+    printf("\nSamples:\n");
+    printf("  %s quota -h\n", app_name);
+    printf("  %s quota\n", app_name);
+    printf("  %s quota -e\n", app_name);
 }
 
-/*ÊâìÂç∞removeÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°remove√¸¡Ó”√∑®*/
 static void usage_remove()
 {
-	version();
-	printf("\nUsage: %s remove [-h] <path>\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Remove the file|directory\n");
-	printf("\nOptions:\n");
-	printf("  -h    Print the usage.\n");
-	printf("\nSamples:\n");
-	printf("  %s remove -h\n", app_name);
-	printf("  %s remove src.txt\n", app_name);
-	printf("  %s remove /music/src.mp3\n", app_name);
-	printf("  %s remove \"/music/Europe and America/dst.mp3\"\n", app_name);
+    version();
+    printf("\nUsage: %s remove [-h] <path>\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Remove the file|directory\n");
+    printf("\nOptions:\n");
+    printf("  -h    Print the usage.\n");
+    printf("\nSamples:\n");
+    printf("  %s remove -h\n", app_name);
+    printf("  %s remove src.txt\n", app_name);
+    printf("  %s remove /music/src.mp3\n", app_name);
+    printf("  %s remove \"/music/Europe and America/dst.mp3\"\n", app_name);
 }
 
-/*ÊâìÂç∞renameÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°rename√¸¡Ó”√∑®*/
 static void usage_rename()
 {
-	version();
-	printf("\nUsage: %s rename [-h] <src> <new name>\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Rename the file|directory\n");
-	printf("\nOptions:\n");
-	printf("  -h    Print the usage.\n");
-	printf("\nSamples:\n");
-	printf("  %s rename -h\n", app_name);
-	printf("  %s rename src.txt dst.txt\n", app_name);
-	printf("  %s rename /music/src.mp3 dst.mp3\n", app_name);
-	printf("  %s rename \"/music/Europe and America/src.mp3\" \"dst 2.mp3\"\n", app_name);
+    version();
+    printf("\nUsage: %s rename [-h] <src> <new name>\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Rename the file|directory\n");
+    printf("\nOptions:\n");
+    printf("  -h    Print the usage.\n");
+    printf("\nSamples:\n");
+    printf("  %s rename -h\n", app_name);
+    printf("  %s rename src.txt dst.txt\n", app_name);
+    printf("  %s rename /music/src.mp3 dst.mp3\n", app_name);
+    printf("  %s rename \"/music/Europe and America/src.mp3\" \"dst 2.mp3\"\n", app_name);
 }
 
-/*ÊâìÂç∞listÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°list√¸¡Ó”√∑®*/
 static void usage_set()
 {
-	version();
-	printf("\nUsage: %s set [-h] [--captcha_file=<path>] [--cookie_file=<path>] ...\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Change the context, you can see the context by '%s context' command.\n", app_name);
-	printf("\nOptions:\n");
-	printf("  -h    Print the usage.\n");
-	printf("\nOptions:\n");
-	printf("  Option Name          Type       Possible Values \n");
-	printf("  -----------------------------------------------\n");
-	printf("  captcha_file         String     not null\n");
-	printf("  cookie_file          String     not null\n");
-	printf("  list_page_size       UInt       > 0\n");
-	printf("  list_sort_direction  Enum       asc|desc\n");
-	printf("  list_sort_name       Enum       name|time|size\n");
-	printf("  secure_enable        Boolean    true|false\n");
-	printf("  secure_key           String     not null when 'secure_method' is not 'plaintext'\n");
-	printf("  secure_method        Enum       plaintext|aes-cbc-128|aes-cbc-192|aes-cbc-256\n");
-	printf("  timeout_retry        Boolean    true|false. \n");
-	printf("  max_thread           UInt       > 0 and < %d. The max number of thread that allow create.\n", MAX_THREAD_NUM);
-	printf("  max_speed_per_thread Int        >= 0. The max speed in KiB per thread.\n");
-	printf("  max_upload_speed_per_thread Int >= 0. The max speed in KiB per thread.\n");
-	printf("  user_agent           String     set user agent.\n");
-	printf("  cache_size           Int        >= 0. The max cache size in KiB.\n");
-	printf("\nSamples:\n");
-	printf("  %s set -h\n", app_name);
-	printf("  %s set --cookie_file=\"/tmp/pcs.cookie\"\n", app_name);
-	printf("  %s set --cookie_file=\"/tmp/pcs.cookie\" --captcha_file=\"/tmp/vc.git\"\n", app_name);
-	printf("  %s set --list_page_size=20 --list_sort_name=name --list_sort_direction=desc\n", app_name);
+    version();
+    printf("\nUsage: %s set [-h] [--captcha_file=<path>] [--cookie_file=<path>] ...\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Change the context, you can see the context by '%s context' command.\n", app_name);
+    printf("\nOptions:\n");
+    printf("  -h    Print the usage.\n");
+    printf("\nOptions:\n");
+    printf("  Option Name          Type       Possible Values \n");
+    printf("  -----------------------------------------------\n");
+    printf("  captcha_file         String     not null\n");
+    printf("  cookie_file          String     not null\n");
+    printf("  list_page_size       UInt       > 0\n");
+    printf("  list_sort_direction  Enum       asc|desc\n");
+    printf("  list_sort_name       Enum       name|time|size\n");
+    printf("  secure_enable        Boolean    true|false\n");
+    printf("  secure_key           String     not null when 'secure_method' is not 'plaintext'\n");
+    printf("  secure_method        Enum       plaintext|aes-cbc-128|aes-cbc-192|aes-cbc-256\n");
+    printf("  timeout_retry        Boolean    true|false. \n");
+    printf("  max_thread           UInt       > 0 and < %d. The max number of thread that allow create.\n", MAX_THREAD_NUM);
+    printf("  max_speed_per_thread Int        >= 0. The max speed in KiB per thread.\n");
+    printf("  max_upload_speed_per_thread Int >= 0. The max speed in KiB per thread.\n");
+    printf("  user_agent           String     set user agent.\n");
+    printf("  cache_size           Int        >= 0. The max cache size in KiB.\n");
+    printf("\nSamples:\n");
+    printf("  %s set -h\n", app_name);
+    printf("  %s set --cookie_file=\"/tmp/pcs.cookie\"\n", app_name);
+    printf("  %s set --cookie_file=\"/tmp/pcs.cookie\" --captcha_file=\"/tmp/vc.git\"\n", app_name);
+    printf("  %s set --list_page_size=20 --list_sort_name=name --list_sort_direction=desc\n", app_name);
 }
 
-/*ÊâìÂç∞searchÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°search√¸¡Ó”√∑®*/
 static void usage_search()
 {
-	version();
-	printf("\nUsage: %s search [-hr] [target dir] <key word>\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Search the files in the specify directory\n");
-	printf("\nOptions:\n");
-	printf("  -md5   Print md5 if possiable.\n");
-	printf("  -thumb Print thumb url if possiable.\n");
-	printf("  -h     Print the usage.\n");
-	printf("  -r     Recursive search the sub directories.\n");
-	printf("\nSamples:\n");
-	printf("  %s search -h\n", app_name);
-	printf("  %s search dst.txt\n", app_name);
-	printf("  %s search -r dst.txt\n", app_name);
-	printf("  %s search /music dst.mp3\n", app_name);
-	printf("  %s search -r /music dst.mp3\n", app_name);
-	printf("  %s search \"/music/Europe and America\" \"dst 2.mp3\"\n", app_name);
+    version();
+    printf("\nUsage: %s search [-hr] [target dir] <key word>\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Search the files in the specify directory\n");
+    printf("\nOptions:\n");
+    printf("  -md5   Print md5 if possiable.\n");
+    printf("  -thumb Print thumb url if possiable.\n");
+    printf("  -h     Print the usage.\n");
+    printf("  -r     Recursive search the sub directories.\n");
+    printf("\nSamples:\n");
+    printf("  %s search -h\n", app_name);
+    printf("  %s search dst.txt\n", app_name);
+    printf("  %s search -r dst.txt\n", app_name);
+    printf("  %s search /music dst.mp3\n", app_name);
+    printf("  %s search -r /music dst.mp3\n", app_name);
+    printf("  %s search \"/music/Europe and America\" \"dst 2.mp3\"\n", app_name);
 }
 
-/*ÊâìÂç∞synchÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°synch√¸¡Ó”√∑®*/
 static void usage_synch()
 {
-	version();
-	printf("\nUsage: %s synch [-cdehnru] <local path> <net disk path>\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Synch between local and net disk. \n"
-		   "  Default options is '-cdu', means download newer files, upload newer files \n"
-		   "  and print confuse files. You can use '-u' to upload newer files only, use \n"
-		   "  '-d' to download newer files only, and use '-c' to view confuse files.\n"
-		   "  Notes:\n"
-		   "    The confuse items will do nothing, \n"
-		   "    e.g. A side of the target is file and another is directory.\n"
-		   );
-	printf("\nOptions:\n");
-	printf("  -c    Print the files that confuse, which is don't know how to do.\n");
-	printf("  -d    Synch the new files from the net disk. \n"
-		   "        This option will download the new files from the net disk.\n"
-		   "        You can use 'compare -dr <local dir> <disk dir>' to view \n"
-		   "        how many and which files will download.\n");
-	printf("  -e    Print the files that is same between local and net disk.\n");
-	printf("  -h    Print the usage.\n");
-	printf("  -n    Dry run.\n");
-	printf("  -r    Recursive synch the sub directories.\n");
-	printf("  -u    Synch the new files to the net disk.\n \n"
-		   "        This option will upload new files from the net disk.\n"
-		   "        You can use 'compare -ur <local dir> <disk dir>' to view \n"
-		   "        how many and which files will upload.\n");
-	printf("\nSamples:\n");
-	printf("  %s synch -h\n", app_name);
-	printf("  %s synch ~/music /music  \n", app_name);
-	printf("  %s synch -d ~/music /music  \n", app_name);
-	printf("  %s synch -u music /music\n", app_name);
-	printf("  %s synch -c music /music\n", app_name);
-	printf("  %s synch -cdu music /music\n", app_name);
-	printf("  %s synch -r music /music\n", app_name);
+    version();
+    printf("\nUsage: %s synch [-cdehnru] <local path> <net disk path>\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Synch between local and net disk. \n"
+           "  Default options is '-cdu', means download newer files, upload newer files \n"
+           "  and print confuse files. You can use '-u' to upload newer files only, use \n"
+           "  '-d' to download newer files only, and use '-c' to view confuse files.\n"
+           "  Notes:\n"
+           "    The confuse items will do nothing, \n"
+           "    e.g. A side of the target is file and another is directory.\n"
+          );
+    printf("\nOptions:\n");
+    printf("  -c    Print the files that confuse, which is don't know how to do.\n");
+    printf("  -d    Synch the new files from the net disk. \n"
+           "        This option will download the new files from the net disk.\n"
+           "        You can use 'compare -dr <local dir> <disk dir>' to view \n"
+           "        how many and which files will download.\n");
+    printf("  -e    Print the files that is same between local and net disk.\n");
+    printf("  -h    Print the usage.\n");
+    printf("  -n    Dry run.\n");
+    printf("  -r    Recursive synch the sub directories.\n");
+    printf("  -u    Synch the new files to the net disk.\n \n"
+           "        This option will upload new files from the net disk.\n"
+           "        You can use 'compare -ur <local dir> <disk dir>' to view \n"
+           "        how many and which files will upload.\n");
+    printf("\nSamples:\n");
+    printf("  %s synch -h\n", app_name);
+    printf("  %s synch ~/music /music  \n", app_name);
+    printf("  %s synch -d ~/music /music  \n", app_name);
+    printf("  %s synch -u music /music\n", app_name);
+    printf("  %s synch -c music /music\n", app_name);
+    printf("  %s synch -cdu music /music\n", app_name);
+    printf("  %s synch -r music /music\n", app_name);
 }
 
-/*ÊâìÂç∞uploadÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°upload√¸¡Ó”√∑®*/
 static void usage_upload()
 {
-	version();
-	printf("\nUsage: %s upload [-fh] <local file> <file>\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Upload the file\n");
-	printf("\nOptions:\n");
-	printf("  -f    Force override the local file when the file exists on local file system.\n");
-	printf("  -h    Print the usage.\n");
-	printf("\nSamples:\n");
-	printf("  %s upload -h\n", app_name);
-	printf("  %s upload ~/dst.txt dst.txt\n", app_name);
-	printf("  %s upload dst.txt dst.txt\n", app_name);
-	printf("  %s upload -f ~/dst.txt dst.txt\n", app_name);
-	printf("  %s upload \"/home/pcs/music/dst.mp3\" \"/music/dst.mp3\"\n", app_name);
+    version();
+    printf("\nUsage: %s upload [-fh] <local file> <file>\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Upload the file\n");
+    printf("\nOptions:\n");
+    printf("  -f    Force override the local file when the file exists on local file system.\n");
+    printf("  -h    Print the usage.\n");
+    printf("\nSamples:\n");
+    printf("  %s upload -h\n", app_name);
+    printf("  %s upload ~/dst.txt dst.txt\n", app_name);
+    printf("  %s upload dst.txt dst.txt\n", app_name);
+    printf("  %s upload -f ~/dst.txt dst.txt\n", app_name);
+    printf("  %s upload \"/home/pcs/music/dst.mp3\" \"/music/dst.mp3\"\n", app_name);
 }
 
-/*ÊâìÂç∞versionÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°version√¸¡Ó”√∑®*/
 static void usage_version()
 {
-	version();
-	printf("\nUsage: %s version [-h]\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Print the version\n");
-	printf("\nOptions:\n");
-	printf("  -h    Print the usage.\n");
-	printf("\nSamples:\n");
-	printf("  %s version -h\n", app_name);
-	printf("  %s version\n", app_name);
+    version();
+    printf("\nUsage: %s version [-h]\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Print the version\n");
+    printf("\nOptions:\n");
+    printf("  -h    Print the usage.\n");
+    printf("\nSamples:\n");
+    printf("  %s version -h\n", app_name);
+    printf("  %s version\n", app_name);
 }
 
-/*ÊâìÂç∞whoÂëΩ‰ª§Áî®Ê≥ï*/
+/*¥Ú”°who√¸¡Ó”√∑®*/
 static void usage_who()
 {
-	version();
-	printf("\nUsage: %s who [-h]\n", app_name);
-	printf("\nDescription:\n");
-	printf("  Print the current user\n");
-	printf("\nOptions:\n");
-	printf("  -h    Print the usage.\n");
-	printf("\nSamples:\n");
-	printf("  %s who -h\n", app_name);
-	printf("  %s who\n", app_name);
+    version();
+    printf("\nUsage: %s who [-h]\n", app_name);
+    printf("\nDescription:\n");
+    printf("  Print the current user\n");
+    printf("\nOptions:\n");
+    printf("  -h    Print the usage.\n");
+    printf("\nSamples:\n");
+    printf("  %s who -h\n", app_name);
+    printf("  %s who\n", app_name);
 }
 
-/*ÊâìÂç∞Áî®Ê≥ï*/
+/*¥Ú”°”√∑®*/
 static void usage()
 {
-	version();
-	printf("\nUsage: %s command [options] [arg1|arg2...]\n", app_name);
-	printf("\nDescription:\n");
-	printf("  The %s is client of baidu net disk. It supplied many functions, \n", app_name);
-	printf("  which can manage baidu net disk on terminal, such as ls, cp, rm, \n");
-	printf("  mv, rename, download, upload, search and so on. \n");
-	printf("  The %s provided AES encryption, which can protected your data.\n", app_name);
-	printf("  The %s is open source, and published on MIT. \n", app_name);
-	printf("  Please see https://github.com/GangZhuo/baidupcs. \n");
-	printf("\nOptions:\n");
-	printf("  --context=<file path>  Specify context.\n");
-	printf("\nCommands:\n");
-	printf("  cat      Print the file content\n");
-	printf("  cd       Change the work directory\n");
-	printf("  copy     Copy the file|directory\n");
-	printf("  compare  Print the differents between local and net disk\n");
-	printf("  context  Print the context\n");
-	printf("  download Download the file\n");
-	printf("  echo     Write the text into net disk file\n");
-	printf("  encode   Encrypt/decrypt the file\n");
-	printf("  fix      Fix file base md5 and scrap\n");
-	printf("  help     Print the usage\n");
-	printf("  list     List the directory\n");
-	printf("  login    Login\n");
-	printf("  logout   Logout\n");
-	printf("  meta     Print the file|directory meta information\n");
-	printf("  mkdir    Make a new directory\n");
-	printf("  move     Move the file|directory into other file|directory\n");
-	printf("  pwd      Print the current work directory\n");
-	printf("  quota    Print the quota\n");
-	printf("  remove   Remove the file|directory\n");
-	printf("  rename   Rename the file|directory\n");
-	printf("  set      Change the context, you can print the context by 'context' command\n");
-	printf("  search   Search the files in the specify directory\n");
-	printf("  synch    Synch between local and net disk. You can 'compare' first.\n");
-	printf("  upload   Upload the file\n");
-	printf("  version  Print the version\n");
-	printf("  who      Print the current user\n");
-	printf("Use '%s <command> -h' to print command usage. \n", app_name);
-	printf("Sample: \n");
-	printf("  %s help\n", app_name);
-	printf("  %s help cat\n", app_name);
-	printf("  %s cat -h\n", app_name);
-	printf("  %s cat /note.txt\n", app_name);
-	printf("  %s cd /temp\n", app_name);
-	printf("  %s cat /note.txt --context=/home/gang/.pcs_context\n", app_name);
+    version();
+    printf("\nUsage: %s command [options] [arg1|arg2...]\n", app_name);
+    printf("\nDescription:\n");
+    printf("  The %s is client of baidu net disk. It supplied many functions, \n", app_name);
+    printf("  which can manage baidu net disk on terminal, such as ls, cp, rm, \n");
+    printf("  mv, rename, download, upload, search and so on. \n");
+    printf("  The %s provided AES encryption, which can protected your data.\n", app_name);
+    printf("  The %s is open source, and published on MIT. \n", app_name);
+    printf("  Please see https://github.com/GangZhuo/baidupcs. \n");
+    printf("\nOptions:\n");
+    printf("  --context=<file path>  Specify context.\n");
+    printf("\nCommands:\n");
+    printf("  cat      Print the file content\n");
+    printf("  cd       Change the work directory\n");
+    printf("  copy     Copy the file|directory\n");
+    printf("  compare  Print the differents between local and net disk\n");
+    printf("  context  Print the context\n");
+    printf("  download Download the file\n");
+    printf("  echo     Write the text into net disk file\n");
+    printf("  encode   Encrypt/decrypt the file\n");
+    printf("  fix      Fix file base md5 and scrap\n");
+    printf("  help     Print the usage\n");
+    printf("  list     List the directory\n");
+    printf("  login    Login\n");
+    printf("  logout   Logout\n");
+    printf("  meta     Print the file|directory meta information\n");
+    printf("  mkdir    Make a new directory\n");
+    printf("  move     Move the file|directory into other file|directory\n");
+    printf("  pwd      Print the current work directory\n");
+    printf("  quota    Print the quota\n");
+    printf("  remove   Remove the file|directory\n");
+    printf("  rename   Rename the file|directory\n");
+    printf("  set      Change the context, you can print the context by 'context' command\n");
+    printf("  search   Search the files in the specify directory\n");
+    printf("  synch    Synch between local and net disk. You can 'compare' first.\n");
+    printf("  upload   Upload the file\n");
+    printf("  version  Print the version\n");
+    printf("  who      Print the current user\n");
+    printf("Use '%s <command> -h' to print command usage. \n", app_name);
+    printf("Sample: \n");
+    printf("  %s help\n", app_name);
+    printf("  %s help cat\n", app_name);
+    printf("  %s cat -h\n", app_name);
+    printf("  %s cat /note.txt\n", app_name);
+    printf("  %s cd /temp\n", app_name);
+    printf("  %s cat /note.txt --context=/home/gang/.pcs_context\n", app_name);
 }
 
 #pragma endregion
 
-#pragma region 'set'ÂëΩ‰ª§ÁöÑÂàÜÊîØÂáΩÊï∞
+#pragma region 'set'√¸¡Óµƒ∑÷÷ß∫Ø ˝
 
-/*ËÆæÁΩÆ‰∏ä‰∏ãÊñá‰∏≠ÁöÑcookiefileÂÄº*/
-static int set_cookiefile(ShellContext *context, const char *val)
+/*…Ë÷√…œœ¬Œƒ÷–µƒcookiefile÷µ*/
+static int set_cookiefile(ShellContext* context, const char* val)
 {
-	if (!val || !val[0]) return -1;
-	if (streq(context->cookiefile, val, -1)) return 0;
-	if (context->cookiefile) pcs_free(context->cookiefile);
-	context->cookiefile = pcs_utils_strdup(val);
-	if (context->pcs) {
-		Pcs *pcs = create_pcs(context);
-		if (!pcs) return -1;
-		destroy_pcs(context->pcs);
-		context->pcs = pcs;
-	}
-	return 0;
+    if (!val || !val[0]) {
+        return -1;
+    }
+    if (streq(context->cookiefile, val, -1)) {
+        return 0;
+    }
+    if (context->cookiefile) {
+        pcs_free(context->cookiefile);
+    }
+    context->cookiefile = pcs_utils_strdup(val);
+    if (context->pcs) {
+        Pcs* pcs = create_pcs(context);
+        if (!pcs) {
+            return -1;
+        }
+        destroy_pcs(context->pcs);
+        context->pcs = pcs;
+    }
+    return 0;
 }
 
-/*ËÆæÁΩÆ‰∏ä‰∏ãÊñá‰∏≠ÁöÑcaptchafileÂÄº*/
-static int set_captchafile(ShellContext *context, const char *val)
+/*…Ë÷√…œœ¬Œƒ÷–µƒcaptchafile÷µ*/
+static int set_captchafile(ShellContext* context, const char* val)
 {
-	if (!val || !val[0]) return -1;
-	if (streq(context->captchafile, val, -1)) return 0;
-	if (context->captchafile) pcs_free(context->captchafile);
-	context->captchafile = pcs_utils_strdup(val);
-	return 0;
+    if (!val || !val[0]) {
+        return -1;
+    }
+    if (streq(context->captchafile, val, -1)) {
+        return 0;
+    }
+    if (context->captchafile) {
+        pcs_free(context->captchafile);
+    }
+    context->captchafile = pcs_utils_strdup(val);
+    return 0;
 }
 
-/*ËÆæÁΩÆ‰∏ä‰∏ãÊñá‰∏≠ÁöÑlist_page_sizeÂÄº*/
-static int set_list_page_size(ShellContext *context, const char *val)
+/*…Ë÷√…œœ¬Œƒ÷–µƒlist_page_size÷µ*/
+static int set_list_page_size(ShellContext* context, const char* val)
 {
-	const char *p = val;
-	int v;
-	if (!val || !val[0]) return -1;
-	while (*p) {
-		if (*p < '0' || *p > '9')
-			return -1;
-		p++;
-	}
-	v = atoi(val);
-	if (v < 1) return -1;
-	context->list_page_size = v;
-	return 0;
+    const char* p = val;
+    int v;
+    if (!val || !val[0]) {
+        return -1;
+    }
+    while (*p) {
+        if (*p < '0' || *p > '9') {
+            return -1;
+        }
+        p++;
+    }
+    v = atoi(val);
+    if (v < 1) {
+        return -1;
+    }
+    context->list_page_size = v;
+    return 0;
 }
 
-/*ËÆæÁΩÆ‰∏ä‰∏ãÊñá‰∏≠ÁöÑlist_sort_nameÂÄº*/
-static int set_list_sort_name(ShellContext *context, const char *val)
+/*…Ë÷√…œœ¬Œƒ÷–µƒlist_sort_name÷µ*/
+static int set_list_sort_name(ShellContext* context, const char* val)
 {
-	if (!val || !val[0]) return -1;
-	if (strcmp(val, "name") && strcmp(val, "time") && strcmp(val, "size")) {
-		return -1;
-	}
-	if (streq(context->list_sort_name, val, -1)) return 0;
-	if (context->list_sort_name) pcs_free(context->list_sort_name);
-	context->list_sort_name = pcs_utils_strdup(val);
-	return 0;
+    if (!val || !val[0]) {
+        return -1;
+    }
+    if (strcmp(val, "name") && strcmp(val, "time") && strcmp(val, "size")) {
+        return -1;
+    }
+    if (streq(context->list_sort_name, val, -1)) {
+        return 0;
+    }
+    if (context->list_sort_name) {
+        pcs_free(context->list_sort_name);
+    }
+    context->list_sort_name = pcs_utils_strdup(val);
+    return 0;
 }
 
-/*ËÆæÁΩÆ‰∏ä‰∏ãÊñá‰∏≠ÁöÑlist_sort_directionÂÄº*/
-static int set_list_sort_direction(ShellContext *context, const char *val)
+/*…Ë÷√…œœ¬Œƒ÷–µƒlist_sort_direction÷µ*/
+static int set_list_sort_direction(ShellContext* context, const char* val)
 {
-	if (!val || !val[0]) return -1;
-	if (strcmp(val, "asc") && strcmp(val, "desc")) {
-		return -1;
-	}
-	if (streq(context->list_sort_direction, val, -1)) return 0;
-	if (context->list_sort_direction) pcs_free(context->list_sort_direction);
-	context->list_sort_direction = pcs_utils_strdup(val);
-	return 0;
+    if (!val || !val[0]) {
+        return -1;
+    }
+    if (strcmp(val, "asc") && strcmp(val, "desc")) {
+        return -1;
+    }
+    if (streq(context->list_sort_direction, val, -1)) {
+        return 0;
+    }
+    if (context->list_sort_direction) {
+        pcs_free(context->list_sort_direction);
+    }
+    context->list_sort_direction = pcs_utils_strdup(val);
+    return 0;
 }
 
-/*ËÆæÁΩÆ‰∏ä‰∏ãÊñá‰∏≠ÁöÑsecure_methodÂÄº*/
-static int set_secure_method(ShellContext *context, const char *val)
+/*…Ë÷√…œœ¬Œƒ÷–µƒsecure_method÷µ*/
+static int set_secure_method(ShellContext* context, const char* val)
 {
-	if (!val || !val[0]) return -1;
-	if (strcmp(val, "plaintext") && strcmp(val, "aes-cbc-128") && strcmp(val, "aes-cbc-192") && strcmp(val, "aes-cbc-256")) {
-		return -1;
-	}
-	if (streq(context->secure_method, val, -1)) return 0;
-	if (context->secure_method) pcs_free(context->secure_method);
-	context->secure_method = pcs_utils_strdup(val);
-	return 0;
+    if (!val || !val[0]) {
+        return -1;
+    }
+    if (strcmp(val, "plaintext") && strcmp(val, "aes-cbc-128") && strcmp(val, "aes-cbc-192") && strcmp(val, "aes-cbc-256")) {
+        return -1;
+    }
+    if (streq(context->secure_method, val, -1)) {
+        return 0;
+    }
+    if (context->secure_method) {
+        pcs_free(context->secure_method);
+    }
+    context->secure_method = pcs_utils_strdup(val);
+    return 0;
 }
 
-/*ËÆæÁΩÆ‰∏ä‰∏ãÊñá‰∏≠ÁöÑsecure_keyÂÄº*/
-static int set_secure_key(ShellContext *context, const char *val)
+/*…Ë÷√…œœ¬Œƒ÷–µƒsecure_key÷µ*/
+static int set_secure_key(ShellContext* context, const char* val)
 {
-	if (!val || !val[0]) return -1;
-	if (streq(context->secure_key, val, -1)) return 0;
-	if (context->secure_key) pcs_free(context->secure_key);
-	context->secure_key = pcs_utils_strdup(val);
-	return 0;
+    if (!val || !val[0]) {
+        return -1;
+    }
+    if (streq(context->secure_key, val, -1)) {
+        return 0;
+    }
+    if (context->secure_key) {
+        pcs_free(context->secure_key);
+    }
+    context->secure_key = pcs_utils_strdup(val);
+    return 0;
 }
 
-/*ËÆæÁΩÆ‰∏ä‰∏ãÊñá‰∏≠ÁöÑsecure_enableÂÄº*/
-static int set_secure_enable(ShellContext *context, const char *val)
+/*…Ë÷√…œœ¬Œƒ÷–µƒsecure_enable÷µ*/
+static int set_secure_enable(ShellContext* context, const char* val)
 {
-	if (!val || !val[0]) return -1;
-	if (strcmp(val, "true") == 0 || strcmp(val, "1") == 0) {
-		context->secure_enable = 1;
-	}
-	else if (strcmp(val, "false") == 0 || strcmp(val, "0") == 0) {
-		context->secure_enable = 0;
-	}
-	else {
-		return -1;
-	}
-	return 0;
+    if (!val || !val[0]) {
+        return -1;
+    }
+    if (strcmp(val, "true") == 0 || strcmp(val, "1") == 0) {
+        context->secure_enable = 1;
+    } else if (strcmp(val, "false") == 0 || strcmp(val, "0") == 0) {
+        context->secure_enable = 0;
+    } else {
+        return -1;
+    }
+    return 0;
 }
 
-/*ËÆæÁΩÆ‰∏ä‰∏ãÊñá‰∏≠ÁöÑtimeout_retryÂÄº*/
-static int set_timeout_retry(ShellContext *context, const char *val)
+/*…Ë÷√…œœ¬Œƒ÷–µƒtimeout_retry÷µ*/
+static int set_timeout_retry(ShellContext* context, const char* val)
 {
-	if (!val || !val[0]) return -1;
-	if (strcmp(val, "true") == 0 || strcmp(val, "1") == 0) {
-		context->timeout_retry = 1;
-	}
-	else if (strcmp(val, "false") == 0 || strcmp(val, "0") == 0) {
-		context->timeout_retry = 0;
-	}
-	else {
-		return -1;
-	}
-	return 0;
+    if (!val || !val[0]) {
+        return -1;
+    }
+    if (strcmp(val, "true") == 0 || strcmp(val, "1") == 0) {
+        context->timeout_retry = 1;
+    } else if (strcmp(val, "false") == 0 || strcmp(val, "0") == 0) {
+        context->timeout_retry = 0;
+    } else {
+        return -1;
+    }
+    return 0;
 }
 
-/*ËÆæÁΩÆ‰∏ä‰∏ãÊñá‰∏≠ÁöÑmax_threadÂÄº*/
-static int set_max_thread(ShellContext *context, const char *val)
+/*…Ë÷√…œœ¬Œƒ÷–µƒmax_thread÷µ*/
+static int set_max_thread(ShellContext* context, const char* val)
 {
-	const char *p = val;
-	int v;
-	if (!val || !val[0]) return -1;
-	while (*p) {
-		if (*p < '0' || *p > '9')
-			return -1;
-		p++;
-	}
-	v = atoi(val);
-	if (v < 1 || v > MAX_THREAD_NUM) return -1;
-	context->max_thread = v;
-	return 0;
+    const char* p = val;
+    int v;
+    if (!val || !val[0]) {
+        return -1;
+    }
+    while (*p) {
+        if (*p < '0' || *p > '9') {
+            return -1;
+        }
+        p++;
+    }
+    v = atoi(val);
+    if (v < 1 || v > MAX_THREAD_NUM) {
+        return -1;
+    }
+    context->max_thread = v;
+    return 0;
 }
 
-/*ËÆæÁΩÆ‰∏ä‰∏ãÊñá‰∏≠ÁöÑmax_speed_per_threadÂÄº*/
-static int set_max_speed_per_thread(ShellContext *context, const char *val)
+/*…Ë÷√…œœ¬Œƒ÷–µƒmax_speed_per_thread÷µ*/
+static int set_max_speed_per_thread(ShellContext* context, const char* val)
 {
-	const char *p = val;
-	int v;
-	if (!val || !val[0]) return -1;
-	while (*p) {
-		if (*p < '0' || *p > '9')
-			return -1;
-		p++;
-	}
-	v = atoi(val);
-	if (v < 0) return -1;
-	context->max_speed_per_thread = v;
-	return 0;
+    const char* p = val;
+    int v;
+    if (!val || !val[0]) {
+        return -1;
+    }
+    while (*p) {
+        if (*p < '0' || *p > '9') {
+            return -1;
+        }
+        p++;
+    }
+    v = atoi(val);
+    if (v < 0) {
+        return -1;
+    }
+    context->max_speed_per_thread = v;
+    return 0;
 }
 
-/*ËÆæÁΩÆ‰∏ä‰∏ãÊñá‰∏≠ÁöÑmax_upload_speed_per_threadÂÄº*/
-static int set_max_upload_speed_per_thread(ShellContext *context, const char *val)
+/*…Ë÷√…œœ¬Œƒ÷–µƒmax_upload_speed_per_thread÷µ*/
+static int set_max_upload_speed_per_thread(ShellContext* context, const char* val)
 {
-	const char *p = val;
-	int v;
-	if (!val || !val[0]) return -1;
-	while (*p) {
-		if (*p < '0' || *p > '9')
-			return -1;
-		p++;
-	}
-	v = atoi(val);
-	if (v < 0) return -1;
-	context->max_upload_speed_per_thread = v;
-	return 0;
+    const char* p = val;
+    int v;
+    if (!val || !val[0]) {
+        return -1;
+    }
+    while (*p) {
+        if (*p < '0' || *p > '9') {
+            return -1;
+        }
+        p++;
+    }
+    v = atoi(val);
+    if (v < 0) {
+        return -1;
+    }
+    context->max_upload_speed_per_thread = v;
+    return 0;
 }
 
-/*ËÆæÁΩÆ‰∏ä‰∏ãÊñá‰∏≠ÁöÑcache_sizeÂÄº*/
-static int set_cache_size(ShellContext *context, const char *val)
+/*…Ë÷√…œœ¬Œƒ÷–µƒcache_size÷µ*/
+static int set_cache_size(ShellContext* context, const char* val)
 {
-	const char *p = val;
-	int v;
-	if (!val || !val[0]) return -1;
-	while (*p) {
-		if (*p < '0' || *p > '9')
-			return -1;
-		p++;
-	}
-	v = atoi(val);
-	if (v < 0) return -1;
-	context->cache_size = v;
-	return 0;
+    const char* p = val;
+    int v;
+    if (!val || !val[0]) {
+        return -1;
+    }
+    while (*p) {
+        if (*p < '0' || *p > '9') {
+            return -1;
+        }
+        p++;
+    }
+    v = atoi(val);
+    if (v < 0) {
+        return -1;
+    }
+    context->cache_size = v;
+    return 0;
 }
 
-/*ËÆæÁΩÆ‰∏ä‰∏ãÊñá‰∏≠ÁöÑ user_agent ÂÄº*/
-static int set_user_agent(ShellContext *context, const char *val)
+/*…Ë÷√…œœ¬Œƒ÷–µƒ user_agent ÷µ*/
+static int set_user_agent(ShellContext* context, const char* val)
 {
-	if (!val || !val[0]) return -1;
-	if (streq(context->user_agent, val, -1)) return 0;
-	if (context->user_agent) pcs_free(context->user_agent);
-	context->user_agent = pcs_utils_strdup(val);
-	return 0;
+    if (!val || !val[0]) {
+        return -1;
+    }
+    if (streq(context->user_agent, val, -1)) {
+        return 0;
+    }
+    if (context->user_agent) {
+        pcs_free(context->user_agent);
+    }
+    context->user_agent = pcs_utils_strdup(val);
+    return 0;
 }
 
 #pragma endregion
 
-#pragma region Meta Áõ∏ÂÖ≥ÊñπÊ≥ï
+#pragma region Meta œ‡πÿ∑Ω∑®
 
-static void meta_destroy(MyMeta *meta);
+static void meta_destroy(MyMeta* meta);
 
-#pragma region Á∫¢ÈªëÊ†ëÁöÑÂá†‰∏™ÂõûË∞ÉÂáΩÊï∞
+#pragma region ∫Ï∫⁄ ˜µƒº∏∏ˆªÿµ˜∫Ø ˝
 
-/*Á∫¢ÈªëÊ†ë‰∏≠Áî®‰∫éÈáäÊîæ key */
-static void rb_destory_key(void *a, void *state)
+/*∫Ï∫⁄ ˜÷–”√”⁄ Õ∑≈ key */
+static void rb_destory_key(void* a, void* state)
 {
 
 }
 
-/*Á∫¢ÈªëÊ†ë‰∏≠Áî®‰∫éÈáäÊîæ info */
-static void rb_destory_info(void *a, void *state)
+/*∫Ï∫⁄ ˜÷–”√”⁄ Õ∑≈ info */
+static void rb_destory_info(void* a, void* state)
 {
-	if (a) meta_destroy((MyMeta *)a);
+    if (a) {
+        meta_destroy((MyMeta*)a);
+    }
 }
 
-/*Á∫¢ÈªëÊ†ë‰∏≠Áî®‰∫éÊØîËæÉ key ÂÄº„ÄÇÂΩì *a > *b Êó∂ÔºåËøîÂõû 1; ÂΩì *a < *b Êó∂ÔºåËøîÂõû -1; ÂΩìÁõ∏Á≠âÊó∂ÔºåËøîÂõû 0„ÄÇ */
-static int rb_compare(const void *a, const void *b, void *state)
+/*∫Ï∫⁄ ˜÷–”√”⁄±»Ωœ key ÷µ°£µ± *a > *b  ±£¨∑µªÿ 1; µ± *a < *b  ±£¨∑µªÿ -1; µ±œ‡µ» ±£¨∑µªÿ 0°£ */
+static int rb_compare(const void* a, const void* b, void* state)
 {
-	int rc;
-	if (!a && !b) return 0;
-	if (!a) return -1;
-	if (!b) return 1;
-	rc = pcs_utils_strcmpi(a, b);
-	return (rc < 0 ? -1 : (rc > 0 ? 1 : 0));
+    int rc;
+    if (!a && !b) {
+        return 0;
+    }
+    if (!a) {
+        return -1;
+    }
+    if (!b) {
+        return 1;
+    }
+    rc = pcs_utils_strcmpi(a, b);
+    return (rc < 0 ? -1 : (rc > 0 ? 1 : 0));
 }
 
-/*Á∫¢ÈªëÊ†ë‰∏≠Áî®‰∫éÊâìÂç∞ key */
-static void rb_print_key(const void *a, void *state)
+/*∫Ï∫⁄ ˜÷–”√”⁄¥Ú”° key */
+static void rb_print_key(const void* a, void* state)
 {
-	printf("%s", (char *)a);
+    printf("%s", (char*)a);
 }
 
-/*Á∫¢ÈªëÊ†ë‰∏≠Áî®‰∫éÊâìÂç∞ info */
-static void rb_print_info(void *a, void *state)
+/*∫Ï∫⁄ ˜÷–”√”⁄¥Ú”° info */
+static void rb_print_info(void* a, void* state)
 {
-	MyMeta *meta = (MyMeta *)a;
-	if (!meta) {
-		printf("null\n");
-		return;
-	}
-	printf("{\n");
+    MyMeta* meta = (MyMeta*)a;
+    if (!meta) {
+        printf("null\n");
+        return;
+    }
+    printf("{\n");
 
-	printf("  path: \"%s\",\n", meta->path);
+    printf("  path: \"%s\",\n", meta->path);
 
-	printf("  local_exist: %s,\n", (meta->flag & FLAG_ON_LOCAL) ? "true" : "false");
-	print_time("  local_mtime: \"%s\",\n", meta->local_mtime);
-	printf("  local_isdir: %s,\n", meta->local_isdir ? "true" : "false");
-	
-	printf("  remote_path: \"%s\",\n", meta->remote_path);
-	printf("  remote_exist: %s,\n", (meta->flag & FLAG_ON_REMOTE) ? "true" : "false");
-	print_time("  remote_mtime: \"%s\",\n", meta->remote_mtime);
-	printf("  remote_isdir: %s\n", meta->remote_isdir ? "true" : "false");
+    printf("  local_exist: %s,\n", (meta->flag & FLAG_ON_LOCAL) ? "true" : "false");
+    print_time("  local_mtime: \"%s\",\n", meta->local_mtime);
+    printf("  local_isdir: %s,\n", meta->local_isdir ? "true" : "false");
 
-	printf("}\n");
+    printf("  remote_path: \"%s\",\n", meta->remote_path);
+    printf("  remote_exist: %s,\n", (meta->flag & FLAG_ON_REMOTE) ? "true" : "false");
+    print_time("  remote_mtime: \"%s\",\n", meta->remote_mtime);
+    printf("  remote_isdir: %s\n", meta->remote_isdir ? "true" : "false");
+
+    printf("}\n");
 }
 
 #pragma endregion
 
-/*ÂàõÂª∫‰∏Ä‰∏™MyMeta*/
-static MyMeta *meta_create(const char *path, const char *md5)
+/*¥¥Ω®“ª∏ˆMyMeta*/
+static MyMeta* meta_create(const char* path, const char* md5)
 {
-	MyMeta *meta;
-	meta = (MyMeta *)pcs_malloc(sizeof(MyMeta));
-	memset(meta, 0, sizeof(MyMeta));
-	if (path) {
-		meta->path = pcs_utils_strdup(path);
-	}
-	if (md5) {
-		meta->md5 = pcs_utils_strdup(md5);
-	}
-	return meta;
+    MyMeta* meta;
+    meta = (MyMeta*)pcs_malloc(sizeof(MyMeta));
+    memset(meta, 0, sizeof(MyMeta));
+    if (path) {
+        meta->path = pcs_utils_strdup(path);
+    }
+    if (md5) {
+        meta->md5 = pcs_utils_strdup(md5);
+    }
+    return meta;
 }
 
-/*ÈáäÊîæÊéâ‰∏Ä‰∏™MyMeta*/
-static void meta_destroy(MyMeta *meta)
+/* Õ∑≈µÙ“ª∏ˆMyMeta*/
+static void meta_destroy(MyMeta* meta)
 {
-	if (!meta) return;
-	if (meta->path) pcs_free(meta->path);
-	if (meta->remote_path) pcs_free(meta->remote_path);
-	if (meta->md5) pcs_free(meta->md5);
-	if (meta->msg) pcs_free(meta->msg);
-	pcs_free(meta);
+    if (!meta) {
+        return;
+    }
+    if (meta->path) {
+        pcs_free(meta->path);
+    }
+    if (meta->remote_path) {
+        pcs_free(meta->remote_path);
+    }
+    if (meta->md5) {
+        pcs_free(meta->md5);
+    }
+    if (meta->msg) {
+        pcs_free(meta->msg);
+    }
+    pcs_free(meta);
 }
 
-/*meta_load()ÂáΩÊï∞‰∏≠ÂΩìËé∑ÂèñÂà∞‰∏Ä‰∏™Êñá‰ª∂ÂêéÁöÑÂõûË∞ÉÂáΩÊï∞*/
-static void onGotLocalFile(LocalFileInfo *info, LocalFileInfo *parent, void *state)
+/*meta_load()∫Ø ˝÷–µ±ªÒ»°µΩ“ª∏ˆŒƒº˛∫Ûµƒªÿµ˜∫Ø ˝*/
+static void onGotLocalFile(LocalFileInfo* info, LocalFileInfo* parent, void* state)
 {
-	struct ScanLocalFileState *st = (struct ScanLocalFileState *)state;
-	rb_red_blk_tree *rb = st->rb;
-	MyMeta *meta;
-	if (!info->isdir && endsWith(info->path, TEMP_FILE_SUFFIX)) {
-		return;
-	}
-	fix_unix_path(info->path);
-	meta = meta_create(info->path, NULL);
-	meta->flag |= FLAG_ON_LOCAL;
-	meta->local_mtime = info->mtime;
-	meta->local_isdir = info->isdir;
-	meta->local_filecount = info->filecount;
-	meta->parent = (parent ? (MyMeta *)parent->userdata : NULL);
-	info->userdata = meta;
-	RBTreeInsert(rb, (void *)meta->path, (void *)meta);
-	st->total++;
-	printf("Scanned %d                     \r", st->total);
-	fflush(stdout);
+    struct ScanLocalFileState* st = (struct ScanLocalFileState*)state;
+    rb_red_blk_tree* rb = st->rb;
+    MyMeta* meta;
+    if (!info->isdir && endsWith(info->path, TEMP_FILE_SUFFIX)) {
+        return;
+    }
+    fix_unix_path(info->path);
+    meta = meta_create(info->path, NULL);
+    meta->flag |= FLAG_ON_LOCAL;
+    meta->local_mtime = info->mtime;
+    meta->local_isdir = info->isdir;
+    meta->local_filecount = info->filecount;
+    meta->parent = (parent ? (MyMeta*)parent->userdata : NULL);
+    info->userdata = meta;
+    RBTreeInsert(rb, (void*)meta->path, (void*)meta);
+    st->total++;
+    printf("Scanned %d                     \r", st->total);
+    fflush(stdout);
 }
 
 /*
- * ‰ªéÊú¨Âú∞Êñá‰ª∂Á≥ªÁªüÁöÑÁõÆÂΩïÊ†ë‰∏≠ÂàõÂª∫<MyMeta>ÂØπË±°ÔºåÂπ∂Â≠òÂÖ•Á∫¢ÈªëÊ†ë‰∏≠
- * ËøîÂõûÁ∫¢ÈªëÊ†ëÂØπË±°
+ * ¥”±æµÿŒƒº˛œµÕ≥µƒƒø¬º ˜÷–¥¥Ω®<MyMeta>∂‘œÛ£¨≤¢¥Ê»Î∫Ï∫⁄ ˜÷–
+ * ∑µªÿ∫Ï∫⁄ ˜∂‘œÛ
 */
-static rb_red_blk_tree *meta_load(const char *dir, int recursive)
+static rb_red_blk_tree* meta_load(const char* dir, int recursive)
 {
-	rb_red_blk_tree *rb = NULL;
-	LocalFileInfo *link = NULL;
-	int cnt = 0;
-	struct ScanLocalFileState state = { 0 };
+    rb_red_blk_tree* rb = NULL;
+    LocalFileInfo* link = NULL;
+    int cnt = 0;
+    struct ScanLocalFileState state = { 0 };
 
-	rb = RBTreeCreate(&rb_compare, &rb_destory_key, &rb_destory_info, &rb_print_key, &rb_print_info);
+    rb = RBTreeCreate(&rb_compare, &rb_destory_key, &rb_destory_info, &rb_print_key, &rb_print_info);
 
-	state.rb = rb;
-	state.total = 0;
-	cnt = GetDirectoryFiles(&link, dir, recursive, &onGotLocalFile, &state);
-	if (cnt < 0) {
-		RBTreeDestroy(rb);
-		return NULL;
-	}
-	if (cnt > 0) putchar('\n');
-	if (link)
-		DestroyLocalFileInfoLink(link);
-	return rb;
+    state.rb = rb;
+    state.total = 0;
+    cnt = GetDirectoryFiles(&link, dir, recursive, &onGotLocalFile, &state);
+    if (cnt < 0) {
+        RBTreeDestroy(rb);
+        return NULL;
+    }
+    if (cnt > 0) {
+        putchar('\n');
+    }
+    if (link) {
+        DestroyLocalFileInfoLink(link);
+    }
+    return rb;
 }
 
 /*
-* ÂÜ≥ÂÆöÊñá‰ª∂ÊâßË°å‰ΩïÁßçÊìç‰Ωú„ÄÇ
-*   1) ÂΩìÊñá‰ª∂Âú®Êú¨Âú∞ÂíåÁΩëÁõò‰∏≠ÈÉΩÂ≠òÂú®Êó∂ÔºåÊØîËæÉÊú¨Âú∞ÂíåÁΩëÁõòÁöÑÂÖÉÊï∞ÊçÆ„ÄÇ
-*         a) Â¶ÇÊûúÊú¨Âú∞Êñá‰ª∂‰øÆÊîπÊó∂Èó¥Â∞è‰∫éÁΩëÁõòÊñá‰ª∂ÂàõÂª∫Êó∂Èó¥ÔºåÂàôÈúÄË¶Å‰∏ãËΩΩ
-*         b) Â¶ÇÊûúÊú¨Âú∞Êñá‰ª∂‰øÆÊîπÊó∂Èó¥Â§ß‰∫éÁΩëÁõòÊñá‰ª∂ÂàõÂª∫Êó∂Èó¥ÔºåÂàôÈúÄË¶Å‰∏ä‰º†
-*         c) Â¶ÇÊûúÊú¨Âú∞Êñá‰ª∂‰øÆÊîπÊó∂Èó¥Á≠â‰∫éÁΩëÁõòÊñá‰ª∂ÂàõÂª∫Êó∂Èó¥ÔºåÂàô‰∏çÈúÄÂÅö‰ªª‰ΩïÊìç‰Ωú
-*  2) ÂΩìÊñá‰ª∂Âú®Êú¨Âú∞Â≠òÂú®Ôºå‰ΩÜÊòØÂú®ÁΩëÁõò‰∏≠‰∏çÂ≠òÂú®Êó∂ÔºåÂàôÈúÄË¶Å‰∏ä‰º†
-*  3) ÂΩìÊñá‰ª∂Âú®Êú¨Âú∞‰∏çÂ≠òÂú®Ôºå‰ΩÜÊòØÂú®ÁΩëÁõò‰∏≠Â≠òÂú®Êó∂ÔºåÂàôÈúÄË¶Å‰∏ãËΩΩ
-*  4) ÂÖ∂‰ªñÊÉÖÂÜµÔºå‰∏çÈúÄÂÅö‰ªª‰ΩïÊìç‰Ωú„ÄÇ
+* æˆ∂®Œƒº˛÷¥––∫Œ÷÷≤Ÿ◊˜°£
+*   1) µ±Œƒº˛‘⁄±æµÿ∫ÕÕ¯≈Ã÷–∂º¥Ê‘⁄ ±£¨±»Ωœ±æµÿ∫ÕÕ¯≈Ãµƒ‘™ ˝æ›°£
+*         a) »Áπ˚±æµÿŒƒº˛–ﬁ∏ƒ ±º‰–°”⁄Õ¯≈ÃŒƒº˛¥¥Ω® ±º‰£¨‘Ú–Ë“™œ¬‘ÿ
+*         b) »Áπ˚±æµÿŒƒº˛–ﬁ∏ƒ ±º‰¥Û”⁄Õ¯≈ÃŒƒº˛¥¥Ω® ±º‰£¨‘Ú–Ë“™…œ¥´
+*         c) »Áπ˚±æµÿŒƒº˛–ﬁ∏ƒ ±º‰µ»”⁄Õ¯≈ÃŒƒº˛¥¥Ω® ±º‰£¨‘Ú≤ª–Ë◊ˆ»Œ∫Œ≤Ÿ◊˜
+*  2) µ±Œƒº˛‘⁄±æµÿ¥Ê‘⁄£¨µ´ «‘⁄Õ¯≈Ã÷–≤ª¥Ê‘⁄ ±£¨‘Ú–Ë“™…œ¥´
+*  3) µ±Œƒº˛‘⁄±æµÿ≤ª¥Ê‘⁄£¨µ´ «‘⁄Õ¯≈Ã÷–¥Ê‘⁄ ±£¨‘Ú–Ë“™œ¬‘ÿ
+*  4) ∆‰À˚«Èøˆ£¨≤ª–Ë◊ˆ»Œ∫Œ≤Ÿ◊˜°£
 */
-static inline void decide_op(MyMeta *meta)
+static inline void decide_op(MyMeta* meta)
 {
-	if ((meta->flag & FLAG_ON_LOCAL) && (meta->flag & FLAG_ON_REMOTE)) { /*Êñá‰ª∂Âú®Êú¨Âú∞ÂíåÁΩëÁõò‰∏≠ÈÉΩÂ≠òÂú®*/
-		if (meta->local_isdir && meta->remote_isdir) {
-			meta->op = OP_EQ;
-		}
-		else if (!meta->local_isdir && !meta->remote_isdir) {
-			if (meta->local_mtime < meta->remote_mtime)
-				meta->op = OP_LEFT;
-			else if (meta->local_mtime > meta->remote_mtime)
-				meta->op = OP_RIGHT;
-			else
-				meta->op = OP_EQ;
-		}
-		else {
-			meta->op = OP_CONFUSE;
-		}
-	}
-	else if (meta->flag & FLAG_ON_LOCAL) {
-		meta->op = OP_RIGHT;
-	}
-	else if (meta->flag & FLAG_ON_REMOTE) {
-		meta->op = OP_LEFT;
-	}
-	else {
-		meta->op = OP_NONE;
-	}
+    if ((meta->flag & FLAG_ON_LOCAL) && (meta->flag & FLAG_ON_REMOTE)) { /*Œƒº˛‘⁄±æµÿ∫ÕÕ¯≈Ã÷–∂º¥Ê‘⁄*/
+        if (meta->local_isdir && meta->remote_isdir) {
+            meta->op = OP_EQ;
+        } else if (!meta->local_isdir && !meta->remote_isdir) {
+            if (meta->local_mtime < meta->remote_mtime) {
+                meta->op = OP_LEFT;
+            } else if (meta->local_mtime > meta->remote_mtime) {
+                meta->op = OP_RIGHT;
+            } else {
+                meta->op = OP_EQ;
+            }
+        } else {
+            meta->op = OP_CONFUSE;
+        }
+    } else if (meta->flag & FLAG_ON_LOCAL) {
+        meta->op = OP_RIGHT;
+    } else if (meta->flag & FLAG_ON_REMOTE) {
+        meta->op = OP_LEFT;
+    } else {
+        meta->op = OP_NONE;
+    }
 }
 
 /*
- * ÊâìÂç∞ÊòæÁ§∫metaÊó∂ÁöÑÂàóË°®Â§¥
- *   first  - Á¨¨‰∏ÄÂàóÂÆΩÂ∫¶ÔºåÁ¨¨‰∏ÄÂàó‰∏∫Êìç‰ΩúÊàêÂäüËøòÊòØÂ§±Ë¥•ÁöÑÊ†áËÆ∞Âàó„ÄÇ‰∏çÂ≠òÂú®Êó∂Ôºå‰º†ÂÖ•0
- *   second - Á¨¨‰∫åÂàóÂÆΩÂ∫¶ÔºåÁ¨¨‰∫åÂàó‰∏∫Êú¨Âú∞Êñá‰ª∂ÁöÑË∑ØÂæÑ
- *   other  - Ââ©‰∏ãÂàóÁöÑÊÄªÂÆΩÂ∫¶Ôºå‰∏çÂåÖÊã¨Á¨¨‰∏âÂàó„ÄÇÁ¨¨‰∏âÂàóÂÆΩÂ∫¶‰∏∫Âõ∫ÂÆöÂÄº2
- *   page_index - ÂàÜÈ°µÁºñÂè∑Ôºå‰∏çÊâìÂç∞ÂàÜÈ°µÁöÑËØùÔºå‰º†ÂÖ•0
+ * ¥Ú”°œ‘ æmeta ±µƒ¡–±ÌÕ∑
+ *   first  - µ⁄“ª¡–øÌ∂»£¨µ⁄“ª¡–Œ™≤Ÿ◊˜≥…π¶ªπ « ß∞‹µƒ±Íº«¡–°£≤ª¥Ê‘⁄ ±£¨¥´»Î0
+ *   second - µ⁄∂˛¡–øÌ∂»£¨µ⁄∂˛¡–Œ™±æµÿŒƒº˛µƒ¬∑æ∂
+ *   other  -  £œ¬¡–µƒ◊‹øÌ∂»£¨≤ª∞¸¿®µ⁄»˝¡–°£µ⁄»˝¡–øÌ∂»Œ™πÃ∂®÷µ2
+ *   page_index - ∑÷“≥±‡∫≈£¨≤ª¥Ú”°∑÷“≥µƒª∞£¨¥´»Î0
 */
 static void print_meta_list_head(int first, int second, int other)
 {
-	int i, total = 0;
-	for (i = 0; i < first; i++) putchar(' ');
-	if (first > 0) putchar(' ');
-	printf("Local File");
-	for (i = 10; i < second; i++) putchar(' ');
-	printf(" OP Net Disk File\n");
-	if (first > 0) total += first + 1;
-	total += second + 1;
-	total += 2 + 1; /*2‰∏∫ÂàóÂ§¥"OP"ÁöÑÈïøÂ∫¶Ôºå1‰∏∫ÂàÜÈöîÁ©∫ÁôΩ*/
-	total += other;
-	for (i = 0; i < total; i++) putchar('-');
-	putchar('\n');
+    int i, total = 0;
+    for (i = 0; i < first; i++) {
+        putchar(' ');
+    }
+    if (first > 0) {
+        putchar(' ');
+    }
+    printf("Local File");
+    for (i = 10; i < second; i++) {
+        putchar(' ');
+    }
+    printf(" OP Net Disk File\n");
+    if (first > 0) {
+        total += first + 1;
+    }
+    total += second + 1;
+    total += 2 + 1; /*2Œ™¡–Õ∑"OP"µƒ≥§∂»£¨1Œ™∑÷∏Ùø’∞◊*/
+    total += other;
+    for (i = 0; i < total; i++) {
+        putchar('-');
+    }
+    putchar('\n');
 }
 
 
 /*
-* ÊâìÂç∞ÊòæÁ§∫metaÊó∂ÁöÑÂàóË°®Â§¥
-*   first  - Á¨¨‰∏ÄÂàóÂÆΩÂ∫¶ÔºåÁ¨¨‰∏ÄÂàó‰∏∫Êìç‰ΩúÊàêÂäüËøòÊòØÂ§±Ë¥•ÁöÑÊ†áËÆ∞Âàó„ÄÇ‰∏çÂ≠òÂú®Êó∂Ôºå‰º†ÂÖ•0
-*   second - Á¨¨‰∫åÂàóÂÆΩÂ∫¶ÔºåÁ¨¨‰∫åÂàó‰∏∫Êú¨Âú∞Êñá‰ª∂ÁöÑË∑ØÂæÑ
-*   other  - Ââ©‰∏ãÂàóÁöÑÊÄªÂÆΩÂ∫¶Ôºå‰∏çÂåÖÊã¨Á¨¨‰∏âÂàó„ÄÇÁ¨¨‰∏âÂàóÂÆΩÂ∫¶‰∏∫Âõ∫ÂÆöÂÄº2
-*   meta   - ÂæÖÊâìÂç∞ÁöÑ meta 
+* ¥Ú”°œ‘ æmeta ±µƒ¡–±ÌÕ∑
+*   first  - µ⁄“ª¡–øÌ∂»£¨µ⁄“ª¡–Œ™≤Ÿ◊˜≥…π¶ªπ « ß∞‹µƒ±Íº«¡–°£≤ª¥Ê‘⁄ ±£¨¥´»Î0
+*   second - µ⁄∂˛¡–øÌ∂»£¨µ⁄∂˛¡–Œ™±æµÿŒƒº˛µƒ¬∑æ∂
+*   other  -  £œ¬¡–µƒ◊‹øÌ∂»£¨≤ª∞¸¿®µ⁄»˝¡–°£µ⁄»˝¡–øÌ∂»Œ™πÃ∂®÷µ2
+*   meta   - ¥˝¥Ú”°µƒ meta
 */
-static void print_meta_list_row(int first, int second, int other, MyMeta *meta)
+static void print_meta_list_row(int first, int second, int other, MyMeta* meta)
 {
-	int i;
-	if (first > 0) {
-		switch (meta->op_st) {
-		case OP_ST_SUCC:
-			printf("[" GREEN " ok " NONE "] ");
-			break;
-		case OP_ST_FAIL:
-			printf("[" RED "fail" NONE "] ");
-			break;
-		case OP_ST_SKIP:
-			printf("[" WHITE "skip" NONE "] ");
-			break;
-		case OP_ST_CONFUSE:
-			printf("[" YELLOW "confus" NONE "] ");
-			break;
-		case OP_ST_PROCESSING:
-			printf("[ing...] ");
-			break;
-		default:
-			printf("[    ] ");
-			break;
-		}
-	}
-	if (meta->flag & FLAG_ON_LOCAL) {
-		printf("%s", meta->path);
-		i = strlen(meta->path);
-		if (meta->local_isdir && i > 0 && meta->path[i - 1] != '/' && meta->path[i - 1] != '\\') {
-			putchar('/');
-			i++;
-		}
-	}
-	else {
-		i = 0;
-	}
-	for (; i < second; i++) putchar(' ');
-	putchar(' ');
-	switch (meta->op) {
-	case OP_LEFT:
-		printf(BLUE"<-"NONE);
-		break;
-	case OP_RIGHT:
-		printf(LIGHT_BLUE"->"NONE);
-		break;
-	case OP_EQ:
-		printf(GREEN"=="NONE);
-		break;
-	case OP_CONFUSE:
-		printf(RED"><"NONE);
-		break;
-	default:
-		printf("  ");
-		break;
-	}
-	putchar(' ');
-	if (meta->flag & FLAG_ON_REMOTE) {
-		printf("%s", meta->remote_path);
-		i = strlen(meta->remote_path);
-		if (meta->remote_isdir && i > 0 && meta->remote_path[i - 1] != '/' && meta->remote_path[i - 1] != '\\') {
-			putchar('/');
-		}
-	}
-	putchar('\n');
-	//if (meta->msg) {
-	//	fprintf(stderr, RED "Error: %s" NONE "\n", meta->msg);
-	//}
+    int i;
+    if (first > 0) {
+        switch (meta->op_st) {
+        case OP_ST_SUCC:
+            printf("[" GREEN " ok " NONE "] ");
+            break;
+        case OP_ST_FAIL:
+            printf("[" RED "fail" NONE "] ");
+            break;
+        case OP_ST_SKIP:
+            printf("[" WHITE "skip" NONE "] ");
+            break;
+        case OP_ST_CONFUSE:
+            printf("[" YELLOW "confus" NONE "] ");
+            break;
+        case OP_ST_PROCESSING:
+            printf("[processing...] ");
+            break;
+        default:
+            printf("[    ] ");
+            break;
+        }
+    }
+    if (meta->flag & FLAG_ON_LOCAL) {
+        printf("%s", meta->path);
+        i = strlen(meta->path);
+        if (meta->local_isdir && i > 0 && meta->path[i - 1] != '/' && meta->path[i - 1] != '\\') {
+            putchar('/');
+            i++;
+        }
+    } else {
+        i = 0;
+    }
+    for (; i < second; i++) {
+        putchar(' ');
+    }
+    putchar(' ');
+    switch (meta->op) {
+    case OP_LEFT:
+        printf(BLUE"<-"NONE);
+        break;
+    case OP_RIGHT:
+        printf(LIGHT_BLUE"->"NONE);
+        break;
+    case OP_EQ:
+        printf(GREEN"=="NONE);
+        break;
+    case OP_CONFUSE:
+        printf(RED"><"NONE);
+        break;
+    default:
+        printf("  ");
+        break;
+    }
+    putchar(' ');
+    if (meta->flag & FLAG_ON_REMOTE) {
+        printf("%s", meta->remote_path);
+        i = strlen(meta->remote_path);
+        if (meta->remote_isdir && i > 0 && meta->remote_path[i - 1] != '/' && meta->remote_path[i - 1] != '\\') {
+            putchar('/');
+        }
+    }
+    putchar('\n');
+    //if (meta->msg) {
+    //  fprintf(stderr, RED "Error: %s" NONE "\n", meta->msg);
+    //}
 }
 
-static void print_meta_list_row_err(int first, int second, int other, MyMeta *meta)
+static void print_meta_list_row_err(int first, int second, int other, MyMeta* meta)
 {
-	int i;
-	if (first > 0) {
-		switch (meta->op_st) {
-		case OP_ST_SUCC:
-			fprintf(stderr, "[" GREEN " ok " NONE "] ");
-			break;
-		case OP_ST_FAIL:
-			fprintf(stderr, "[" RED "fail" NONE "] ");
-			break;
-		case OP_ST_SKIP:
-			fprintf(stderr, "[" WHITE "skip" NONE "] ");
-			break;
-		case OP_ST_CONFUSE:
-			fprintf(stderr, "[" YELLOW "confus" NONE "] ");
-			break;
-		case OP_ST_PROCESSING:
-			fprintf(stderr, "[ing...] ");
-			break;
-		default:
-			fprintf(stderr, "[    ] ");
-			break;
-		}
-	}
-	if (meta->flag & FLAG_ON_LOCAL) {
-		fprintf(stderr, "%s", meta->path);
-		i = strlen(meta->path);
-		if (meta->local_isdir && i > 0 && meta->path[i - 1] != '/' && meta->path[i - 1] != '\\') {
-			fprintf(stderr, "/");
-			i++;
-		}
-	}
-	else {
-		i = 0;
-	}
-	for (; i < second; i++) fprintf(stderr, " ");
-	fprintf(stderr, " ");
-	switch (meta->op) {
-	case OP_LEFT:
-		fprintf(stderr, BLUE"<-"NONE);
-		break;
-	case OP_RIGHT:
-		fprintf(stderr, LIGHT_BLUE"->"NONE);
-		break;
-	case OP_EQ:
-		fprintf(stderr, GREEN"=="NONE);
-		break;
-	case OP_CONFUSE:
-		fprintf(stderr, RED"><"NONE);
-		break;
-	default:
-		fprintf(stderr, "  ");
-		break;
-	}
-	fprintf(stderr, " ");
-	if (meta->flag & FLAG_ON_REMOTE) {
-		fprintf(stderr, "%s", meta->remote_path);
-		i = strlen(meta->remote_path);
-		if (meta->remote_isdir && i > 0 && meta->remote_path[i - 1] != '/' && meta->remote_path[i - 1] != '\\') {
-			fprintf(stderr, "/");
-		}
-	}
-	if (meta->msg) {
-		fprintf(stderr, "\n");
-		fprintf(stderr, RED "      %s" NONE, meta->msg);
-	}
-	fprintf(stderr, "\n");
+    int i;
+    if (first > 0) {
+        switch (meta->op_st) {
+        case OP_ST_SUCC:
+            fprintf(stderr, "[" GREEN " ok " NONE "] ");
+            break;
+        case OP_ST_FAIL:
+            fprintf(stderr, "[" RED "fail" NONE "] ");
+            break;
+        case OP_ST_SKIP:
+            fprintf(stderr, "[" WHITE "skip" NONE "] ");
+            break;
+        case OP_ST_CONFUSE:
+            fprintf(stderr, "[" YELLOW "confus" NONE "] ");
+            break;
+        case OP_ST_PROCESSING:
+            fprintf(stderr, "[processing...] ");
+            break;
+        default:
+            fprintf(stderr, "[    ] ");
+            break;
+        }
+    }
+    if (meta->flag & FLAG_ON_LOCAL) {
+        fprintf(stderr, "%s", meta->path);
+        i = strlen(meta->path);
+        if (meta->local_isdir && i > 0 && meta->path[i - 1] != '/' && meta->path[i - 1] != '\\') {
+            fprintf(stderr, "/");
+            i++;
+        }
+    } else {
+        i = 0;
+    }
+    for (; i < second; i++) {
+        fprintf(stderr, " ");
+    }
+    fprintf(stderr, " ");
+    switch (meta->op) {
+    case OP_LEFT:
+        fprintf(stderr, BLUE"<-"NONE);
+        break;
+    case OP_RIGHT:
+        fprintf(stderr, LIGHT_BLUE"->"NONE);
+        break;
+    case OP_EQ:
+        fprintf(stderr, GREEN"=="NONE);
+        break;
+    case OP_CONFUSE:
+        fprintf(stderr, RED"><"NONE);
+        break;
+    default:
+        fprintf(stderr, "  ");
+        break;
+    }
+    fprintf(stderr, " ");
+    if (meta->flag & FLAG_ON_REMOTE) {
+        fprintf(stderr, "%s", meta->remote_path);
+        i = strlen(meta->remote_path);
+        if (meta->remote_isdir && i > 0 && meta->remote_path[i - 1] != '/' && meta->remote_path[i - 1] != '\\') {
+            fprintf(stderr, "/");
+        }
+    }
+    if (meta->msg) {
+        fprintf(stderr, "\n");
+        fprintf(stderr, RED "      %s" NONE, meta->msg);
+    }
+    fprintf(stderr, "\n");
 }
 
 /*
-* ÊâìÂç∞ÁªüËÆ°
+* ¥Ú”°Õ≥º∆
 */
-static void print_meta_list_statistic(struct RBEnumerateState *s, int print_fail)
+static void print_meta_list_statistic(struct RBEnumerateState* s, int print_fail)
 {
-	int i, total = 0;
+    int i, total = 0;
 
-	printf("\nStatistic:\n");
-	if (s->first > 0) total += s->first + 1;
-	total += s->second + 1;
-	total += 2 + 1; /*2‰∏∫ÂàóÂ§¥"OP"ÁöÑÈïøÂ∫¶Ôºå1‰∏∫ÂàÜÈöîÁ©∫ÁôΩ*/
-	total += s->other;
-	for (i = 0; i < total; i++) putchar('-');
-	putchar('\n');
-	printf("Need Download: %d, Need Upload: %d\n"
-		   "Confuse: %d, Equal: %d, Other: %d\n"
-		   "Total: %d",
-		s->cnt_left, s->cnt_right, s->cnt_confuse, s->cnt_eq, s->cnt_none, s->cnt_total);
-	if (print_fail) {
-		printf(", Fail: %d\n", s->cnt_fail);
-	}
-	else {
-		putchar('\n');
-	}
+    printf("\nStatistic:\n");
+    if (s->first > 0) {
+        total += s->first + 1;
+    }
+    total += s->second + 1;
+    total += 2 + 1; /*2Œ™¡–Õ∑"OP"µƒ≥§∂»£¨1Œ™∑÷∏Ùø’∞◊*/
+    total += s->other;
+    for (i = 0; i < total; i++) {
+        putchar('-');
+    }
+    putchar('\n');
+    printf("Need Download: %d, Need Upload: %d\n"
+           "Confuse: %d, Equal: %d, Other: %d\n"
+           "Total: %d",
+           s->cnt_left, s->cnt_right, s->cnt_confuse, s->cnt_eq, s->cnt_none, s->cnt_total);
+    if (print_fail) {
+        printf(", Fail: %d\n", s->cnt_fail);
+    } else {
+        putchar('\n');
+    }
 }
 
 /*
-* ÊâìÂç∞ÊòæÁ§∫metaÊó∂ÁöÑÂàóË°®Â§¥
-*   first  - Á¨¨‰∏ÄÂàóÂÆΩÂ∫¶ÔºåÁ¨¨‰∏ÄÂàó‰∏∫Êìç‰ΩúÊàêÂäüËøòÊòØÂ§±Ë¥•ÁöÑÊ†áËÆ∞Âàó„ÄÇ‰∏çÂ≠òÂú®Êó∂Ôºå‰º†ÂÖ•0
-*   second - Á¨¨‰∫åÂàóÂÆΩÂ∫¶ÔºåÁ¨¨‰∫åÂàó‰∏∫Êú¨Âú∞Êñá‰ª∂ÁöÑË∑ØÂæÑ
-*   other  - Ââ©‰∏ãÂàóÁöÑÊÄªÂÆΩÂ∫¶Ôºå‰∏çÂåÖÊã¨Á¨¨‰∏âÂàó„ÄÇÁ¨¨‰∏âÂàóÂÆΩÂ∫¶‰∏∫Âõ∫ÂÆöÂÄº2
+* ¥Ú”°œ‘ æmeta ±µƒ¡–±ÌÕ∑
+*   first  - µ⁄“ª¡–øÌ∂»£¨µ⁄“ª¡–Œ™≤Ÿ◊˜≥…π¶ªπ « ß∞‹µƒ±Íº«¡–°£≤ª¥Ê‘⁄ ±£¨¥´»Î0
+*   second - µ⁄∂˛¡–øÌ∂»£¨µ⁄∂˛¡–Œ™±æµÿŒƒº˛µƒ¬∑æ∂
+*   other  -  £œ¬¡–µƒ◊‹øÌ∂»£¨≤ª∞¸¿®µ⁄»˝¡–°£µ⁄»˝¡–øÌ∂»Œ™πÃ∂®÷µ2
 */
 static void print_meta_list_notes(int first, int second, int other)
 {
-	printf("\nNotes:\n"
-		"  <- means the right file will download into \n"
-		"     the local file system. \n");
-	printf("  -> means the left file will upload into the disk. \n");
-	printf("  == means left file same as right file. \n");
-	printf("  >< means confuse, don't known how to. \n");
+    printf("\nNotes:\n"
+           "  <- means the right file will download into \n"
+           "     the local file system. \n");
+    printf("  -> means the left file will upload into the disk. \n");
+    printf("  == means left file same as right file. \n");
+    printf("  >< means confuse, don't known how to. \n");
 }
 
-/*Âà§Êñ≠ÊòØÂê¶ÂÖÅËÆ∏ÊâìÂç∞„ÄÇËøîÂõû0Ë°®Á§∫‰∏çÂÖÅËÆ∏ÔºåËøîÂõûÈùû0ÂÄºË°®Á§∫ÂÖÅËÆ∏*/
-static inline int rb_print_enabled(MyMeta *meta, struct RBEnumerateState *s)
+/*≈–∂œ «∑Ò‘ –Ì¥Ú”°°£∑µªÿ0±Ì æ≤ª‘ –Ì£¨∑µªÿ∑«0÷µ±Ì æ‘ –Ì*/
+static inline int rb_print_enabled(MyMeta* meta, struct RBEnumerateState* s)
 {
-	if (!(meta->op & s->print_op) || !((meta->op) & (~(s->no_print_op))))
-		return 0;
-	if (!(meta->flag & s->print_flag) || !((meta->flag) & (~(s->no_print_flag))))
-		return 0;
-	return 1;
+    if (!(meta->op & s->print_op) || !((meta->op) & (~(s->no_print_op)))) {
+        return 0;
+    }
+    if (!(meta->flag & s->print_flag) || !((meta->flag) & (~(s->no_print_flag)))) {
+        return 0;
+    }
+    return 1;
 }
 
-/* Êûö‰∏æÊó∂Áî®‰∫éÊâìÂç∞ÊØè‰∏ÄÈ°π */
-static int rb_print_meta(void *a, void *state)
+/* √∂æŸ ±”√”⁄¥Ú”°√ø“ªœÓ */
+static int rb_print_meta(void* a, void* state)
 {
-	MyMeta *meta = (MyMeta *)a;
-	struct RBEnumerateState *s = (struct RBEnumerateState *)state;
-	char tmp[8];
+    MyMeta* meta = (MyMeta*)a;
+    struct RBEnumerateState* s = (struct RBEnumerateState*)state;
+    char tmp[8];
 
-	if (!meta || !s || !rb_print_enabled(meta, s)) return 0;
+    if (!meta || !s || !rb_print_enabled(meta, s)) {
+        return 0;
+    }
 
-	if (s->printed_count == 0) {
-		if (s->page_enable && s->page_size > 0)
-			printf("\n%sPAGE #%d\n", s->prefixion ? s->prefixion : "", s->page_index);
-		else
-			putchar('\n');
-		print_meta_list_head(s->first, s->second, s->other);
-	}
-	else if (s->page_enable && s->page_size > 0 && (s->printed_count % s->page_size) == 0) {
-		s->page_index++;
-		printf("\nPrint next page #%d?\n"
-			   "  yes - Continue print\n"
-			   "  no  - Abort print\n"
-			   "  YES - Continue, but print all left items\n"
-			   "Press <enter> to continue or input your choice: ", s->page_index);
-		std_string(tmp, 8);
-		if (strlen(tmp) != 0 && pcs_utils_strcmpi(tmp, "y") && pcs_utils_strcmpi(tmp, "yes")) {
-			return -1;
-		}
-		if (strlen(tmp) != 0 && (strcmp(tmp, "Y") == 0 || strcmp(tmp, "YES") == 0)) {
-			s->page_enable = 0;
-		}
-		printf("\n%sPAGE #%d\n", s->prefixion ? s->prefixion : "", s->page_index);
-		print_meta_list_head(s->first, s->second, s->other);
-	}
+    if (s->printed_count == 0) {
+        if (s->page_enable && s->page_size > 0) {
+            printf("\n%sPAGE #%d\n", s->prefixion ? s->prefixion : "", s->page_index);
+        } else {
+            putchar('\n');
+        }
+        print_meta_list_head(s->first, s->second, s->other);
+    } else if (s->page_enable && s->page_size > 0 && (s->printed_count % s->page_size) == 0) {
+        s->page_index++;
+        printf("\nPrint next page #%d?\n"
+               "  yes - Continue print\n"
+               "  no  - Abort print\n"
+               "  YES - Continue, but print all left items\n"
+               "Press <enter> to continue or input your choice: ", s->page_index);
+        std_string(tmp, 8);
+        if (strlen(tmp) != 0 && pcs_utils_strcmpi(tmp, "y") && pcs_utils_strcmpi(tmp, "yes")) {
+            return -1;
+        }
+        if (strlen(tmp) != 0 && (strcmp(tmp, "Y") == 0 || strcmp(tmp, "YES") == 0)) {
+            s->page_enable = 0;
+        }
+        printf("\n%sPAGE #%d\n", s->prefixion ? s->prefixion : "", s->page_index);
+        print_meta_list_head(s->first, s->second, s->other);
+    }
 
-	if (s->process)
-		meta->op_st = OP_ST_PROCESSING;
+    if (s->process) {
+        meta->op_st = OP_ST_PROCESSING;
+    }
 
-	print_meta_list_row(s->first, s->second, s->other, meta);
-	
-	if (s->process) {
-		int rc = (*s->process)(meta, s, s->processState);
-		clear_current_print_line();
-		back_prev_print_line();
-		if (meta->op_st == OP_ST_PROCESSING) meta->op_st = OP_ST_FAIL;
-		if (meta->op_st == OP_ST_FAIL) {
+    print_meta_list_row(s->first, s->second, s->other, meta);
+
+    if (s->process) {
+        int rc = (*s->process)(meta, s, s->processState);
+        clear_current_print_line();
+        back_prev_print_line();
+        if (meta->op_st == OP_ST_PROCESSING) {
+            meta->op_st = OP_ST_FAIL;
+        }
+        if (meta->op_st == OP_ST_FAIL) {
 #ifdef _WIN32
-			fprintf(stderr, "\r");  //Ê∏ÖÈô§ËØ•Ë°å
-			fprintf(stderr, "                                        ");  //Ê∏ÖÈô§ËØ•Ë°å
-			fprintf(stderr, "\r");  //Ê∏ÖÈô§ËØ•Ë°å
+            fprintf(stderr, "\r");  //«Â≥˝∏√––
+            fprintf(stderr, "                                        ");  //«Â≥˝∏√––
+            fprintf(stderr, "\r");  //«Â≥˝∏√––
 #else
-			fprintf(stderr, "\033[K");  //Ê∏ÖÈô§ËØ•Ë°å
-			fprintf(stderr, "\033[1A"); //ÂÖàÂõûÂà∞‰∏ä‰∏ÄË°å
-			fprintf(stderr, "\033[K");  //Ê∏ÖÈô§ËØ•Ë°å
+            fprintf(stderr, "\033[K");  //«Â≥˝∏√––
+            fprintf(stderr, "\033[1A"); //œ»ªÿµΩ…œ“ª––
+            fprintf(stderr, "\033[K");  //«Â≥˝∏√––
 #endif
-			print_meta_list_row_err(s->first, s->second, s->other, meta);
-		}
-		else {
-			print_meta_list_row(s->first, s->second, s->other, meta);
-		}
-		if (rc) return rc;
-	}
+            print_meta_list_row_err(s->first, s->second, s->other, meta);
+        } else {
+            print_meta_list_row(s->first, s->second, s->other, meta);
+        }
+        if (rc) {
+            return rc;
+        }
+    }
 
-	if (meta->op_st == OP_ST_FAIL)
-		s->cnt_fail++;
+    if (meta->op_st == OP_ST_FAIL) {
+        s->cnt_fail++;
+    }
 
-	s->printed_count++;
+    s->printed_count++;
 
-	return 0;
+    return 0;
 }
 
-/* Êûö‰∏æÂÜ≥ÂÆöÁ∫¢ÈªëÊ†ë‰∏≠È°πÁöÑopÂÄºÔºåÂêåÊó∂‰πüÂÜ≥ÂÆöflag‰∏≠ÁöÑFLAG_PARENT_NOT_ON_REMOTEÊ†áËÆ∞ÔºåÂêåÊó∂ÁªüËÆ°‰∏Ä‰∫õÂÄº */
-static int rb_decide_op(void *a, void *state)
+/* √∂æŸæˆ∂®∫Ï∫⁄ ˜÷–œÓµƒop÷µ£¨Õ¨ ±“≤æˆ∂®flag÷–µƒFLAG_PARENT_NOT_ON_REMOTE±Íº«£¨Õ¨ ±Õ≥º∆“ª–©÷µ */
+static int rb_decide_op(void* a, void* state)
 {
-	MyMeta *meta = (MyMeta *)a;
-	struct RBEnumerateState *s = (struct RBEnumerateState *)state;
-	int len;
+    MyMeta* meta = (MyMeta*)a;
+    struct RBEnumerateState* s = (struct RBEnumerateState*)state;
+    int len;
 
-	if (!meta || !s) return 0;
-	
-	decide_op(meta);
-	meta->op_st = OP_ST_NONE;
+    if (!meta || !s) {
+        return 0;
+    }
 
-	if (meta->parent) {
-		if (!(meta->parent->flag & FLAG_ON_REMOTE))
-			meta->flag |= FLAG_PARENT_NOT_ON_REMOTE;
-	}
+    decide_op(meta);
+    meta->op_st = OP_ST_NONE;
 
-	switch (meta->op) {
-	case OP_EQ:
-		s->cnt_eq++;
-		break;
-	case OP_LEFT:
-		s->cnt_left++;
-		break;
-	case OP_RIGHT:
-		s->cnt_right++;
-		break;
-	case OP_CONFUSE:
-		s->cnt_confuse++;
-		break;
-	default:
-		s->cnt_none++;
-		break;
-	}
-	s->cnt_total++;
+    if (meta->parent) {
+        if (!(meta->parent->flag & FLAG_ON_REMOTE)) {
+            meta->flag |= FLAG_PARENT_NOT_ON_REMOTE;
+        }
+    }
 
-	if (!rb_print_enabled(meta, s)) return 0;
+    switch (meta->op) {
+    case OP_EQ:
+        s->cnt_eq++;
+        break;
+    case OP_LEFT:
+        s->cnt_left++;
+        break;
+    case OP_RIGHT:
+        s->cnt_right++;
+        break;
+    case OP_CONFUSE:
+        s->cnt_confuse++;
+        break;
+    default:
+        s->cnt_none++;
+        break;
+    }
+    s->cnt_total++;
 
-	if ((meta->flag & FLAG_ON_LOCAL)) {
-		len = strlen(meta->path);
-		if (meta->local_isdir) len++;
-		if (s->second < len) s->second = len;
-	}
-	s->cnt_valid_total++;
-	printf("Compared %d                     \r", s->cnt_total);
-	fflush(stdout);
-	return 0;
+    if (!rb_print_enabled(meta, s)) {
+        return 0;
+    }
+
+    if ((meta->flag & FLAG_ON_LOCAL)) {
+        len = strlen(meta->path);
+        if (meta->local_isdir) {
+            len++;
+        }
+        if (s->second < len) {
+            s->second = len;
+        }
+    }
+    s->cnt_valid_total++;
+    printf("Compared %d                     \r", s->cnt_total);
+    fflush(stdout);
+    return 0;
 }
 
 #pragma endregion
 
-#pragma region ÂêÑÂëΩ‰ª§ÂáΩÊï∞‰Ωì
+#pragma region ∏˜√¸¡Ó∫Ø ˝ÃÂ
 
 /*
- * Ê£ÄÊü•ÊòØÂê¶ÁôªÂΩï
- *   msg   - Ê£ÄÊµãÂà∞Êú™ÁôªÂΩïÊó∂ÁöÑÊâìÂç∞Ê∂àÊÅØ„ÄÇ‰º†ÂÖ•NULLÁöÑËØùÔºåÂàô‰ΩøÁî®ÈªòËÆ§Ê∂àÊÅØ„ÄÇ
+ * ºÏ≤È «∑Òµ«¬º
+ *   msg   - ºÏ≤‚µΩŒ¥µ«¬º ±µƒ¥Ú”°œ˚œ¢°£¥´»ÎNULLµƒª∞£¨‘Ú π”√ƒ¨»œœ˚œ¢°£
 */
-static PcsBool is_login(ShellContext *context, const char *msg)
+static PcsBool is_login(ShellContext* context, const char* msg)
 {
-	PcsRes pcsres;
-	time_t now;
-	time(&now);
-	pcsres = pcs_islogin(context->pcs);
-	if (pcsres == PCS_LOGIN)
-		return PcsTrue;
-	if (msg) {
-		if (msg[0])
-			printf("%s\n", msg);
-	}
-	else if (pcsres == PCS_NOT_LOGIN) {
-		printf("You are not logon or your session is time out. You can login by 'login' command.\n");
-	}
-	else {
-		printf("Error: %s\n", pcs_strerror(context->pcs));
-	}
-	return PcsFalse;
+    PcsRes pcsres;
+    time_t now;
+    time(&now);
+    pcsres = pcs_islogin(context->pcs);
+    if (pcsres == PCS_LOGIN) {
+        return PcsTrue;
+    }
+    if (msg) {
+        if (msg[0]) {
+            printf("%s\n", msg);
+        }
+    } else if (pcsres == PCS_NOT_LOGIN) {
+        printf("You are not logon or your session is time out. You can login by 'login' command.\n");
+    } else {
+        printf("Error: %s\n", pcs_strerror(context->pcs));
+    }
+    return PcsFalse;
 }
 
-static struct DownloadThreadState *pop_download_threadstate(struct DownloadState *ds)
+static struct DownloadThreadState* pop_download_threadstate(struct DownloadState* ds)
 {
-	struct DownloadThreadState *ts = NULL;
-	lock_for_download(ds);
-	ts = ds->threads;
-	while (ts && ts->status != DOWNLOAD_STATUS_PENDDING) {
-		ts = ts->next;
-	}
-	if (ts && ts->status == DOWNLOAD_STATUS_PENDDING)
-		ts->status = DOWNLOAD_STATUS_DOWNLOADING;
-	else
-		ts = NULL;
-	unlock_for_download(ds);
-	return ts;
+    struct DownloadThreadState* ts = NULL;
+    lock_for_download(ds);
+    ts = ds->threads;
+    while (ts && ts->status != DOWNLOAD_STATUS_PENDDING) {
+        ts = ts->next;
+    }
+    if (ts && ts->status == DOWNLOAD_STATUS_PENDDING) {
+        ts->status = DOWNLOAD_STATUS_DOWNLOADING;
+    } else {
+        ts = NULL;
+    }
+    unlock_for_download(ds);
+    return ts;
 }
 
 #ifdef _WIN32
-static DWORD WINAPI download_thread(LPVOID params)
+    static DWORD WINAPI download_thread(LPVOID params)
 #else
-static void *download_thread(void *params)
+    static void* download_thread(void* params)
 #endif
 {
-	PcsRes res;
-	int dsstatus;
-	struct DownloadState *ds = (struct DownloadState *)params;
-	ShellContext *context = ds->context;
-	struct DownloadThreadState *ts = pop_download_threadstate(ds);
-	Pcs *pcs;
-	srand((unsigned int)time(NULL));
-	if (ds->threads != ts) {
-		sleep(rand() % 5);
-	}
-	if (ts == NULL) {
-		lock_for_download(ds);
-		ds->num_of_running_thread--;
-		unlock_for_download(ds);
+    PcsRes res;
+    int dsstatus;
+    struct DownloadState* ds = (struct DownloadState*)params;
+    ShellContext* context = ds->context;
+    struct DownloadThreadState* ts = pop_download_threadstate(ds);
+    Pcs* pcs;
+    srand((unsigned int)time(NULL));
+    if (ds->threads != ts) {
+        sleep(rand() % 5);
+    }
+    if (ts == NULL) {
+        lock_for_download(ds);
+        ds->num_of_running_thread--;
+        unlock_for_download(ds);
 #ifdef _WIN32
-		return (DWORD)0;
+        return (DWORD)0;
 #else
-		return NULL;
+        return NULL;
 #endif
-	}
-	pcs = create_pcs(context);
-	if (!pcs) {
-		lock_for_download(ds);
-		if (ds->pErrMsg) {
-			if (*(ds->pErrMsg)) pcs_free(*(ds->pErrMsg));
-			(*(ds->pErrMsg)) = pcs_utils_sprintf("Can't create pcs context.");
-		}
-		//ds->status = DOWNLOAD_STATUS_FAIL;
-		ds->num_of_running_thread--;
-		ts->status = DOWNLOAD_STATUS_PENDDING;
-		unlock_for_download(ds);
+    }
+    pcs = create_pcs(context);
+    if (!pcs) {
+        lock_for_download(ds);
+        if (ds->pErrMsg) {
+            if (*(ds->pErrMsg)) {
+                pcs_free(*(ds->pErrMsg));
+            }
+            (*(ds->pErrMsg)) = pcs_utils_sprintf("Can't create pcs context.");
+        }
+        //ds->status = DOWNLOAD_STATUS_FAIL;
+        ds->num_of_running_thread--;
+        ts->status = DOWNLOAD_STATUS_PENDDING;
+        unlock_for_download(ds);
 #ifdef _WIN32
-		return (DWORD)0;
+        return (DWORD)0;
 #else
-		return NULL;
+        return NULL;
 #endif
-	}
-	pcs_clone_userinfo(pcs, context->pcs);
-	while (ts) {
-		ts->pcs = pcs;
-		lock_for_download(ds);
-		dsstatus = ds->status;
-		unlock_for_download(ds);
-		if (dsstatus != DOWNLOAD_STATUS_OK) {
-			lock_for_download(ds);
-			ts->status = DOWNLOAD_STATUS_PENDDING;
-			unlock_for_download(ds);
-			break;
-		}
-		pcs_setopts(pcs,
-			PCS_OPTION_DOWNLOAD_WRITE_FUNCTION, &download_write_for_multy_thread,
-			PCS_OPTION_DOWNLOAD_WRITE_FUNCTION_DATA, ts,
-			PCS_OPTION_END);
-		res = pcs_download(pcs, ds->remote_file, convert_to_real_speed(context->max_speed_per_thread), ts->start, ts->end - ts->start);
-		if (res != PCS_OK && ts->status != DOWNLOAD_STATUS_OK) {
-			int delay;
-			lock_for_download(ds);
-			if (!ds->pErrMsg) {
-				(*(ds->pErrMsg)) = pcs_utils_sprintf("%s", pcs_strerror(pcs));
-			}
-			//ds->status = DOWNLOAD_STATUS_FAIL;
-			unlock_for_download(ds);
-			delay = rand();
-			delay %= 10;
-			sleep(delay); /*10ÁßíÂêéÈáçËØï*/
-			continue;
-		}
-		lock_for_download(ds);
-		ts->status = DOWNLOAD_STATUS_OK;
-		unlock_for_download(ds);
-		ts = pop_download_threadstate(ds);
-	}
+    }
+    pcs_clone_userinfo(pcs, context->pcs);
+    while (ts) {
+        ts->pcs = pcs;
+        lock_for_download(ds);
+        dsstatus = ds->status;
+        unlock_for_download(ds);
+        if (dsstatus != DOWNLOAD_STATUS_OK) {
+            lock_for_download(ds);
+            ts->status = DOWNLOAD_STATUS_PENDDING;
+            unlock_for_download(ds);
+            break;
+        }
+        pcs_setopts(pcs,
+                    PCS_OPTION_DOWNLOAD_WRITE_FUNCTION, &download_write_for_multy_thread,
+                    PCS_OPTION_DOWNLOAD_WRITE_FUNCTION_DATA, ts,
+                    PCS_OPTION_END);
+        res = pcs_download(pcs, ds->remote_file, convert_to_real_speed(context->max_speed_per_thread), ts->start, ts->end - ts->start);
+        if (res != PCS_OK && ts->status != DOWNLOAD_STATUS_OK) {
+            int delay;
+            lock_for_download(ds);
+            if (!ds->pErrMsg) {
+                (*(ds->pErrMsg)) = pcs_utils_sprintf("%s", pcs_strerror(pcs));
+            }
+            //ds->status = DOWNLOAD_STATUS_FAIL;
+            unlock_for_download(ds);
+            delay = rand();
+            delay %= 10;
+            sleep(delay); /*10√Î∫Û÷ÿ ‘*/
+            continue;
+        }
+        lock_for_download(ds);
+        ts->status = DOWNLOAD_STATUS_OK;
+        unlock_for_download(ds);
+        ts = pop_download_threadstate(ds);
+    }
 
-	destroy_pcs(pcs);
-	lock_for_download(ds);
-	ds->num_of_running_thread--;
-	unlock_for_download(ds);
+    destroy_pcs(pcs);
+    lock_for_download(ds);
+    ds->num_of_running_thread--;
+    unlock_for_download(ds);
 #ifdef _WIN32
-	return (DWORD)0;
+    return (DWORD)0;
 #else
-	return NULL;
+    return NULL;
 #endif
 }
 
-static void start_download_thread(struct DownloadState *ds, void **pHandle)
+static void start_download_thread(struct DownloadState* ds, void** pHandle)
 {
 #ifdef _WIN32
-	DWORD tid;
-	HANDLE thandle;
-	/* hThread = CreateThread (&security_attributes, dwStackSize, ThreadProc, pParam, dwFlags, &idThread)
-	WINBASEAPI HANDLE WINAPI CreateThread(LPSECURITY_ATTRIBUTES,DWORD,LPTHREAD_START_ROUTINE,PVOID,DWORD,PDWORD);
-	Á¨¨‰∏Ä‰∏™ÂèÇÊï∞ÊòØÊåáÂêëSECURITY_ATTRIBUTESÂûãÊÄÅÁöÑÁªìÊûÑÁöÑÊåáÈíà„ÄÇÂú®Windows 98‰∏≠ÂøΩÁï•ËØ•ÂèÇÊï∞„ÄÇÂú®Windows NT‰∏≠ÔºåÂÆÉË¢´ËÆæ‰∏∫NULL„ÄÇ
-	Á¨¨‰∫å‰∏™ÂèÇÊï∞ÊòØÁî®‰∫éÊñ∞Á∫øÁ®ãÁöÑÂàùÂßãÂ†ÜÊ†àÂ§ßÂ∞èÔºåÈªòËÆ§ÂÄº‰∏∫0„ÄÇÂú®‰ªª‰ΩïÊÉÖÂÜµ‰∏ãÔºåWindowsÊ†πÊçÆÈúÄË¶ÅÂä®ÊÄÅÂª∂ÈïøÂ†ÜÊ†àÁöÑÂ§ßÂ∞è„ÄÇ
-	Á¨¨‰∏â‰∏™ÂèÇÊï∞ÊòØÊåáÂêëÁ∫øÁ®ãÂáΩÊï∞ÁöÑÊåáÊ†á„ÄÇÂáΩÊï∞ÂêçÁß∞Ê≤°ÊúâÈôêÂà∂Ôºå‰ΩÜÊòØÂøÖÈ°ª‰ª•‰∏ãÂàóÂΩ¢ÂºèÂ£∞Êòé:DWORD WINAPI ThreadProc (PVOID pParam) ;
-	Á¨¨Âõõ‰∏™ÂèÇÊï∞‰∏∫‰º†ÈÄíÁªôThreadProcÁöÑÂèÇÊï∞„ÄÇËøôÊ†∑‰∏ªÁ∫øÁ®ãÂíå‰ªéÂ±ûÁ∫øÁ®ãÂ∞±ÂèØ‰ª•ÂÖ±‰∫´Êï∞ÊçÆ„ÄÇ
-	Á¨¨‰∫î‰∏™ÂèÇÊï∞ÈÄöÂ∏∏‰∏∫0Ôºå‰ΩÜÂΩìÂª∫Á´ãÁöÑÁ∫øÁ®ã‰∏çÈ©¨‰∏äÊâßË°åÊó∂‰∏∫ÊóóÊ†á
-	Á¨¨ÂÖ≠‰∏™ÂèÇÊï∞ÊòØ‰∏Ä‰∏™ÊåáÈíàÔºåÊåáÂêëÊé•ÂèóÊâßË°åÁª™IDÂÄºÁöÑÂèòÈáè
-	*/
-	thandle = CreateThread(NULL, 0, download_thread, (LPVOID)ds, 0, &tid); // Âª∫Á´ãÁ∫øÁ®ã
-	if (pHandle) *pHandle = thandle;
-	if (!thandle) {
-		printf("Error: Can't create download thread.\n");
-		lock_for_download(ds);
-		ds->num_of_running_thread--;
-		unlock_for_download(ds);
-	}
+    DWORD tid;
+    HANDLE thandle;
+    /* hThread = CreateThread (&security_attributes, dwStackSize, ThreadProc, pParam, dwFlags, &idThread)
+    WINBASEAPI HANDLE WINAPI CreateThread(LPSECURITY_ATTRIBUTES,DWORD,LPTHREAD_START_ROUTINE,PVOID,DWORD,PDWORD);
+    µ⁄“ª∏ˆ≤Œ ˝ «÷∏œÚSECURITY_ATTRIBUTES–ÕÃ¨µƒΩ·ππµƒ÷∏’Î°£‘⁄Windows 98÷–∫ˆ¬‘∏√≤Œ ˝°£‘⁄Windows NT÷–£¨À¸±ª…ËŒ™NULL°£
+    µ⁄∂˛∏ˆ≤Œ ˝ «”√”⁄–¬œﬂ≥Ãµƒ≥ı º∂—’ª¥Û–°£¨ƒ¨»œ÷µŒ™0°£‘⁄»Œ∫Œ«Èøˆœ¬£¨Windows∏˘æ›–Ë“™∂ØÃ¨—”≥§∂—’ªµƒ¥Û–°°£
+    µ⁄»˝∏ˆ≤Œ ˝ «÷∏œÚœﬂ≥Ã∫Ø ˝µƒ÷∏±Í°£∫Ø ˝√˚≥∆√ª”–œﬁ÷∆£¨µ´ «±ÿ–Î“‘œ¬¡––Œ Ω…˘√˜:DWORD WINAPI ThreadProc (PVOID pParam) ;
+    µ⁄Àƒ∏ˆ≤Œ ˝Œ™¥´µ›∏¯ThreadProcµƒ≤Œ ˝°£’‚—˘÷˜œﬂ≥Ã∫Õ¥” Ùœﬂ≥ÃæÕø…“‘π≤œÌ ˝æ›°£
+    µ⁄ŒÂ∏ˆ≤Œ ˝Õ®≥£Œ™0£¨µ´µ±Ω®¡¢µƒœﬂ≥Ã≤ª¬Ì…œ÷¥–– ±Œ™∆Ï±Í
+    µ⁄¡˘∏ˆ≤Œ ˝ «“ª∏ˆ÷∏’Î£¨÷∏œÚΩ” ‹÷¥–––˜ID÷µµƒ±‰¡ø
+    */
+    thandle = CreateThread(NULL, 0, download_thread, (LPVOID)ds, 0, &tid); // Ω®¡¢œﬂ≥Ã
+    if (pHandle) {
+        *pHandle = thandle;
+    }
+    if (!thandle) {
+        printf("Error: Can't create download thread.\n");
+        lock_for_download(ds);
+        ds->num_of_running_thread--;
+        unlock_for_download(ds);
+    }
 #else
-	int err;
-	pthread_t main_tid;
-	err = pthread_create(&main_tid, NULL, download_thread, ds);
-	if (err) {
-		printf("Error: Can't create download thread.\n");
-		lock_for_download(ds);
-		ds->num_of_running_thread--;
-		unlock_for_download(ds);
-	}
+    int err;
+    pthread_t main_tid;
+    err = pthread_create(&main_tid, NULL, download_thread, ds);
+    if (err) {
+        printf("Error: Can't create download thread.\n");
+        lock_for_download(ds);
+        ds->num_of_running_thread--;
+        unlock_for_download(ds);
+    }
 #endif
 }
 
-static int restore_download_state(struct DownloadState *ds, const char *tmp_local_path, int *pendding_count)
+static int restore_download_state(struct DownloadState* ds, const char* tmp_local_path, int* pendding_count)
 {
-	LocalFileInfo *tmpFileInfo;
-	int64_t tmp_file_size = 0;
-	tmpFileInfo = GetLocalFileInfo(tmp_local_path);
-	if (tmpFileInfo) {
-		tmp_file_size = tmpFileInfo->size;
-		DestroyLocalFileInfo(tmpFileInfo);
-	}
+    LocalFileInfo* tmpFileInfo;
+    int64_t tmp_file_size = 0;
+    tmpFileInfo = GetLocalFileInfo(tmp_local_path);
+    if (tmpFileInfo) {
+        tmp_file_size = tmpFileInfo->size;
+        DestroyLocalFileInfo(tmpFileInfo);
+    }
 
-	if ((tmp_file_size >= ds->file_size + 4 + sizeof(struct DownloadThreadState))) {
-		FILE *pf;
-		int magic;
-		int thread_count = 0;
-		struct DownloadThreadState *ts, *tail = NULL;
-		curl_off_t left_size = 0;
-		pf = fopen(tmp_local_path, "rb");
-		if (!pf) return -1;
-		if (fseeko(pf, ds->file_size, SEEK_SET)) {
-			fclose(pf);
-			return -1;
-		}
-		if (fread(&magic, 4, 1, pf) != 1) {
-			fclose(pf);
-			return -1;
-		}
-		if (magic != THREAD_STATE_MAGIC) {
-			fclose(pf);
-			return -1;
-		}
-		if (pendding_count) (*pendding_count) = 0;
-		while(1) {
-			ts = (struct DownloadThreadState *) pcs_malloc(sizeof(struct DownloadThreadState));
-			if (fread(ts, sizeof(struct DownloadThreadState), 1, pf) != 1) {
-				pcs_free(ts);
-				break;
-			}
-			ts->ds = ds;
-			//printf("%d: ", thread_count);
-			if (ts->status != DOWNLOAD_STATUS_OK) {
-				ts->status = DOWNLOAD_STATUS_PENDDING;
-				if (pendding_count) (*pendding_count)++;
-				//printf("*");
-			}
-			//printf("%d/%d\n", (int)ts->start, (int)ts->end);
-			left_size += (ts->end - ts->start);
-			if (tail == NULL) {
-				ds->threads = tail = ts;
-			}
-			else {
-				tail->next = ts;
-				tail = ts;
-			}
-			thread_count++;
-			ts->tid = thread_count;
-			if (!ts->next) {
-				ts->next = NULL;
-				break;
-			}
-			ts->next = NULL;
-		}
-		fclose(pf);
-		ds->resume_from = ds->file_size - left_size;
-		ds->num_of_slice = thread_count;
-		return 0;
-	}
-	return -1;
+    if ((tmp_file_size >= ds->file_size + 4 + sizeof(struct DownloadThreadState))) {
+        FILE* pf;
+        int magic;
+        int thread_count = 0;
+        struct DownloadThreadState* ts, *tail = NULL;
+        curl_off_t left_size = 0;
+        pf = fopen(tmp_local_path, "rb");
+        if (!pf) {
+            return -1;
+        }
+        if (fseeko(pf, ds->file_size, SEEK_SET)) {
+            fclose(pf);
+            return -1;
+        }
+        if (fread(&magic, 4, 1, pf) != 1) {
+            fclose(pf);
+            return -1;
+        }
+        if (magic != THREAD_STATE_MAGIC) {
+            fclose(pf);
+            return -1;
+        }
+        if (pendding_count) {
+            (*pendding_count) = 0;
+        }
+        while (1) {
+            ts = (struct DownloadThreadState*) pcs_malloc(sizeof(struct DownloadThreadState));
+            if (fread(ts, sizeof(struct DownloadThreadState), 1, pf) != 1) {
+                pcs_free(ts);
+                break;
+            }
+            ts->ds = ds;
+            //printf("%d: ", thread_count);
+            if (ts->status != DOWNLOAD_STATUS_OK) {
+                ts->status = DOWNLOAD_STATUS_PENDDING;
+                if (pendding_count) {
+                    (*pendding_count)++;
+                }
+                //printf("*");
+            }
+            //printf("%d/%d\n", (int)ts->start, (int)ts->end);
+            left_size += (ts->end - ts->start);
+            if (tail == NULL) {
+                ds->threads = tail = ts;
+            } else {
+                tail->next = ts;
+                tail = ts;
+            }
+            thread_count++;
+            ts->tid = thread_count;
+            if (!ts->next) {
+                ts->next = NULL;
+                break;
+            }
+            ts->next = NULL;
+        }
+        fclose(pf);
+        ds->resume_from = ds->file_size - left_size;
+        ds->num_of_slice = thread_count;
+        return 0;
+    }
+    return -1;
 }
 
-static int create_file(const char *file, int64_t fsize)
+static int create_file(const char* file, int64_t fsize)
 {
-	FILE *pf;
-	pf = fopen(file, "wb");
-	if (!pf) return -1;
-	fclose(pf);
-	if (fsize > 0) {
-		if (truncate(file, fsize)) {
-			return -1;
-		}
-	}
-	return 0;
+    FILE* pf;
+    pf = fopen(file, "wb");
+    if (!pf) {
+        return -1;
+    }
+    fclose(pf);
+    if (fsize > 0) {
+        if (truncate(file, fsize)) {
+            return -1;
+        }
+    }
+    return 0;
 }
 
 /*
- * ÊâßË°å‰∏ãËΩΩÊìç‰Ωú
- *   context        - ‰∏ä‰∏ãÊñá
- *   local_file     - Êñá‰ª∂Êú¨Âú∞Â≠òÂÇ®Ë∑ØÂæÑ
- *   remote_file    - ËøúÁ´ØÊñá‰ª∂
- *   remote_mtime   - ËøúÁ´ØÊñá‰ª∂ÁöÑÊúÄÂêé‰øÆÊîπÊó∂Èó¥
- *   local_basedir  - Êú¨Âú∞Â≠òÂÇ®Ë∑ØÂæÑÊòØÂü∫‰∫éÂì™‰∏Ä‰∏™ÁõÆÂΩïÁöÑ
- *   remote_basedir - ËøúÁ´ØÊñá‰ª∂ÊòØÂü∫‰∫éÂì™‰∏Ä‰∏™ÁõÆÂΩïÁöÑ
- *   pErrMsg        - Â¶ÇÊûú‰∏ãËΩΩÂ§±Ë¥•Êó∂ÔºåÁî®‰∫éÊé•Êî∂Â§±Ë¥•Ê∂àÊÅØÔºåÂ¶ÇÊûúÊó†ÈúÄÂ§±Ë¥•Ê∂àÊÅØÔºåÂàô‰º†ÂÖ•NULL
- *                    ‰ΩøÁî®ÂÆåÂêéÈúÄË∞ÉÁî®pcs_free()
- *   op_st          - Áî®‰∫éÊé•Êî∂Êìç‰ΩúÁä∂ÊÄÅÁöÑ„ÄÇÂç≥ OP_ST_FAILÔºå OP_ST_SUCCÔºå OP_ST_SKIP
- * ÊàêÂäüÂêéËøîÂõû0ÔºåÂ§±Ë¥•ÂêéËøîÂõûÈùû0ÂÄº
+ * ÷¥––œ¬‘ÿ≤Ÿ◊˜
+ *   context        - …œœ¬Œƒ
+ *   local_file     - Œƒº˛±æµÿ¥Ê¥¢¬∑æ∂
+ *   remote_file    - ‘∂∂ÀŒƒº˛
+ *   remote_mtime   - ‘∂∂ÀŒƒº˛µƒ◊Ó∫Û–ﬁ∏ƒ ±º‰
+ *   local_basedir  - ±æµÿ¥Ê¥¢¬∑æ∂ «ª˘”⁄ƒƒ“ª∏ˆƒø¬ºµƒ
+ *   remote_basedir - ‘∂∂ÀŒƒº˛ «ª˘”⁄ƒƒ“ª∏ˆƒø¬ºµƒ
+ *   pErrMsg        - »Áπ˚œ¬‘ÿ ß∞‹ ±£¨”√”⁄Ω” ’ ß∞‹œ˚œ¢£¨»Áπ˚Œﬁ–Ë ß∞‹œ˚œ¢£¨‘Ú¥´»ÎNULL
+ *                     π”√ÕÍ∫Û–Ëµ˜”√pcs_free()
+ *   op_st          - ”√”⁄Ω” ’≤Ÿ◊˜◊¥Ã¨µƒ°£º¥ OP_ST_FAIL£¨ OP_ST_SUCC£¨ OP_ST_SKIP
+ * ≥…π¶∫Û∑µªÿ0£¨ ß∞‹∫Û∑µªÿ∑«0÷µ
  */
-static inline int do_download(ShellContext *context, 
-	const char *local_file, const char *remote_file, time_t remote_mtime,
-	const char *local_basedir, const char *remote_basedir, const char *md5,
-	char **pErrMsg, int *op_st)
+static inline int do_download(ShellContext* context,
+                              const char* local_file, const char* remote_file, time_t remote_mtime,
+                              const char* local_basedir, const char* remote_basedir, const char* md5,
+                              char** pErrMsg, int* op_st)
 {
-	PcsRes res;
-	struct DownloadState ds = { 0 };
-	char *local_path, *remote_path, *dir,
-		*tmp_local_path;
-	const char *local_filename;
-	int secure_method = 0;
-	int64_t fsize = 0;
+    PcsRes res;
+    struct DownloadState ds = { 0 };
+    char* local_path, *remote_path, *dir,
+          *tmp_local_path;
+    const char* local_filename;
+    int secure_method = 0;
+    int64_t fsize = 0;
 
-	init_download_state(&ds);
+    init_download_state(&ds);
 
-	ds.context = context;
-	ds.pErrMsg = pErrMsg;
-	ds.status = 0;
+    ds.context = context;
+    ds.pErrMsg = pErrMsg;
+    ds.status = 0;
 
-	local_filename = filename(local_file);
-	if (strlen(local_filename) == 0) {
-		char *new_local_file;
-		dir = base_dir(local_file, -1);
-		new_local_file = combin_path(dir, -1, filename(remote_file));
-		local_path = combin_path(local_basedir, -1, new_local_file);
-		pcs_free(new_local_file);
-		pcs_free(dir);
-	}
-	else {
-		local_path = combin_path(local_basedir, -1, local_file);
-	}
+    local_filename = filename(local_file);
+    if (strlen(local_filename) == 0) {
+        char* new_local_file;
+        dir = base_dir(local_file, -1);
+        new_local_file = combin_path(dir, -1, filename(remote_file));
+        local_path = combin_path(local_basedir, -1, new_local_file);
+        pcs_free(new_local_file);
+        pcs_free(dir);
+    } else {
+        local_path = combin_path(local_basedir, -1, local_file);
+    }
 
-	/*ÂàõÂª∫ÁõÆÂΩï*/
-	dir = base_dir(local_path, -1);
-	if (dir) {
-		if (CreateDirectoryRecursive(dir) != MKDIR_OK) {
-			if (pErrMsg) {
-				if (*pErrMsg) pcs_free(*pErrMsg);
-				(*pErrMsg) = pcs_utils_sprintf("Can't create the directory: %s", dir);
-			}
-			if (op_st) (*op_st) = OP_ST_FAIL;
-			pcs_free(dir);
-			pcs_free(local_path);
-			uninit_download_state(&ds);
-			return -1;
-		}
-		pcs_free(dir);
-	}
+    /*¥¥Ω®ƒø¬º*/
+    dir = base_dir(local_path, -1);
+    if (dir) {
+        if (CreateDirectoryRecursive(dir) != MKDIR_OK) {
+            if (pErrMsg) {
+                if (*pErrMsg) {
+                    pcs_free(*pErrMsg);
+                }
+                (*pErrMsg) = pcs_utils_sprintf("Can't create the directory: %s", dir);
+            }
+            if (op_st) {
+                (*op_st) = OP_ST_FAIL;
+            }
+            pcs_free(dir);
+            pcs_free(local_path);
+            uninit_download_state(&ds);
+            return -1;
+        }
+        pcs_free(dir);
+    }
 
-	tmp_local_path = (char *)pcs_malloc(strlen(local_path) + (md5 ? strlen(md5) + 1 : 0) + strlen(TEMP_FILE_SUFFIX) + 1);
-	strcpy(tmp_local_path, local_path);
-	if (md5) {
-		strcat(tmp_local_path, ".");
-		strcat(tmp_local_path, md5);
-	}
-	strcat(tmp_local_path, TEMP_FILE_SUFFIX);
+    tmp_local_path = (char*)pcs_malloc(strlen(local_path) + (md5 ? strlen(md5) + 1 : 0) + strlen(TEMP_FILE_SUFFIX) + 1);
+    strcpy(tmp_local_path, local_path);
+    if (md5) {
+        strcat(tmp_local_path, ".");
+        strcat(tmp_local_path, md5);
+    }
+    strcat(tmp_local_path, TEMP_FILE_SUFFIX);
 
-	dir = combin_net_disk_path(context->workdir, remote_basedir);
-	if (!dir) {
-		if (pErrMsg) {
-			if (*pErrMsg) pcs_free(*pErrMsg);
-			(*pErrMsg) = pcs_utils_sprintf("Can't combin remote path\n");
-		}
-		if (op_st) (*op_st) = OP_ST_FAIL;
-		DeleteFileRecursive(tmp_local_path);
-		pcs_free(tmp_local_path);
-		pcs_free(local_path);
-		uninit_download_state(&ds);
-		return -1;
-	}
-	remote_path = combin_net_disk_path(dir, remote_file);
-	pcs_free(dir);
-	if (!remote_path) {
-		if (pErrMsg) {
-			if (*pErrMsg) pcs_free(*pErrMsg);
-			(*pErrMsg) = pcs_utils_sprintf("Can't combin remote path\n");
-		}
-		if (op_st) (*op_st) = OP_ST_FAIL;
-		DeleteFileRecursive(tmp_local_path);
-		pcs_free(tmp_local_path);
-		pcs_free(local_path);
-		uninit_download_state(&ds);
-		return -1;
-	}
+    dir = combin_net_disk_path(context->workdir, remote_basedir);
+    if (!dir) {
+        if (pErrMsg) {
+            if (*pErrMsg) {
+                pcs_free(*pErrMsg);
+            }
+            (*pErrMsg) = pcs_utils_sprintf("Can't combin remote path\n");
+        }
+        if (op_st) {
+            (*op_st) = OP_ST_FAIL;
+        }
+        DeleteFileRecursive(tmp_local_path);
+        pcs_free(tmp_local_path);
+        pcs_free(local_path);
+        uninit_download_state(&ds);
+        return -1;
+    }
+    remote_path = combin_net_disk_path(dir, remote_file);
+    pcs_free(dir);
+    if (!remote_path) {
+        if (pErrMsg) {
+            if (*pErrMsg) {
+                pcs_free(*pErrMsg);
+            }
+            (*pErrMsg) = pcs_utils_sprintf("Can't combin remote path\n");
+        }
+        if (op_st) {
+            (*op_st) = OP_ST_FAIL;
+        }
+        DeleteFileRecursive(tmp_local_path);
+        pcs_free(tmp_local_path);
+        pcs_free(local_path);
+        uninit_download_state(&ds);
+        return -1;
+    }
 
-	ds.remote_file = remote_path;
+    ds.remote_file = remote_path;
 
-	fsize = pcs_get_download_filesize(context->pcs, remote_path);
-	ds.file_size = fsize;
+    fsize = pcs_get_download_filesize(context->pcs, remote_path);
+    ds.file_size = fsize;
     if (fsize < 0) {
-		if (pErrMsg) {
-			if (*pErrMsg) pcs_free(*pErrMsg);
-			(*pErrMsg) = pcs_utils_sprintf("Can't get the file size.\n");
-		}
-		if (op_st) (*op_st) = OP_ST_FAIL;
-		DeleteFileRecursive(tmp_local_path);
-		pcs_free(tmp_local_path);
-		pcs_free(local_path);
+        if (pErrMsg) {
+            if (*pErrMsg) {
+                pcs_free(*pErrMsg);
+            }
+            (*pErrMsg) = pcs_utils_sprintf("Can't get the file size.\n");
+        }
+        if (op_st) {
+            (*op_st) = OP_ST_FAIL;
+        }
+        DeleteFileRecursive(tmp_local_path);
+        pcs_free(tmp_local_path);
+        pcs_free(local_path);
         pcs_free(remote_path);
-		uninit_download_state(&ds);
-		return -1;
-	}
+        uninit_download_state(&ds);
+        return -1;
+    }
 
-	if (fsize <= MIN_SLICE_SIZE) {
-		/*ÂêØÂä®‰∏ãËΩΩ*/
-		/*ÊâìÂºÄÊñá‰ª∂*/
-		ds.pf = fopen(tmp_local_path, "wb");
-		if (!ds.pf) {
-			if (pErrMsg) {
-				if (*pErrMsg) pcs_free(*pErrMsg);
-				(*pErrMsg) = pcs_utils_sprintf("Can't open or create the temp file: %s\n", tmp_local_path);
-			}
-			if (op_st) (*op_st) = OP_ST_FAIL;
-			DeleteFileRecursive(tmp_local_path);
-			pcs_free(tmp_local_path);
-			pcs_free(local_path);
-			pcs_free(remote_path);
-			uninit_download_state(&ds);
-			return -1;
-		}
-		ds.cache.fp = ds.pf;
-		pcs_setopts(context->pcs,
-			PCS_OPTION_DOWNLOAD_WRITE_FUNCTION, &download_write,
-			PCS_OPTION_DOWNLOAD_WRITE_FUNCTION_DATA, &ds,
-			PCS_OPTION_END);
-		res = pcs_download(context->pcs, remote_path, convert_to_real_speed(context->max_speed_per_thread), 0, 0);
-		if (ds.cache.total_size > 0) {
-			int rc = cache_flush(&ds.cache);
-			if (rc) {
-				if (pErrMsg) {
-					if (*pErrMsg) pcs_free(*pErrMsg);
-					(*pErrMsg) = pcs_utils_sprintf("%s\n", "cache_flush() error.");
-				}
-				if (op_st) (*op_st) = OP_ST_FAIL;
-				fclose(ds.pf);
-				pcs_free(tmp_local_path);
-				pcs_free(local_path);
-				pcs_free(remote_path);
-				uninit_download_state(&ds);
-				return -1;
-			}
-		}
-		fclose(ds.pf);
-		if (res != PCS_OK) {
-			if (pErrMsg) {
-				if (*pErrMsg) pcs_free(*pErrMsg);
-				(*pErrMsg) = pcs_utils_sprintf("%s. local_path=%s, remote_path=%s\n",
-					pcs_strerror(context->pcs), tmp_local_path, remote_path);
-			}
-			if (op_st) (*op_st) = OP_ST_FAIL;
-			//if (!strstr(pcs_strerror(context->pcs), "Timeout"))
-			//	DeleteFileRecursive(tmp_local_path);
-			pcs_free(tmp_local_path);
-			pcs_free(local_path);
-			pcs_free(remote_path);
-			uninit_download_state(&ds);
-			return -1;
-		}
-	}
-	else {
-		struct DownloadThreadState *ts, *tail = NULL;
-		curl_off_t start = 0;
-		const char *mode = "rb+";
-		int slice_count, pendding_slice_count = 0, thread_count, running_thread_count, i, is_success;
-		int64_t slice_size;
+    if (fsize <= MIN_SLICE_SIZE) {
+        /*∆Ù∂Øœ¬‘ÿ*/
+        /*¥Úø™Œƒº˛*/
+        ds.pf = fopen(tmp_local_path, "wb");
+        if (!ds.pf) {
+            if (pErrMsg) {
+                if (*pErrMsg) {
+                    pcs_free(*pErrMsg);
+                }
+                (*pErrMsg) = pcs_utils_sprintf("Can't open or create the temp file: %s\n", tmp_local_path);
+            }
+            if (op_st) {
+                (*op_st) = OP_ST_FAIL;
+            }
+            DeleteFileRecursive(tmp_local_path);
+            pcs_free(tmp_local_path);
+            pcs_free(local_path);
+            pcs_free(remote_path);
+            uninit_download_state(&ds);
+            return -1;
+        }
+        ds.cache.fp = ds.pf;
+        pcs_setopts(context->pcs,
+                    PCS_OPTION_DOWNLOAD_WRITE_FUNCTION, &download_write,
+                    PCS_OPTION_DOWNLOAD_WRITE_FUNCTION_DATA, &ds,
+                    PCS_OPTION_END);
+        res = pcs_download(context->pcs, remote_path, convert_to_real_speed(context->max_speed_per_thread), 0, 0);
+        if (ds.cache.total_size > 0) {
+            int rc = cache_flush(&ds.cache);
+            if (rc) {
+                if (pErrMsg) {
+                    if (*pErrMsg) {
+                        pcs_free(*pErrMsg);
+                    }
+                    (*pErrMsg) = pcs_utils_sprintf("%s\n", "cache_flush() error.");
+                }
+                if (op_st) {
+                    (*op_st) = OP_ST_FAIL;
+                }
+                fclose(ds.pf);
+                pcs_free(tmp_local_path);
+                pcs_free(local_path);
+                pcs_free(remote_path);
+                uninit_download_state(&ds);
+                return -1;
+            }
+        }
+        fclose(ds.pf);
+        if (res != PCS_OK) {
+            if (pErrMsg) {
+                if (*pErrMsg) {
+                    pcs_free(*pErrMsg);
+                }
+                (*pErrMsg) = pcs_utils_sprintf("%s. local_path=%s, remote_path=%s\n",
+                                               pcs_strerror(context->pcs), tmp_local_path, remote_path);
+            }
+            if (op_st) {
+                (*op_st) = OP_ST_FAIL;
+            }
+            //if (!strstr(pcs_strerror(context->pcs), "Timeout"))
+            //  DeleteFileRecursive(tmp_local_path);
+            pcs_free(tmp_local_path);
+            pcs_free(local_path);
+            pcs_free(remote_path);
+            uninit_download_state(&ds);
+            return -1;
+        }
+    } else {
+        struct DownloadThreadState* ts, *tail = NULL;
+        curl_off_t start = 0;
+        const char* mode = "rb+";
+        int slice_count, pendding_slice_count = 0, thread_count, running_thread_count, i, is_success;
+        int64_t slice_size;
 #ifdef _WIN32
-		HANDLE *handles = NULL;
+        HANDLE* handles = NULL;
 #endif
-		if (restore_download_state(&ds, tmp_local_path, &pendding_slice_count)) {
-			//ÂàÜÁâáÂºÄÂßã
-			mode = "wb";
-			ds.resume_from = 0;
-			slice_size = MIN_SLICE_SIZE;
-			slice_count = (int)(fsize / slice_size);
-			if ((fsize % slice_size)) slice_count++;
+        if (restore_download_state(&ds, tmp_local_path, &pendding_slice_count)) {
+            //∑÷∆¨ø™ º
+            mode = "wb";
+            ds.resume_from = 0;
+            slice_size = MIN_SLICE_SIZE;
+            slice_count = (int)(fsize / slice_size);
+            if ((fsize % slice_size)) {
+                slice_count++;
+            }
 
-			for (i = 0; i < slice_count; i++) {
-				ts = (struct DownloadThreadState *) pcs_malloc(sizeof(struct DownloadThreadState));
-				ts->ds = &ds;
-				ts->start = start;
-				start += slice_size;
-				ts->end = start;
-				if (ts->end > ((curl_off_t)fsize)) ts->end = (curl_off_t)fsize;
-				ts->status = DOWNLOAD_STATUS_PENDDING;
-				pendding_slice_count++;
-				ts->tid = i + 1;
-				ts->next = NULL;
-				if (tail == NULL) {
-					ds.threads = tail = ts;
-				}
-				else {
-					tail->next = ts;
-					tail = ts;
-				}
-			}
-			ds.num_of_slice = slice_count;
-			//ÂàÜÁâáÁªìÊùü
-			//printf("fs: %" PRIu64 ", %" PRIu64 ", %" PRIu64 ", %d\n", ds.file_size, ds.file_size + 4 + sizeof(struct DownloadThreadState) * slice_count, slice_size, slice_count);
-			if (create_file(tmp_local_path, ds.file_size + 4 + sizeof(struct DownloadThreadState) * slice_count)) {
-				if (pErrMsg) {
-					if (*pErrMsg) pcs_free(*pErrMsg);
-					(*pErrMsg) = pcs_utils_sprintf("Can't create the temp file: %s, maybe have no disk space.\n", tmp_local_path);
-				}
-				if (op_st) (*op_st) = OP_ST_FAIL;
-				DeleteFileRecursive(tmp_local_path);
-				pcs_free(tmp_local_path);
-				pcs_free(local_path);
-				pcs_free(remote_path);
-				uninit_download_state(&ds);
-				return -1;
-			}
-			mode = "rb+";
-		}
-		/*ÊâìÂºÄÊñá‰ª∂*/
-		ds.pf = fopen(tmp_local_path, mode);
-		if (!ds.pf) {
-			if (pErrMsg) {
-				if (*pErrMsg) pcs_free(*pErrMsg);
-				(*pErrMsg) = pcs_utils_sprintf("Can't open or create the temp file: %s\n", tmp_local_path);
-			}
-			if (op_st) (*op_st) = OP_ST_FAIL;
-			DeleteFileRecursive(tmp_local_path);
-			pcs_free(tmp_local_path);
-			pcs_free(local_path);
-			pcs_free(remote_path);
-			uninit_download_state(&ds);
-			return -1;
-		}
-		ds.cache.fp = ds.pf;
-		//‰øùÂ≠òÂàÜÁâáÊï∞ÊçÆ
-		printf("Create/Load temporary file...\r");
-		fflush(stdout);
-		if (save_thread_states_to_file(ds.pf, ds.file_size, ds.threads)) {
-			if (pErrMsg) {
-				if (*pErrMsg) pcs_free(*pErrMsg);
-				(*pErrMsg) = pcs_utils_sprintf("Can't save slices into temporary file: %s \n", tmp_local_path);
-			}
-			if (op_st) (*op_st) = OP_ST_FAIL;
-			DeleteFileRecursive(tmp_local_path);
-			pcs_free(tmp_local_path);
-			pcs_free(local_path);
-			pcs_free(remote_path);
-			fclose(ds.pf);
-			uninit_download_state(&ds);
-			return -1;
-		}
-		fflush(ds.pf);
+            for (i = 0; i < slice_count; i++) {
+                ts = (struct DownloadThreadState*) pcs_malloc(sizeof(struct DownloadThreadState));
+                ts->ds = &ds;
+                ts->start = start;
+                start += slice_size;
+                ts->end = start;
+                if (ts->end > ((curl_off_t)fsize)) {
+                    ts->end = (curl_off_t)fsize;
+                }
+                ts->status = DOWNLOAD_STATUS_PENDDING;
+                pendding_slice_count++;
+                ts->tid = i + 1;
+                ts->next = NULL;
+                if (tail == NULL) {
+                    ds.threads = tail = ts;
+                } else {
+                    tail->next = ts;
+                    tail = ts;
+                }
+            }
+            ds.num_of_slice = slice_count;
+            //∑÷∆¨Ω· ¯
+            //printf("fs: %" PRIu64 ", %" PRIu64 ", %" PRIu64 ", %d\n", ds.file_size, ds.file_size + 4 + sizeof(struct DownloadThreadState) * slice_count, slice_size, slice_count);
+            if (create_file(tmp_local_path, ds.file_size + 4 + sizeof(struct DownloadThreadState) * slice_count)) {
+                if (pErrMsg) {
+                    if (*pErrMsg) {
+                        pcs_free(*pErrMsg);
+                    }
+                    (*pErrMsg) = pcs_utils_sprintf("Can't create the temp file: %s, maybe have no disk space.\n", tmp_local_path);
+                }
+                if (op_st) {
+                    (*op_st) = OP_ST_FAIL;
+                }
+                DeleteFileRecursive(tmp_local_path);
+                pcs_free(tmp_local_path);
+                pcs_free(local_path);
+                pcs_free(remote_path);
+                uninit_download_state(&ds);
+                return -1;
+            }
+            mode = "rb+";
+        }
+        /*¥Úø™Œƒº˛*/
+        ds.pf = fopen(tmp_local_path, mode);
+        if (!ds.pf) {
+            if (pErrMsg) {
+                if (*pErrMsg) {
+                    pcs_free(*pErrMsg);
+                }
+                (*pErrMsg) = pcs_utils_sprintf("Can't open or create the temp file: %s\n", tmp_local_path);
+            }
+            if (op_st) {
+                (*op_st) = OP_ST_FAIL;
+            }
+            DeleteFileRecursive(tmp_local_path);
+            pcs_free(tmp_local_path);
+            pcs_free(local_path);
+            pcs_free(remote_path);
+            uninit_download_state(&ds);
+            return -1;
+        }
+        ds.cache.fp = ds.pf;
+        //±£¥Ê∑÷∆¨ ˝æ›
+        printf("Create/Load temporary file...\r");
+        fflush(stdout);
+        if (save_thread_states_to_file(ds.pf, ds.file_size, ds.threads)) {
+            if (pErrMsg) {
+                if (*pErrMsg) {
+                    pcs_free(*pErrMsg);
+                }
+                (*pErrMsg) = pcs_utils_sprintf("Can't save slices into temporary file: %s \n", tmp_local_path);
+            }
+            if (op_st) {
+                (*op_st) = OP_ST_FAIL;
+            }
+            DeleteFileRecursive(tmp_local_path);
+            pcs_free(tmp_local_path);
+            pcs_free(local_path);
+            pcs_free(remote_path);
+            fclose(ds.pf);
+            uninit_download_state(&ds);
+            return -1;
+        }
+        fflush(ds.pf);
 
-		printf("Starting threads...\r");
-		fflush(stdout);
+        printf("Starting threads...\r");
+        fflush(stdout);
 
-		thread_count = pendding_slice_count;
-		if (thread_count > context->max_thread && context->max_thread > 0)
-			thread_count = context->max_thread;
-		ds.num_of_running_thread = thread_count;
-		//printf("\nthread: %d, slice: %d\n", thread_count, ds.num_of_slice);
+        thread_count = pendding_slice_count;
+        if (thread_count > context->max_thread && context->max_thread > 0) {
+            thread_count = context->max_thread;
+        }
+        ds.num_of_running_thread = thread_count;
+        //printf("\nthread: %d, slice: %d\n", thread_count, ds.num_of_slice);
 #ifdef _WIN32
-		handles = (HANDLE *)pcs_malloc(sizeof(HANDLE) * thread_count);
-		memset(handles, 0, sizeof(HANDLE) * thread_count);
+        handles = (HANDLE*)pcs_malloc(sizeof(HANDLE) * thread_count);
+        memset(handles, 0, sizeof(HANDLE) * thread_count);
 #endif
-		for (i = 0; i < thread_count; i++) {
+        for (i = 0; i < thread_count; i++) {
 #ifdef _WIN32
-			start_download_thread(&ds, handles + i);
+            start_download_thread(&ds, handles + i);
 #else
-			start_download_thread(&ds, NULL);
+            start_download_thread(&ds, NULL);
 #endif
-		}
+        }
 
-		/*Á≠âÂæÖÊâÄÊúâËøêË°åÁöÑÁ∫øÁ®ãÈÄÄÂá∫*/
-		while (1) {
-			lock_for_download(&ds);
-			running_thread_count = ds.num_of_running_thread;
-			unlock_for_download(&ds);
-			if (running_thread_count < 1) break;
-			sleep(1);
-		}
+        /*µ»¥˝À˘”–‘À––µƒœﬂ≥ÃÕÀ≥ˆ*/
+        while (1) {
+            lock_for_download(&ds);
+            running_thread_count = ds.num_of_running_thread;
+            unlock_for_download(&ds);
+            if (running_thread_count < 1) {
+                break;
+            }
+            sleep(1);
+        }
 
-		if (ds.cache.total_size > 0) {
-			int rc = cache_flush(&ds.cache);
-			if (rc) {
-				if (pErrMsg) {
-					if (!(*pErrMsg))
-						(*pErrMsg) = pcs_utils_sprintf("%s\n", "cache_flush() error.");
-				}
-				if (op_st) (*op_st) = OP_ST_FAIL;
-				fclose(ds.pf);
-				DeleteFileRecursive(tmp_local_path);
-				pcs_free(tmp_local_path);
-				pcs_free(local_path);
-				pcs_free(remote_path);
-				uninit_download_state(&ds);
-				return -1;
-			}
-		}
+        if (ds.cache.total_size > 0) {
+            int rc = cache_flush(&ds.cache);
+            if (rc) {
+                if (pErrMsg) {
+                    if (!(*pErrMsg)) {
+                        (*pErrMsg) = pcs_utils_sprintf("%s\n", "cache_flush() error.");
+                    }
+                }
+                if (op_st) {
+                    (*op_st) = OP_ST_FAIL;
+                }
+                fclose(ds.pf);
+                DeleteFileRecursive(tmp_local_path);
+                pcs_free(tmp_local_path);
+                pcs_free(local_path);
+                pcs_free(remote_path);
+                uninit_download_state(&ds);
+                return -1;
+            }
+        }
 
-		fclose(ds.pf);
+        fclose(ds.pf);
 
 #ifdef _WIN32
-		for (i = 0; i < thread_count; i++) {
-			if (handles[i]) {
-				CloseHandle(handles[i]);
-			}
-		}
-		pcs_free(handles);
+        for (i = 0; i < thread_count; i++) {
+            if (handles[i]) {
+                CloseHandle(handles[i]);
+            }
+        }
+        pcs_free(handles);
 #endif
 
-		/*Âà§Êñ≠ÊòØÂê¶ÊâÄÊúâÂàÜÁâáÈÉΩ‰∏ãËΩΩÂÆåÊàê‰∫Ü*/
-		is_success = 1;
-		ts = ds.threads;
-		while (ts) {
-			if (ts->status != DOWNLOAD_STATUS_OK) {
-				is_success = 0;
-				break;
-			}
-			ts = ts->next;
-		}
+        /*≈–∂œ «∑ÒÀ˘”–∑÷∆¨∂ºœ¬‘ÿÕÍ≥…¡À*/
+        is_success = 1;
+        ts = ds.threads;
+        while (ts) {
+            if (ts->status != DOWNLOAD_STATUS_OK) {
+                is_success = 0;
+                break;
+            }
+            ts = ts->next;
+        }
 
-		if (!is_success) {
-			if (pErrMsg) {
-				if (!(*pErrMsg))
-					(*pErrMsg) = pcs_utils_sprintf("Download fail.\n");
-			}
-			if (op_st) (*op_st) = OP_ST_FAIL;
-			DeleteFileRecursive(tmp_local_path);
-			pcs_free(tmp_local_path);
-			pcs_free(local_path);
-			pcs_free(remote_path);
-			uninit_download_state(&ds);
-			return -1;
-		}
-		if (truncate(tmp_local_path, ds.file_size)) {
-			if (pErrMsg) {
-				if (!(*pErrMsg))
-					(*pErrMsg) = pcs_utils_sprintf("Can't truncate the temp file %s.\n", tmp_local_path);
-			}
-			if (op_st) (*op_st) = OP_ST_FAIL;
-			DeleteFileRecursive(tmp_local_path);
-			pcs_free(tmp_local_path);
-			pcs_free(local_path);
-			pcs_free(remote_path);
-			uninit_download_state(&ds);
-			return -1;
-		}
-	}
+        if (!is_success) {
+            if (pErrMsg) {
+                if (!(*pErrMsg)) {
+                    (*pErrMsg) = pcs_utils_sprintf("Download fail.\n");
+                }
+            }
+            if (op_st) {
+                (*op_st) = OP_ST_FAIL;
+            }
+            DeleteFileRecursive(tmp_local_path);
+            pcs_free(tmp_local_path);
+            pcs_free(local_path);
+            pcs_free(remote_path);
+            uninit_download_state(&ds);
+            return -1;
+        }
+        if (truncate(tmp_local_path, ds.file_size)) {
+            if (pErrMsg) {
+                if (!(*pErrMsg)) {
+                    (*pErrMsg) = pcs_utils_sprintf("Can't truncate the temp file %s.\n", tmp_local_path);
+                }
+            }
+            if (op_st) {
+                (*op_st) = OP_ST_FAIL;
+            }
+            DeleteFileRecursive(tmp_local_path);
+            pcs_free(tmp_local_path);
+            pcs_free(local_path);
+            pcs_free(remote_path);
+            uninit_download_state(&ds);
+            return -1;
+        }
+    }
 
-	uninit_download_state(&ds);
+    uninit_download_state(&ds);
 
-	DeleteFileRecursive(local_path);
+    DeleteFileRecursive(local_path);
 
-	if (context->secure_enable) {
-		int context_secure_method = get_secure_method(context);
-		if (context_secure_method == PCS_SECURE_AES_CBC_128
-			|| context_secure_method == PCS_SECURE_AES_CBC_192
-			|| context_secure_method == PCS_SECURE_AES_CBC_256) {
-			secure_method = get_file_secure_method(tmp_local_path);
-		}
-	}
+    if (context->secure_enable) {
+        int context_secure_method = get_secure_method(context);
+        if (context_secure_method == PCS_SECURE_AES_CBC_128
+            || context_secure_method == PCS_SECURE_AES_CBC_192
+            || context_secure_method == PCS_SECURE_AES_CBC_256) {
+            secure_method = get_file_secure_method(tmp_local_path);
+        }
+    }
 
-	if (secure_method == PCS_SECURE_AES_CBC_128 || secure_method == PCS_SECURE_AES_CBC_192 || secure_method == PCS_SECURE_AES_CBC_256) {
-		if (decrypt_file(tmp_local_path, local_path, context->secure_key, pErrMsg)) {
-			//if (pErrMsg) {
-			//	if (*pErrMsg) pcs_free(*pErrMsg);
-			//	(*pErrMsg) = pcs_utils_sprintf("Error: The file have been download at %s, but can't decrypted to %s.\n"
-			//		" Maybe broken data.", tmp_local_path, local_path);
-			//}
-			if (pErrMsg) {
-				if (!(*pErrMsg))
-					(*pErrMsg) = pcs_utils_sprintf("Can't decrypt the file.\n");
-			}
-			if (op_st) (*op_st) = OP_ST_FAIL;
-			//DeleteFileRecursive(tmp_local_path);
-			pcs_free(tmp_local_path);
-			pcs_free(local_path);
-			pcs_free(remote_path);
-			return -1;
-		}
-		DeleteFileRecursive(tmp_local_path);
-	}
-	else if (rename(tmp_local_path, local_path)) {
-		if (pErrMsg) {
-			if (*pErrMsg) pcs_free(*pErrMsg);
-			(*pErrMsg) = pcs_utils_sprintf("The file have been download at %s, but can't rename to %s.\n"
-				" You should be rename manual.", tmp_local_path, local_path);
-		}
-		if (op_st) (*op_st) = OP_ST_FAIL;
-		//DeleteFileRecursive(tmp_local_path);
-		pcs_free(tmp_local_path);
-		pcs_free(local_path);
-		pcs_free(remote_path);
-		return -1;
-	}
+    if (secure_method == PCS_SECURE_AES_CBC_128 || secure_method == PCS_SECURE_AES_CBC_192 || secure_method == PCS_SECURE_AES_CBC_256) {
+        if (decrypt_file(tmp_local_path, local_path, context->secure_key, pErrMsg)) {
+            //if (pErrMsg) {
+            //  if (*pErrMsg) pcs_free(*pErrMsg);
+            //  (*pErrMsg) = pcs_utils_sprintf("Error: The file have been download at %s, but can't decrypted to %s.\n"
+            //      " Maybe broken data.", tmp_local_path, local_path);
+            //}
+            if (pErrMsg) {
+                if (!(*pErrMsg)) {
+                    (*pErrMsg) = pcs_utils_sprintf("Can't decrypt the file.\n");
+                }
+            }
+            if (op_st) {
+                (*op_st) = OP_ST_FAIL;
+            }
+            //DeleteFileRecursive(tmp_local_path);
+            pcs_free(tmp_local_path);
+            pcs_free(local_path);
+            pcs_free(remote_path);
+            return -1;
+        }
+        DeleteFileRecursive(tmp_local_path);
+    } else if (rename(tmp_local_path, local_path)) {
+        if (pErrMsg) {
+            if (*pErrMsg) {
+                pcs_free(*pErrMsg);
+            }
+            (*pErrMsg) = pcs_utils_sprintf("The file have been download at %s, but can't rename to %s.\n"
+                                           " You should be rename manual.", tmp_local_path, local_path);
+        }
+        if (op_st) {
+            (*op_st) = OP_ST_FAIL;
+        }
+        //DeleteFileRecursive(tmp_local_path);
+        pcs_free(tmp_local_path);
+        pcs_free(local_path);
+        pcs_free(remote_path);
+        return -1;
+    }
 
-	/*ËÆæÁΩÆÊñá‰ª∂ÊúÄÂêé‰øÆÊîπÊó∂Èó¥‰∏∫ÁΩëÁõòÊñá‰ª∂ÊúÄÂêé‰øÆÊîπÊó∂Èó¥*/
-	SetFileLastModifyTime(local_path, remote_mtime);
-	if (op_st) (*op_st) = OP_ST_SUCC;
-	pcs_free(tmp_local_path);
-	pcs_free(local_path);
-	pcs_free(remote_path);
-	return 0;
+    /*…Ë÷√Œƒº˛◊Ó∫Û–ﬁ∏ƒ ±º‰Œ™Õ¯≈ÃŒƒº˛◊Ó∫Û–ﬁ∏ƒ ±º‰*/
+    SetFileLastModifyTime(local_path, remote_mtime);
+    if (op_st) {
+        (*op_st) = OP_ST_SUCC;
+    }
+    pcs_free(tmp_local_path);
+    pcs_free(local_path);
+    pcs_free(remote_path);
+    return 0;
 }
 
 
-static struct UploadThreadState *pop_upload_threadstate(struct UploadState *us)
+static struct UploadThreadState* pop_upload_threadstate(struct UploadState* us)
 {
-	struct UploadThreadState *ts = NULL;
-	lock_for_upload(us);
-	ts = us->threads;
-	while (ts && ts->status != UPLOAD_STATUS_PENDDING) {
-		ts = ts->next;
-	}
-	if (ts && ts->status == UPLOAD_STATUS_PENDDING)
-		ts->status = UPLOAD_STATUS_UPLOADING;
-	else
-		ts = NULL;
-	unlock_for_upload(us);
-	return ts;
+    struct UploadThreadState* ts = NULL;
+    lock_for_upload(us);
+    ts = us->threads;
+    while (ts && ts->status != UPLOAD_STATUS_PENDDING) {
+        ts = ts->next;
+    }
+    if (ts && ts->status == UPLOAD_STATUS_PENDDING) {
+        ts->status = UPLOAD_STATUS_UPLOADING;
+    } else {
+        ts = NULL;
+    }
+    unlock_for_upload(us);
+    return ts;
 }
 
 /*see http://curl.haxx.se/libcurl/c/CURLOPT_READFUNCTION.html */
-static size_t read_slice(void *ptr, size_t size, size_t nmemb, void *userdata)
+static size_t read_slice(void* ptr, size_t size, size_t nmemb, void* userdata)
 {
-	static char tmp[64];
-	struct UploadThreadState *ts = (struct UploadThreadState*)userdata;
-	struct UploadState *us = ts->us;
-	time_t tm;
-	size_t sz;
+    static char tmp[64];
+    struct UploadThreadState* ts = (struct UploadThreadState*)userdata;
+    struct UploadState* us = ts->us;
+    time_t tm;
+    size_t sz;
 
-	lock_for_upload(us);
+    lock_for_upload(us);
 
-	if (ts->start + ts->uploaded_size >= ts->end) {
-		unlock_for_upload(us);
-		return 0;
-	}
+    if (ts->start + ts->uploaded_size >= ts->end) {
+        unlock_for_upload(us);
+        return 0;
+    }
 
-	if (fseeko(us->pf, ts->start + ts->uploaded_size, SEEK_SET)) {
-		if (us->pErrMsg && !(*us->pErrMsg)) {
-			(*(us->pErrMsg)) = pcs_utils_sprintf("Can't fseeko().");
-		}
-		us->status = UPLOAD_STATUS_FAIL;
-		unlock_for_upload(us);
-		return CURL_READFUNC_ABORT;
-	}
-	sz = size * nmemb;
-	if (ts->start + ts->uploaded_size + sz > ts->end) {
-		sz = (size_t)(ts->end - ts->start - ts->uploaded_size);
-	}
-	sz = fread(ptr, 1, sz, us->pf);
-	if (sz == 0) {
-		if (us->pErrMsg && !(*us->pErrMsg)) {
-			(*(us->pErrMsg)) = pcs_utils_sprintf("Can't read the file.");
-		}
-		us->status = UPLOAD_STATUS_FAIL;
-		unlock_for_upload(us);
-		return CURL_READFUNC_ABORT;
-	}
-	//printf("%llu - %llu (%llu) \n", (long long)ts->start + ts->uploaded_size, (long long)ts->start + ts->uploaded_size + sz, (long long)sz);
-	us->speed += sz;
-	us->uploaded_size += sz;
-	ts->uploaded_size += sz;
+    if (fseeko(us->pf, ts->start + ts->uploaded_size, SEEK_SET)) {
+        if (us->pErrMsg && !(*us->pErrMsg)) {
+            (*(us->pErrMsg)) = pcs_utils_sprintf("Can't fseeko().");
+        }
+        us->status = UPLOAD_STATUS_FAIL;
+        unlock_for_upload(us);
+        return CURL_READFUNC_ABORT;
+    }
+    sz = size * nmemb;
+    if (ts->start + ts->uploaded_size + sz > ts->end) {
+        sz = (size_t)(ts->end - ts->start - ts->uploaded_size);
+    }
+    sz = fread(ptr, 1, sz, us->pf);
+    if (sz == 0) {
+        if (us->pErrMsg && !(*us->pErrMsg)) {
+            (*(us->pErrMsg)) = pcs_utils_sprintf("Can't read the file.");
+        }
+        us->status = UPLOAD_STATUS_FAIL;
+        unlock_for_upload(us);
+        return CURL_READFUNC_ABORT;
+    }
+    //printf("%llu - %llu (%llu) \n", (long long)ts->start + ts->uploaded_size, (long long)ts->start + ts->uploaded_size + sz, (long long)sz);
+    us->speed += sz;
+    us->uploaded_size += sz;
+    ts->uploaded_size += sz;
 
 
-	tm = time(&tm);
-	if (tm != us->time) {
-		int64_t left_size = us->file_size - us->uploaded_size;
-		int64_t remain_tm = (us->speed > 0) ? (left_size / us->speed) : 0;
-		us->time = tm;
-		tmp[63] = '\0';
-		printf("\r                                                \r");
-		printf("%s", pcs_utils_readable_size((double)us->uploaded_size, tmp, 63, NULL));
-		printf("/%s \t", pcs_utils_readable_size((double)us->file_size, tmp, 63, NULL));
-		printf("%s/s \t", pcs_utils_readable_size((double)us->speed, tmp, 63, NULL));
-		printf(" %s        ", pcs_utils_readable_left_time(remain_tm, tmp, 63, NULL));
-		printf("\r");
-		fflush(stdout);
-		us->speed = 0;
-	}
+    tm = time(&tm);
+    if (tm != us->time) {
+        int64_t left_size = us->file_size - us->uploaded_size;
+        int64_t remain_tm = (us->speed > 0) ? (left_size / us->speed) : 0;
+        us->time = tm;
+        tmp[63] = '\0';
+        printf("\r                                                \r");
+        printf("%s", pcs_utils_readable_size((double)us->uploaded_size, tmp, 63, NULL));
+        printf("/%s \t", pcs_utils_readable_size((double)us->file_size, tmp, 63, NULL));
+        printf("%s/s \t", pcs_utils_readable_size((double)us->speed, tmp, 63, NULL));
+        printf(" %s        ", pcs_utils_readable_left_time(remain_tm, tmp, 63, NULL));
+        printf("\r");
+        fflush(stdout);
+        us->speed = 0;
+    }
 
-	unlock_for_upload(us);
-	return sz;
+    unlock_for_upload(us);
+    return sz;
 }
 
 #ifdef _WIN32
-static DWORD WINAPI upload_thread(LPVOID params)
+    static DWORD WINAPI upload_thread(LPVOID params)
 #else
-static void *upload_thread(void *params)
+    static void* upload_thread(void* params)
 #endif
 {
-	PcsFileInfo *res;
-	int dsstatus;
-	struct UploadState *ds = (struct UploadState *)params;
-	ShellContext *context = ds->context;
-	struct UploadThreadState *ts = pop_upload_threadstate(ds);
-	Pcs *pcs;
+    PcsFileInfo* res;
+    int dsstatus;
+    struct UploadState* ds = (struct UploadState*)params;
+    ShellContext* context = ds->context;
+    struct UploadThreadState* ts = pop_upload_threadstate(ds);
+    Pcs* pcs;
 
-	if (ts == NULL) {
-		lock_for_upload(ds);
-		ds->num_of_running_thread--;
-		unlock_for_upload(ds);
+    if (ts == NULL) {
+        lock_for_upload(ds);
+        ds->num_of_running_thread--;
+        unlock_for_upload(ds);
 #ifdef _WIN32
-		return (DWORD)0;
+        return (DWORD)0;
 #else
-		return NULL;
+        return NULL;
 #endif
-	}
-	pcs = create_pcs(context);
-	if (!pcs) {
-		lock_for_upload(ds);
-		if (ds->pErrMsg) {
-			if (*(ds->pErrMsg)) pcs_free(*(ds->pErrMsg));
-			(*(ds->pErrMsg)) = pcs_utils_sprintf("Can't create pcs context.");
-		}
-		//ds->status = DOWNLOAD_STATUS_FAIL;
-		ds->num_of_running_thread--;
-		ts->status = UPLOAD_STATUS_PENDDING;
-		unlock_for_upload(ds);
+    }
+    pcs = create_pcs(context);
+    if (!pcs) {
+        lock_for_upload(ds);
+        if (ds->pErrMsg) {
+            if (*(ds->pErrMsg)) {
+                pcs_free(*(ds->pErrMsg));
+            }
+            (*(ds->pErrMsg)) = pcs_utils_sprintf("Can't create pcs context.");
+        }
+        //ds->status = DOWNLOAD_STATUS_FAIL;
+        ds->num_of_running_thread--;
+        ts->status = UPLOAD_STATUS_PENDDING;
+        unlock_for_upload(ds);
 #ifdef _WIN32
-		return (DWORD)0;
+        return (DWORD)0;
 #else
-		return NULL;
+        return NULL;
 #endif
-	}
-	pcs_clone_userinfo(pcs, context->pcs);
-	while (ts) {
-		ts->pcs = pcs;
-		lock_for_upload(ds);
-		dsstatus = ds->status;
-		unlock_for_upload(ds);
-		if (dsstatus != UPLOAD_STATUS_OK) {
-			lock_for_upload(ds);
-			ts->status = UPLOAD_STATUS_PENDDING;
-			unlock_for_upload(ds);
-			break;
-		}
-		ds->uploaded_size -= ts->uploaded_size;
-		ts->uploaded_size = 0;
+    }
+    pcs_clone_userinfo(pcs, context->pcs);
+    while (ts) {
+        ts->pcs = pcs;
+        lock_for_upload(ds);
+        dsstatus = ds->status;
+        unlock_for_upload(ds);
+        if (dsstatus != UPLOAD_STATUS_OK) {
+            lock_for_upload(ds);
+            ts->status = UPLOAD_STATUS_PENDDING;
+            unlock_for_upload(ds);
+            break;
+        }
+        ds->uploaded_size -= ts->uploaded_size;
+        ts->uploaded_size = 0;
 
-		res = pcs_upload_slicefile(pcs, &read_slice, ts, (size_t)(ts->end - ts->start),
-			convert_to_real_speed(context->max_upload_speed_per_thread));
-		if (!res) {
-			lock_for_upload(ds);
-			if (ds->pErrMsg && !(*ds->pErrMsg)) {
-				(*(ds->pErrMsg)) = pcs_utils_sprintf("%s", pcs_strerror(pcs));
-			}
-			//ds->status = UPLOAD_STATUS_FAIL;
-			unlock_for_upload(ds);
+        res = pcs_upload_slicefile(pcs, &read_slice, ts, (size_t)(ts->end - ts->start),
+                                   convert_to_real_speed(context->max_upload_speed_per_thread));
+        if (!res) {
+            lock_for_upload(ds);
+            if (ds->pErrMsg && !(*ds->pErrMsg)) {
+                (*(ds->pErrMsg)) = pcs_utils_sprintf("%s", pcs_strerror(pcs));
+            }
+            //ds->status = UPLOAD_STATUS_FAIL;
+            unlock_for_upload(ds);
 #ifdef _WIN32
-			printf("Upload slice failed, retry delay 10 second, tid: %x. message: %s\n", GetCurrentThreadId(), pcs_strerror(pcs));
+            printf("Upload slice failed, retry delay 10 second, tid: %x. message: %s\n", GetCurrentThreadId(), pcs_strerror(pcs));
 #else
-			printf("Upload slice failed, retry delay 10 second, tid: %p. message: %s\n", pthread_self(), pcs_strerror(pcs));
+            printf("Upload slice failed, retry delay 10 second, tid: %p. message: %s\n", pthread_self(), pcs_strerror(pcs));
 #endif
-			sleep(10); /*10ÁßíÂêéÈáçËØï*/
-			continue;
-		}
-		lock_for_upload(ds);
-		ts->status = UPLOAD_STATUS_OK;
-		strcpy(ts->md5, res->md5);
-		pcs_fileinfo_destroy(res);
-		save_upload_thread_states_to_file(ds->slice_file, ds->threads);
-		unlock_for_upload(ds);
-		ts = pop_upload_threadstate(ds);
-	}
+            sleep(10); /*10√Î∫Û÷ÿ ‘*/
+            continue;
+        }
+        lock_for_upload(ds);
+        ts->status = UPLOAD_STATUS_OK;
+        strcpy(ts->md5, res->md5);
+        pcs_fileinfo_destroy(res);
+        save_upload_thread_states_to_file(ds->slice_file, ds->threads);
+        unlock_for_upload(ds);
+        ts = pop_upload_threadstate(ds);
+    }
 
-	destroy_pcs(pcs);
-	lock_for_upload(ds);
-	ds->num_of_running_thread--;
-	unlock_for_upload(ds);
+    destroy_pcs(pcs);
+    lock_for_upload(ds);
+    ds->num_of_running_thread--;
+    unlock_for_upload(ds);
 #ifdef _WIN32
-	return (DWORD)0;
+    return (DWORD)0;
 #else
-	return NULL;
+    return NULL;
 #endif
 }
 
-static void start_upload_thread(struct UploadState *us, void **pHandle)
+static void start_upload_thread(struct UploadState* us, void** pHandle)
 {
 #ifdef _WIN32
-	DWORD tid;
-	HANDLE thandle;
-	/* hThread = CreateThread (&security_attributes, dwStackSize, ThreadProc, pParam, dwFlags, &idThread)
-	WINBASEAPI HANDLE WINAPI CreateThread(LPSECURITY_ATTRIBUTES,DWORD,LPTHREAD_START_ROUTINE,PVOID,DWORD,PDWORD);
-	Á¨¨‰∏Ä‰∏™ÂèÇÊï∞ÊòØÊåáÂêëSECURITY_ATTRIBUTESÂûãÊÄÅÁöÑÁªìÊûÑÁöÑÊåáÈíà„ÄÇÂú®Windows 98‰∏≠ÂøΩÁï•ËØ•ÂèÇÊï∞„ÄÇÂú®Windows NT‰∏≠ÔºåÂÆÉË¢´ËÆæ‰∏∫NULL„ÄÇ
-	Á¨¨‰∫å‰∏™ÂèÇÊï∞ÊòØÁî®‰∫éÊñ∞Á∫øÁ®ãÁöÑÂàùÂßãÂ†ÜÊ†àÂ§ßÂ∞èÔºåÈªòËÆ§ÂÄº‰∏∫0„ÄÇÂú®‰ªª‰ΩïÊÉÖÂÜµ‰∏ãÔºåWindowsÊ†πÊçÆÈúÄË¶ÅÂä®ÊÄÅÂª∂ÈïøÂ†ÜÊ†àÁöÑÂ§ßÂ∞è„ÄÇ
-	Á¨¨‰∏â‰∏™ÂèÇÊï∞ÊòØÊåáÂêëÁ∫øÁ®ãÂáΩÊï∞ÁöÑÊåáÊ†á„ÄÇÂáΩÊï∞ÂêçÁß∞Ê≤°ÊúâÈôêÂà∂Ôºå‰ΩÜÊòØÂøÖÈ°ª‰ª•‰∏ãÂàóÂΩ¢ÂºèÂ£∞Êòé:DWORD WINAPI ThreadProc (PVOID pParam) ;
-	Á¨¨Âõõ‰∏™ÂèÇÊï∞‰∏∫‰º†ÈÄíÁªôThreadProcÁöÑÂèÇÊï∞„ÄÇËøôÊ†∑‰∏ªÁ∫øÁ®ãÂíå‰ªéÂ±ûÁ∫øÁ®ãÂ∞±ÂèØ‰ª•ÂÖ±‰∫´Êï∞ÊçÆ„ÄÇ
-	Á¨¨‰∫î‰∏™ÂèÇÊï∞ÈÄöÂ∏∏‰∏∫0Ôºå‰ΩÜÂΩìÂª∫Á´ãÁöÑÁ∫øÁ®ã‰∏çÈ©¨‰∏äÊâßË°åÊó∂‰∏∫ÊóóÊ†á
-	Á¨¨ÂÖ≠‰∏™ÂèÇÊï∞ÊòØ‰∏Ä‰∏™ÊåáÈíàÔºåÊåáÂêëÊé•ÂèóÊâßË°åÁª™IDÂÄºÁöÑÂèòÈáè
-	*/
-	thandle = CreateThread(NULL, 0, upload_thread, (LPVOID)us, 0, &tid); // Âª∫Á´ãÁ∫øÁ®ã
-	if (pHandle) *pHandle = thandle;
-	if (!thandle) {
-		printf("Error: Can't create download thread.\n");
-		lock_for_upload(us);
-		us->num_of_running_thread--;
-		unlock_for_upload(us);
-	}
+    DWORD tid;
+    HANDLE thandle;
+    /* hThread = CreateThread (&security_attributes, dwStackSize, ThreadProc, pParam, dwFlags, &idThread)
+    WINBASEAPI HANDLE WINAPI CreateThread(LPSECURITY_ATTRIBUTES,DWORD,LPTHREAD_START_ROUTINE,PVOID,DWORD,PDWORD);
+    µ⁄“ª∏ˆ≤Œ ˝ «÷∏œÚSECURITY_ATTRIBUTES–ÕÃ¨µƒΩ·ππµƒ÷∏’Î°£‘⁄Windows 98÷–∫ˆ¬‘∏√≤Œ ˝°£‘⁄Windows NT÷–£¨À¸±ª…ËŒ™NULL°£
+    µ⁄∂˛∏ˆ≤Œ ˝ «”√”⁄–¬œﬂ≥Ãµƒ≥ı º∂—’ª¥Û–°£¨ƒ¨»œ÷µŒ™0°£‘⁄»Œ∫Œ«Èøˆœ¬£¨Windows∏˘æ›–Ë“™∂ØÃ¨—”≥§∂—’ªµƒ¥Û–°°£
+    µ⁄»˝∏ˆ≤Œ ˝ «÷∏œÚœﬂ≥Ã∫Ø ˝µƒ÷∏±Í°£∫Ø ˝√˚≥∆√ª”–œﬁ÷∆£¨µ´ «±ÿ–Î“‘œ¬¡––Œ Ω…˘√˜:DWORD WINAPI ThreadProc (PVOID pParam) ;
+    µ⁄Àƒ∏ˆ≤Œ ˝Œ™¥´µ›∏¯ThreadProcµƒ≤Œ ˝°£’‚—˘÷˜œﬂ≥Ã∫Õ¥” Ùœﬂ≥ÃæÕø…“‘π≤œÌ ˝æ›°£
+    µ⁄ŒÂ∏ˆ≤Œ ˝Õ®≥£Œ™0£¨µ´µ±Ω®¡¢µƒœﬂ≥Ã≤ª¬Ì…œ÷¥–– ±Œ™∆Ï±Í
+    µ⁄¡˘∏ˆ≤Œ ˝ «“ª∏ˆ÷∏’Î£¨÷∏œÚΩ” ‹÷¥–––˜ID÷µµƒ±‰¡ø
+    */
+    thandle = CreateThread(NULL, 0, upload_thread, (LPVOID)us, 0, &tid); // Ω®¡¢œﬂ≥Ã
+    if (pHandle) {
+        *pHandle = thandle;
+    }
+    if (!thandle) {
+        printf("Error: Can't create download thread.\n");
+        lock_for_upload(us);
+        us->num_of_running_thread--;
+        unlock_for_upload(us);
+    }
 #else
-	int err;
-	pthread_t main_tid;
-	err = pthread_create(&main_tid, NULL, upload_thread, us);
-	if (err) {
-		printf("Error: Can't create download thread.\n");
-		lock_for_upload(us);
-		us->num_of_running_thread--;
-		unlock_for_upload(us);
-	}
+    int err;
+    pthread_t main_tid;
+    err = pthread_create(&main_tid, NULL, upload_thread, us);
+    if (err) {
+        printf("Error: Can't create download thread.\n");
+        lock_for_upload(us);
+        us->num_of_running_thread--;
+        unlock_for_upload(us);
+    }
 #endif
 }
 
-static int restore_upload_state(struct UploadState *us, const char *slice_local_path, int *pendding_count)
+static int restore_upload_state(struct UploadState* us, const char* slice_local_path, int* pendding_count)
 {
-	LocalFileInfo *tmpFileInfo;
-	int64_t slice_file_size = 0;
-	FILE *pf;
-	int magic;
-	int thread_count = 0;
-	struct UploadThreadState *ts, *tail = NULL;
+    LocalFileInfo* tmpFileInfo;
+    int64_t slice_file_size = 0;
+    FILE* pf;
+    int magic;
+    int thread_count = 0;
+    struct UploadThreadState* ts, *tail = NULL;
 
-	tmpFileInfo = GetLocalFileInfo(slice_local_path);
-	if (!tmpFileInfo) {
-		return -1;
-	}
-	slice_file_size = tmpFileInfo->size;
-	DestroyLocalFileInfo(tmpFileInfo);
+    tmpFileInfo = GetLocalFileInfo(slice_local_path);
+    if (!tmpFileInfo) {
+        return -1;
+    }
+    slice_file_size = tmpFileInfo->size;
+    DestroyLocalFileInfo(tmpFileInfo);
 
-	pf = fopen(slice_local_path, "rb");
-	if (!pf) return -1;
-	if (fread(&magic, 4, 1, pf) != 1) {
-		fclose(pf);
-		return -1;
-	}
-	if (magic != THREAD_STATE_MAGIC) {
-		fclose(pf);
-		return -1;
-	}
-	if (pendding_count) (*pendding_count) = 0;
-	us->uploaded_size = 0;
-	while (1) {
-		ts = (struct UploadThreadState *) pcs_malloc(sizeof(struct UploadThreadState));
-		if (fread(ts, sizeof(struct UploadThreadState), 1, pf) != 1) {
-			pcs_free(ts);
-			break;
-		}
-		ts->us = us;
-		//printf("%d: ", thread_count);
-		if (ts->status != UPLOAD_STATUS_OK) {
-			ts->status = UPLOAD_STATUS_PENDDING;
-			if (pendding_count) (*pendding_count)++;
-			ts->uploaded_size = 0;
-			//printf("*");
-		}
-		us->uploaded_size += ts->uploaded_size;
-		//printf("%d/%d\n", (int)ts->start, (int)ts->end);
-		if (tail == NULL) {
-			us->threads = tail = ts;
-		}
-		else {
-			tail->next = ts;
-			tail = ts;
-		}
-		thread_count++;
-		ts->tid = thread_count;
-		if (!ts->next) {
-			ts->next = NULL;
-			break;
-		}
-		ts->next = NULL;
-	}
-	fclose(pf);
-	us->num_of_slice = thread_count;
-	return 0;
+    pf = fopen(slice_local_path, "rb");
+    if (!pf) {
+        return -1;
+    }
+    if (fread(&magic, 4, 1, pf) != 1) {
+        fclose(pf);
+        return -1;
+    }
+    if (magic != THREAD_STATE_MAGIC) {
+        fclose(pf);
+        return -1;
+    }
+    if (pendding_count) {
+        (*pendding_count) = 0;
+    }
+    us->uploaded_size = 0;
+    while (1) {
+        ts = (struct UploadThreadState*) pcs_malloc(sizeof(struct UploadThreadState));
+        if (fread(ts, sizeof(struct UploadThreadState), 1, pf) != 1) {
+            pcs_free(ts);
+            break;
+        }
+        ts->us = us;
+        //printf("%d: ", thread_count);
+        if (ts->status != UPLOAD_STATUS_OK) {
+            ts->status = UPLOAD_STATUS_PENDDING;
+            if (pendding_count) {
+                (*pendding_count)++;
+            }
+            ts->uploaded_size = 0;
+            //printf("*");
+        }
+        us->uploaded_size += ts->uploaded_size;
+        //printf("%d/%d\n", (int)ts->start, (int)ts->end);
+        if (tail == NULL) {
+            us->threads = tail = ts;
+        } else {
+            tail->next = ts;
+            tail = ts;
+        }
+        thread_count++;
+        ts->tid = thread_count;
+        if (!ts->next) {
+            ts->next = NULL;
+            break;
+        }
+        ts->next = NULL;
+    }
+    fclose(pf);
+    us->num_of_slice = thread_count;
+    return 0;
 }
 
-static inline int do_upload(ShellContext *context, 
-	const char *local_file, const char *remote_file, PcsBool is_force,
-	const char *local_basedir, const char *remote_basedir,
-	char **pErrMsg, int *op_st)
+static inline int do_upload(ShellContext* context,
+                            const char* local_file, const char* remote_file, PcsBool is_force,
+                            const char* local_basedir, const char* remote_basedir,
+                            char** pErrMsg, int* op_st)
 {
-	PcsFileInfo *res = NULL;
-	char *local_path, *remote_path, *dir;
-	int del_local_file = 0;
-	int64_t content_length;
-	char content_md5[33] = { 0 };
+    PcsFileInfo* res = NULL;
+    char* local_path, *remote_path, *dir;
+    int del_local_file = 0;
+    int64_t content_length;
+    char content_md5[33] = { 0 };
 
-	local_path = combin_path(local_basedir, -1, local_file);
-	dir = combin_net_disk_path(context->workdir, remote_basedir);
-	remote_path = combin_net_disk_path(dir, remote_file);
-	pcs_free(dir);
+    local_path = combin_path(local_basedir, -1, local_file);
+    dir = combin_net_disk_path(context->workdir, remote_basedir);
+    remote_path = combin_net_disk_path(dir, remote_file);
+    pcs_free(dir);
 
-	if (context->secure_enable) {
-		int context_secure_method = get_secure_method(context);
-		if (context_secure_method == PCS_SECURE_AES_CBC_128
-			|| context_secure_method == PCS_SECURE_AES_CBC_192
-			|| context_secure_method == PCS_SECURE_AES_CBC_256) {
-			int secure_method = 0;
-			secure_method = get_file_secure_method(local_path);
-			if (secure_method != PCS_SECURE_AES_CBC_128
-				&& secure_method != PCS_SECURE_AES_CBC_192
-				&& secure_method != PCS_SECURE_AES_CBC_256) {
-				char *tmp_local_path = (char *)pcs_malloc(strlen(local_path) + strlen(TEMP_FILE_SUFFIX) + 1);
-				strcpy(tmp_local_path, local_path);
-				strcat(tmp_local_path, TEMP_FILE_SUFFIX);
-				if (encrypt_file(local_path, tmp_local_path, context_secure_method, context->secure_key, pErrMsg)) {
-					//if (pErrMsg) {
-					//	if (*pErrMsg) pcs_free(*pErrMsg);
-					//	(*pErrMsg) = pcs_utils_sprintf("Error: can't encrypt the file %s.\n",
-					//		local_path);
-					//}
-					if (op_st) (*op_st) = OP_ST_FAIL;
-					if (res) pcs_fileinfo_destroy(res);
-					pcs_free(tmp_local_path);
-					pcs_free(local_path);
-					pcs_free(remote_path);
-					return -1;
-				}
-				pcs_free(local_path);
-				local_path = tmp_local_path;
-				del_local_file = 1;
-			}
-		}
-	}
+    if (context->secure_enable) {
+        int context_secure_method = get_secure_method(context);
+        if (context_secure_method == PCS_SECURE_AES_CBC_128
+            || context_secure_method == PCS_SECURE_AES_CBC_192
+            || context_secure_method == PCS_SECURE_AES_CBC_256) {
+            int secure_method = 0;
+            secure_method = get_file_secure_method(local_path);
+            if (secure_method != PCS_SECURE_AES_CBC_128
+                && secure_method != PCS_SECURE_AES_CBC_192
+                && secure_method != PCS_SECURE_AES_CBC_256) {
+                char* tmp_local_path = (char*)pcs_malloc(strlen(local_path) + strlen(TEMP_FILE_SUFFIX) + 1);
+                strcpy(tmp_local_path, local_path);
+                strcat(tmp_local_path, TEMP_FILE_SUFFIX);
+                if (encrypt_file(local_path, tmp_local_path, context_secure_method, context->secure_key, pErrMsg)) {
+                    //if (pErrMsg) {
+                    //  if (*pErrMsg) pcs_free(*pErrMsg);
+                    //  (*pErrMsg) = pcs_utils_sprintf("Error: can't encrypt the file %s.\n",
+                    //      local_path);
+                    //}
+                    if (op_st) {
+                        (*op_st) = OP_ST_FAIL;
+                    }
+                    if (res) {
+                        pcs_fileinfo_destroy(res);
+                    }
+                    pcs_free(tmp_local_path);
+                    pcs_free(local_path);
+                    pcs_free(remote_path);
+                    return -1;
+                }
+                pcs_free(local_path);
+                local_path = tmp_local_path;
+                del_local_file = 1;
+            }
+        }
+    }
 
-	content_length = pcs_local_filesize(context->pcs, local_path);
-	if (content_length < 0) {
-		if (pErrMsg) {
-			if (*pErrMsg) pcs_free(*pErrMsg);
-			(*pErrMsg) = pcs_utils_sprintf("%s. local_path=%s, remote_path=%s\n",
-				pcs_strerror(context->pcs), local_path, remote_path);
-		}
-		if (op_st) (*op_st) = OP_ST_FAIL;
-		if (del_local_file) DeleteFileRecursive(local_path);
-		pcs_free(local_path);
-		pcs_free(remote_path);
-		return -1;
-	}
+    content_length = pcs_local_filesize(context->pcs, local_path);
+    if (content_length < 0) {
+        if (pErrMsg) {
+            if (*pErrMsg) {
+                pcs_free(*pErrMsg);
+            }
+            (*pErrMsg) = pcs_utils_sprintf("%s. local_path=%s, remote_path=%s\n",
+                                           pcs_strerror(context->pcs), local_path, remote_path);
+        }
+        if (op_st) {
+            (*op_st) = OP_ST_FAIL;
+        }
+        if (del_local_file) {
+            DeleteFileRecursive(local_path);
+        }
+        pcs_free(local_path);
+        pcs_free(remote_path);
+        return -1;
+    }
 
-	if (content_length > PCS_RAPIDUPLOAD_THRESHOLD)
-		res = pcs_rapid_upload(context->pcs, remote_path, is_force, local_path, content_md5, NULL);
-	if (!res && content_length <= MIN_UPLOAD_SLICE_SIZE) {
-		pcs_setopts(context->pcs,
-			PCS_OPTION_PROGRESS_FUNCTION, &upload_progress,
-			PCS_OPTION_PROGRESS_FUNCTION_DATE, NULL,
-			PCS_OPTION_PROGRESS, (void *)((long)PcsTrue),
-			//PCS_OPTION_TIMEOUT, (void *)0L,
-			PCS_OPTION_END);
-		res = pcs_upload(context->pcs, remote_path, is_force, local_path,
-			convert_to_real_speed(context->max_upload_speed_per_thread));
-		//pcs_setopts(context->pcs,
-		//	PCS_OPTION_TIMEOUT, (void *)((long)TIMEOUT),
-		//	PCS_OPTION_END);
-		if (!res || !res->path || !res->path[0]) {
-			if (pErrMsg) {
-				if (*pErrMsg) pcs_free(*pErrMsg);
-				(*pErrMsg) = pcs_utils_sprintf("%s. local_path=%s, remote_path=%s\n",
-					pcs_strerror(context->pcs), local_path, remote_path);
-			}
-			if (op_st) (*op_st) = OP_ST_FAIL;
-			if (res) pcs_fileinfo_destroy(res);
-			if (del_local_file) DeleteFileRecursive(local_path);
-			pcs_free(local_path);
-			pcs_free(remote_path);
-			return -1;
-		}
-	}
-	else if (!res) {
-		struct UploadState us = { 0 };
-		struct UploadThreadState *ts, *tail = NULL;
-		curl_off_t start = 0;
-		int slice_count, pendding_slice_count = 0, thread_count, running_thread_count, i, is_success;
-		int64_t slice_size;
+    if (content_length > PCS_RAPIDUPLOAD_THRESHOLD) {
+        res = pcs_rapid_upload(context->pcs, remote_path, is_force, local_path, content_md5, NULL);
+    }
+    if (!res && content_length <= MIN_UPLOAD_SLICE_SIZE) {
+        pcs_setopts(context->pcs,
+                    PCS_OPTION_PROGRESS_FUNCTION, &upload_progress,
+                    PCS_OPTION_PROGRESS_FUNCTION_DATE, NULL,
+                    PCS_OPTION_PROGRESS, (void*)((long)PcsTrue),
+                    //PCS_OPTION_TIMEOUT, (void *)0L,
+                    PCS_OPTION_END);
+        res = pcs_upload(context->pcs, remote_path, is_force, local_path,
+                         convert_to_real_speed(context->max_upload_speed_per_thread));
+        //pcs_setopts(context->pcs,
+        //  PCS_OPTION_TIMEOUT, (void *)((long)TIMEOUT),
+        //  PCS_OPTION_END);
+        if (!res || !res->path || !res->path[0]) {
+            if (pErrMsg) {
+                if (*pErrMsg) {
+                    pcs_free(*pErrMsg);
+                }
+                (*pErrMsg) = pcs_utils_sprintf("%s. local_path=%s, remote_path=%s\n",
+                                               pcs_strerror(context->pcs), local_path, remote_path);
+            }
+            if (op_st) {
+                (*op_st) = OP_ST_FAIL;
+            }
+            if (res) {
+                pcs_fileinfo_destroy(res);
+            }
+            if (del_local_file) {
+                DeleteFileRecursive(local_path);
+            }
+            pcs_free(local_path);
+            pcs_free(remote_path);
+            return -1;
+        }
+    } else if (!res) {
+        struct UploadState us = { 0 };
+        struct UploadThreadState* ts, *tail = NULL;
+        curl_off_t start = 0;
+        int slice_count, pendding_slice_count = 0, thread_count, running_thread_count, i, is_success;
+        int64_t slice_size;
 #ifdef _WIN32
-		HANDLE *handles = NULL;
+        HANDLE* handles = NULL;
 #endif
-		char *slice_file;
+        char* slice_file;
 
-		init_upload_state(&us);
-		us.context = context;
+        init_upload_state(&us);
+        us.context = context;
 
-		if (!(content_md5[0])) {
-			if (!pcs_md5_file(context->pcs, local_path, content_md5)) {
-				if (pErrMsg) {
-					if (*pErrMsg) pcs_free(*pErrMsg);
-					(*pErrMsg) = pcs_utils_sprintf("%s. local_path=%s, remote_path=%s\n",
-						pcs_strerror(context->pcs), local_path, remote_path);
-				}
-				if (op_st) (*op_st) = OP_ST_FAIL;
-				if (del_local_file) DeleteFileRecursive(local_path);
-				pcs_free(local_path);
-				pcs_free(remote_path);
-				uninit_upload_state(&us);
-				return -1;
-			}
-		}
+        if (!(content_md5[0])) {
+            if (!pcs_md5_file(context->pcs, local_path, content_md5)) {
+                if (pErrMsg) {
+                    if (*pErrMsg) {
+                        pcs_free(*pErrMsg);
+                    }
+                    (*pErrMsg) = pcs_utils_sprintf("%s. local_path=%s, remote_path=%s\n",
+                                                   pcs_strerror(context->pcs), local_path, remote_path);
+                }
+                if (op_st) {
+                    (*op_st) = OP_ST_FAIL;
+                }
+                if (del_local_file) {
+                    DeleteFileRecursive(local_path);
+                }
+                pcs_free(local_path);
+                pcs_free(remote_path);
+                uninit_upload_state(&us);
+                return -1;
+            }
+        }
 
-		/*ÊâìÂºÄÊñá‰ª∂*/
-		us.pf = fopen(local_path, "rb");
-		if (!us.pf) {
-			if (pErrMsg) {
-				if (*pErrMsg) pcs_free(*pErrMsg);
-				(*pErrMsg) = pcs_utils_sprintf("Can't open the file: %s\n", local_path);
-			}
-			if (op_st) (*op_st) = OP_ST_FAIL;
-			if (del_local_file) DeleteFileRecursive(local_path);
-			pcs_free(local_path);
-			pcs_free(remote_path);
-			uninit_upload_state(&us);
-			return -1;
-		}
+        /*¥Úø™Œƒº˛*/
+        us.pf = fopen(local_path, "rb");
+        if (!us.pf) {
+            if (pErrMsg) {
+                if (*pErrMsg) {
+                    pcs_free(*pErrMsg);
+                }
+                (*pErrMsg) = pcs_utils_sprintf("Can't open the file: %s\n", local_path);
+            }
+            if (op_st) {
+                (*op_st) = OP_ST_FAIL;
+            }
+            if (del_local_file) {
+                DeleteFileRecursive(local_path);
+            }
+            pcs_free(local_path);
+            pcs_free(remote_path);
+            uninit_upload_state(&us);
+            return -1;
+        }
 
-		slice_file = (char *)pcs_malloc(strlen(local_path) + 33 + strlen(SLICE_FILE_SUFFIX) + 1);
-		strcpy(slice_file, local_path);
-		strcat(slice_file, ".");
-		strcat(slice_file, content_md5);
-		strcat(slice_file, SLICE_FILE_SUFFIX);
+        slice_file = (char*)pcs_malloc(strlen(local_path) + 33 + strlen(SLICE_FILE_SUFFIX) + 1);
+        strcpy(slice_file, local_path);
+        strcat(slice_file, ".");
+        strcat(slice_file, content_md5);
+        strcat(slice_file, SLICE_FILE_SUFFIX);
 
-		us.slice_file = slice_file;
-		us.pErrMsg = pErrMsg;
-		us.file_size = content_length;
-		slice_count = context->max_thread;
-		if (slice_count < 1) slice_count = 1;
-		if (restore_upload_state(&us, slice_file, &pendding_slice_count)) {
-			//ÂàÜÁâáÂºÄÂßã
-			us.uploaded_size = 0;
-			slice_size = content_length / slice_count;
-			if ((content_length % slice_count))
-				slice_size++;
-			if (slice_size <= MIN_UPLOAD_SLICE_SIZE)
-				slice_size = MIN_UPLOAD_SLICE_SIZE;
-			if (slice_size > MAX_UPLOAD_SLICE_SIZE)
-				slice_size = MAX_UPLOAD_SLICE_SIZE;
-			slice_count = (int)(content_length / slice_size);
-			if ((content_length % slice_size)) slice_count++;
-			if (slice_count > MAX_UPLOAD_SLICE_COUNT) {
-				slice_count = MAX_UPLOAD_SLICE_COUNT;
-				slice_size = content_length / slice_count;
-				if ((content_length % slice_count))
-					slice_size++;
-				slice_count = (int)(content_length / slice_size);
-				if ((content_length % slice_size)) slice_count++;
-			}
+        us.slice_file = slice_file;
+        us.pErrMsg = pErrMsg;
+        us.file_size = content_length;
+        slice_count = context->max_thread;
+        if (slice_count < 1) {
+            slice_count = 1;
+        }
+        if (restore_upload_state(&us, slice_file, &pendding_slice_count)) {
+            //∑÷∆¨ø™ º
+            us.uploaded_size = 0;
+            slice_size = content_length / slice_count;
+            if ((content_length % slice_count)) {
+                slice_size++;
+            }
+            if (slice_size <= MIN_UPLOAD_SLICE_SIZE) {
+                slice_size = MIN_UPLOAD_SLICE_SIZE;
+            }
+            if (slice_size > MAX_UPLOAD_SLICE_SIZE) {
+                slice_size = MAX_UPLOAD_SLICE_SIZE;
+            }
+            slice_count = (int)(content_length / slice_size);
+            if ((content_length % slice_size)) {
+                slice_count++;
+            }
+            if (slice_count > MAX_UPLOAD_SLICE_COUNT) {
+                slice_count = MAX_UPLOAD_SLICE_COUNT;
+                slice_size = content_length / slice_count;
+                if ((content_length % slice_count)) {
+                    slice_size++;
+                }
+                slice_count = (int)(content_length / slice_size);
+                if ((content_length % slice_size)) {
+                    slice_count++;
+                }
+            }
 
-			for (i = 0; i < slice_count; i++) {
-				ts = (struct UploadThreadState *) pcs_malloc(sizeof(struct UploadThreadState));
-				memset(ts, 0, sizeof(struct UploadThreadState));
-				ts->us = &us;
-				ts->start = start;
-				start += slice_size;
-				ts->end = start;
-				if (ts->end >((curl_off_t)content_length)) ts->end = (curl_off_t)content_length;
-				ts->status = UPLOAD_STATUS_PENDDING;
-				pendding_slice_count++;
-				ts->tid = i + 1;
-				ts->next = NULL;
-				if (tail == NULL) {
-					us.threads = tail = ts;
-				}
-				else {
-					tail->next = ts;
-					tail = ts;
-				}
-			}
-			us.num_of_slice = slice_count;
-			//ÂàÜÁâáÁªìÊùü
-		}
-		//‰øùÂ≠òÂàÜÁâáÊï∞ÊçÆ
-		printf("Saving slices...\r");
-		fflush(stdout);
-		if (save_upload_thread_states_to_file(slice_file, us.threads)) {
-			if (pErrMsg) {
-				if (*pErrMsg) pcs_free(*pErrMsg);
-				(*pErrMsg) = pcs_utils_sprintf("Can't save slices into file: %s \n", slice_file);
-			}
-			if (op_st) (*op_st) = OP_ST_FAIL;
-			if (del_local_file) DeleteFileRecursive(local_path);
-			DeleteFileRecursive(slice_file);
-			pcs_free(local_path);
-			pcs_free(remote_path);
-			pcs_free(slice_file);
-			uninit_upload_state(&us);
-			return -1;
-		}
+            for (i = 0; i < slice_count; i++) {
+                ts = (struct UploadThreadState*) pcs_malloc(sizeof(struct UploadThreadState));
+                memset(ts, 0, sizeof(struct UploadThreadState));
+                ts->us = &us;
+                ts->start = start;
+                start += slice_size;
+                ts->end = start;
+                if (ts->end > ((curl_off_t)content_length)) {
+                    ts->end = (curl_off_t)content_length;
+                }
+                ts->status = UPLOAD_STATUS_PENDDING;
+                pendding_slice_count++;
+                ts->tid = i + 1;
+                ts->next = NULL;
+                if (tail == NULL) {
+                    us.threads = tail = ts;
+                } else {
+                    tail->next = ts;
+                    tail = ts;
+                }
+            }
+            us.num_of_slice = slice_count;
+            //∑÷∆¨Ω· ¯
+        }
+        //±£¥Ê∑÷∆¨ ˝æ›
+        printf("Saving slices...\r");
+        fflush(stdout);
+        if (save_upload_thread_states_to_file(slice_file, us.threads)) {
+            if (pErrMsg) {
+                if (*pErrMsg) {
+                    pcs_free(*pErrMsg);
+                }
+                (*pErrMsg) = pcs_utils_sprintf("Can't save slices into file: %s \n", slice_file);
+            }
+            if (op_st) {
+                (*op_st) = OP_ST_FAIL;
+            }
+            if (del_local_file) {
+                DeleteFileRecursive(local_path);
+            }
+            DeleteFileRecursive(slice_file);
+            pcs_free(local_path);
+            pcs_free(remote_path);
+            pcs_free(slice_file);
+            uninit_upload_state(&us);
+            return -1;
+        }
 
-		printf("Starting threads...\r");
-		fflush(stdout);
+        printf("Starting threads...\r");
+        fflush(stdout);
 
-		thread_count = pendding_slice_count;
-		if (thread_count > context->max_thread && context->max_thread > 0)
-			thread_count = context->max_thread;
-		us.num_of_running_thread = thread_count;
-		//printf("\nthread: %d, slice: %d\n", thread_count, ds.num_of_slice);
+        thread_count = pendding_slice_count;
+        if (thread_count > context->max_thread && context->max_thread > 0) {
+            thread_count = context->max_thread;
+        }
+        us.num_of_running_thread = thread_count;
+        //printf("\nthread: %d, slice: %d\n", thread_count, ds.num_of_slice);
 #ifdef _WIN32
-		handles = (HANDLE *)pcs_malloc(sizeof(HANDLE) * thread_count);
-		memset(handles, 0, sizeof(HANDLE) * thread_count);
+        handles = (HANDLE*)pcs_malloc(sizeof(HANDLE) * thread_count);
+        memset(handles, 0, sizeof(HANDLE) * thread_count);
 #endif
-		for (i = 0; i < thread_count; i++) {
+        for (i = 0; i < thread_count; i++) {
 #ifdef _WIN32
-			start_upload_thread(&us, handles + i);
+            start_upload_thread(&us, handles + i);
 #else
-			start_upload_thread(&us, NULL);
+            start_upload_thread(&us, NULL);
 #endif
-		}
+        }
 
-		/*Á≠âÂæÖÊâÄÊúâËøêË°åÁöÑÁ∫øÁ®ãÈÄÄÂá∫*/
-		while (1) {
-			lock_for_upload(&us);
-			running_thread_count = us.num_of_running_thread;
-			unlock_for_upload(&us);
-			if (running_thread_count < 1) break;
-			sleep(1);
-		}
-		fclose(us.pf);
+        /*µ»¥˝À˘”–‘À––µƒœﬂ≥ÃÕÀ≥ˆ*/
+        while (1) {
+            lock_for_upload(&us);
+            running_thread_count = us.num_of_running_thread;
+            unlock_for_upload(&us);
+            if (running_thread_count < 1) {
+                break;
+            }
+            sleep(1);
+        }
+        fclose(us.pf);
 
 #ifdef _WIN32
-		for (i = 0; i < thread_count; i++) {
-			if (handles[i]) {
-				CloseHandle(handles[i]);
-			}
-		}
-		pcs_free(handles);
+        for (i = 0; i < thread_count; i++) {
+            if (handles[i]) {
+                CloseHandle(handles[i]);
+            }
+        }
+        pcs_free(handles);
 #endif
 
-		/*Âà§Êñ≠ÊòØÂê¶ÊâÄÊúâÂàÜÁâáÈÉΩ‰∏ãËΩΩÂÆåÊàê‰∫Ü*/
-		is_success = 1;
-		ts = us.threads;
-		while (ts) {
-			if (ts->status != UPLOAD_STATUS_OK) {
-				is_success = 0;
-				break;
-			}
-			ts = ts->next;
-		}
+        /*≈–∂œ «∑ÒÀ˘”–∑÷∆¨∂ºœ¬‘ÿÕÍ≥…¡À*/
+        is_success = 1;
+        ts = us.threads;
+        while (ts) {
+            if (ts->status != UPLOAD_STATUS_OK) {
+                is_success = 0;
+                break;
+            }
+            ts = ts->next;
+        }
 
-		if (!is_success) {
-			if (pErrMsg) {
-				if (!(*pErrMsg))
-					(*pErrMsg) = pcs_utils_sprintf("Upload fail.\n");
-			}
-			if (op_st) (*op_st) = OP_ST_FAIL;
-			if (del_local_file) DeleteFileRecursive(local_path);
-			pcs_free(local_path);
-			pcs_free(remote_path);
-			pcs_free(slice_file);
-			uninit_upload_state(&us);
-			return -1;
-		}
-		else {
-			//ÂêàÂπ∂Êñá‰ª∂
-			PcsSList *slist = NULL, *si, *si_tail;
-			ts = us.threads;
-			while (ts) {
-				si = (PcsSList *)pcs_malloc(sizeof(PcsSList));
-				si->string = ts->md5;
-				si->next = NULL;
-				if (slist == NULL) {
-					slist = si_tail = si;
-				}
-				else {
-					si_tail->next = si;
-					si_tail = si;
-				}
-				ts = ts->next;
-			}
-			res = pcs_create_superfile(context->pcs, remote_path, is_force, slist);
-			si = slist;
-			while (si) {
-				si_tail = si;
-				si = si->next;
-				pcs_free(si_tail);
-			}
-			if (!res) {
-				if (pErrMsg) {
-					if ((*pErrMsg)) pcs_free(*pErrMsg);
-					(*pErrMsg) = pcs_utils_sprintf("%s", pcs_strerror(context->pcs));
-				}
-				if (op_st) (*op_st) = OP_ST_FAIL;
-				if (del_local_file) DeleteFileRecursive(local_path);
-				pcs_free(local_path);
-				pcs_free(remote_path);
-				pcs_free(slice_file);
-				uninit_upload_state(&us);
-				return -1;
-			}
-			uninit_upload_state(&us);
-			DeleteFileRecursive(slice_file);
-			pcs_free(slice_file);
-		}
+        if (!is_success) {
+            if (pErrMsg) {
+                if (!(*pErrMsg)) {
+                    (*pErrMsg) = pcs_utils_sprintf("Upload fail.\n");
+                }
+            }
+            if (op_st) {
+                (*op_st) = OP_ST_FAIL;
+            }
+            if (del_local_file) {
+                DeleteFileRecursive(local_path);
+            }
+            pcs_free(local_path);
+            pcs_free(remote_path);
+            pcs_free(slice_file);
+            uninit_upload_state(&us);
+            return -1;
+        } else {
+            //∫œ≤¢Œƒº˛
+            PcsSList* slist = NULL, *si, *si_tail;
+            ts = us.threads;
+            while (ts) {
+                si = (PcsSList*)pcs_malloc(sizeof(PcsSList));
+                si->string = ts->md5;
+                si->next = NULL;
+                if (slist == NULL) {
+                    slist = si_tail = si;
+                } else {
+                    si_tail->next = si;
+                    si_tail = si;
+                }
+                ts = ts->next;
+            }
+            res = pcs_create_superfile(context->pcs, remote_path, is_force, slist);
+            si = slist;
+            while (si) {
+                si_tail = si;
+                si = si->next;
+                pcs_free(si_tail);
+            }
+            if (!res) {
+                if (pErrMsg) {
+                    if ((*pErrMsg)) {
+                        pcs_free(*pErrMsg);
+                    }
+                    (*pErrMsg) = pcs_utils_sprintf("%s", pcs_strerror(context->pcs));
+                }
+                if (op_st) {
+                    (*op_st) = OP_ST_FAIL;
+                }
+                if (del_local_file) {
+                    DeleteFileRecursive(local_path);
+                }
+                pcs_free(local_path);
+                pcs_free(remote_path);
+                pcs_free(slice_file);
+                uninit_upload_state(&us);
+                return -1;
+            }
+            uninit_upload_state(&us);
+            DeleteFileRecursive(slice_file);
+            pcs_free(slice_file);
+        }
 
-	}
+    }
 
-	/*ÂΩìÊñá‰ª∂Âêç‰ª•.(ÁÇπÂè∑)ÂºÄÂ§¥ÁöÑËØùÔºåÂàôÁΩëÁõò‰ºöËá™Âä®ÂéªÈô§Á¨¨‰∏Ä‰∏™ÁÇπ„ÄÇ‰ª•‰∏ãifËØ≠Âè•ÁöÑÁõÆÁöÑÂ∞±ÊòØÊääÁΩëÁõòÊñá‰ª∂ÈáçÂëΩÂêç‰∏∫‰ª•ÁÇπÂè∑ÂºÄÂ§¥„ÄÇ*/
-	if (res) {
-		char *diskName = pcs_utils_filename(res->path),
-			*orgName = pcs_utils_filename(remote_file);
-		if (diskName && orgName && orgName[0] == '.' && diskName[0] != '.') {
-			PcsPanApiRes *res2;
-			PcsSList2 sl = {
-				res->path,
-				orgName,
-				NULL
-			};
-			PcsSList sl2 = {
-				res->path, NULL
-			};
-			pcs_free(orgName);
-			orgName = (char *)malloc(strlen(diskName) + 2);
-			orgName[0] = '.';
-			strcpy(&orgName[1], diskName);
-			while (1) {
-				sl.string2 = orgName;
-				//printf("\nrename %s -> %s \n", sl.string1, sl.string2);
-				res2 = pcs_rename(context->pcs, &sl);
-				//printf("\nrename %s -> %s %d \n", sl.string1, sl.string2, res2->error);
-				if (res2 && res2->error == 0) {
-					pcs_pan_api_res_destroy(res2);
-					res2 = NULL;
-					break;
-				}
-				else {
-					if (res2) { pcs_pan_api_res_destroy(res2); res2 = NULL; }
-					if (is_force) {
-						sl2.string = remote_path;
-						//printf("\ndelete %s \n", sl2.string);
-						res2 = pcs_delete(context->pcs, &sl2);
-						//printf("\ndelete %s %d \n", sl2.string, res2->error);
-						if (!res2 || res2->error != 0) {
-							if (pErrMsg) {
-								if (*pErrMsg) pcs_free(*pErrMsg);
-								(*pErrMsg) = pcs_utils_sprintf("Error: Can't delete the %s, so can't rename %s to %s. You can rename manually.\n",
-									remote_path, sl.string1, sl.string2);
-							}
-							if (res2) { pcs_pan_api_res_destroy(res2); res2 = NULL; }
-							break;
-						}
-						if (res2) { pcs_pan_api_res_destroy(res2); res2 = NULL; }
-					}
-					else {
-						if (pErrMsg) {
-							if (*pErrMsg) pcs_free(*pErrMsg);
-							(*pErrMsg) = pcs_utils_sprintf("Error: Can't rename %s to %s. You can rename manually.\n",
-								sl.string1, sl.string2);
-						}
-						break;
-					}
-				}
-			}
-		}
-		if (diskName) pcs_free(diskName);
-		if (orgName) pcs_free(orgName);
-		//print_fileinfo(res, " ");
-	}
-	if (op_st) (*op_st) = OP_ST_SUCC;
-	if (res) pcs_fileinfo_destroy(res);
-	if (del_local_file) DeleteFileRecursive(local_path);
-	pcs_free(local_path);
-	pcs_free(remote_path);
-	return 0;
+    /*µ±Œƒº˛√˚“‘.(µ„∫≈)ø™Õ∑µƒª∞£¨‘ÚÕ¯≈Ãª·◊‘∂Ø»•≥˝µ⁄“ª∏ˆµ„°£“‘œ¬if”Ôæ‰µƒƒøµƒæÕ «∞—Õ¯≈ÃŒƒº˛÷ÿ√¸√˚Œ™“‘µ„∫≈ø™Õ∑°£*/
+    if (res) {
+        char* diskName = pcs_utils_filename(res->path),
+              *orgName = pcs_utils_filename(remote_file);
+        if (diskName && orgName && orgName[0] == '.' && diskName[0] != '.') {
+            PcsPanApiRes* res2;
+            PcsSList2 sl = {
+                res->path,
+                orgName,
+                NULL
+            };
+            PcsSList sl2 = {
+                res->path, NULL
+            };
+            pcs_free(orgName);
+            orgName = (char*)malloc(strlen(diskName) + 2);
+            orgName[0] = '.';
+            strcpy(&orgName[1], diskName);
+            while (1) {
+                sl.string2 = orgName;
+                //printf("\nrename %s -> %s \n", sl.string1, sl.string2);
+                res2 = pcs_rename(context->pcs, &sl);
+                //printf("\nrename %s -> %s %d \n", sl.string1, sl.string2, res2->error);
+                if (res2 && res2->error == 0) {
+                    pcs_pan_api_res_destroy(res2);
+                    res2 = NULL;
+                    break;
+                } else {
+                    if (res2) {
+                        pcs_pan_api_res_destroy(res2);
+                        res2 = NULL;
+                    }
+                    if (is_force) {
+                        sl2.string = remote_path;
+                        //printf("\ndelete %s \n", sl2.string);
+                        res2 = pcs_delete(context->pcs, &sl2);
+                        //printf("\ndelete %s %d \n", sl2.string, res2->error);
+                        if (!res2 || res2->error != 0) {
+                            if (pErrMsg) {
+                                if (*pErrMsg) {
+                                    pcs_free(*pErrMsg);
+                                }
+                                (*pErrMsg) = pcs_utils_sprintf("Error: Can't delete the %s, so can't rename %s to %s. You can rename manually.\n",
+                                                               remote_path, sl.string1, sl.string2);
+                            }
+                            if (res2) {
+                                pcs_pan_api_res_destroy(res2);
+                                res2 = NULL;
+                            }
+                            break;
+                        }
+                        if (res2) {
+                            pcs_pan_api_res_destroy(res2);
+                            res2 = NULL;
+                        }
+                    } else {
+                        if (pErrMsg) {
+                            if (*pErrMsg) {
+                                pcs_free(*pErrMsg);
+                            }
+                            (*pErrMsg) = pcs_utils_sprintf("Error: Can't rename %s to %s. You can rename manually.\n",
+                                                           sl.string1, sl.string2);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        if (diskName) {
+            pcs_free(diskName);
+        }
+        if (orgName) {
+            pcs_free(orgName);
+        }
+        //print_fileinfo(res, " ");
+    }
+    if (op_st) {
+        (*op_st) = OP_ST_SUCC;
+    }
+    if (res) {
+        pcs_fileinfo_destroy(res);
+    }
+    if (del_local_file) {
+        DeleteFileRecursive(local_path);
+    }
+    pcs_free(local_path);
+    pcs_free(remote_path);
+    return 0;
 }
 
-/*ÊâìÂç∞ÁΩëÁõòÊñá‰ª∂ÂÜÖÂÆπ*/
-static int cmd_cat(ShellContext *context, struct args *arg)
+/*¥Ú”°Õ¯≈ÃŒƒº˛ƒ⁄»›*/
+static int cmd_cat(ShellContext* context, struct args* arg)
 {
-	char *path;
-	const char *res;
-	size_t sz;
-	if (test_arg(arg, 1, 1, "h", "help", NULL)) {
-		usage_cat();
-		return -1;
-	}
-	if (has_opts(arg, "h","help", NULL)) {
-		usage_cat();
-		return 0;
-	}
-	if (!is_login(context, NULL)) return -1;
-	path = combin_net_disk_path(context->workdir, arg->argv[0]);
-	assert(path);
-	if (strcmp(path, "/") == 0) {
-		fprintf(stderr, "Error: Can't cat root directory.");
-		pcs_free(path);
-		return -1;
-	}
-	res = pcs_cat(context->pcs, path, &sz);
-	if (res == NULL) {
-		fprintf(stderr, "Error: %s path=%s.\n", pcs_strerror(context->pcs), path);
-		pcs_free(path);
-		return -1;
-	}
-	pcs_free(path);
+    char* path;
+    const char* res;
+    size_t sz;
+    if (test_arg(arg, 1, 1, "h", "help", NULL)) {
+        usage_cat();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_cat();
+        return 0;
+    }
+    if (!is_login(context, NULL)) {
+        return -1;
+    }
+    path = combin_net_disk_path(context->workdir, arg->argv[0]);
+    assert(path);
+    if (strcmp(path, "/") == 0) {
+        fprintf(stderr, "Error: Can't cat root directory.");
+        pcs_free(path);
+        return -1;
+    }
+    res = pcs_cat(context->pcs, path, &sz);
+    if (res == NULL) {
+        fprintf(stderr, "Error: %s path=%s.\n", pcs_strerror(context->pcs), path);
+        pcs_free(path);
+        return -1;
+    }
+    pcs_free(path);
 
-	if (context->secure_enable) {
-		int context_secure_method = get_secure_method(context);
-		if (context_secure_method == PCS_SECURE_AES_CBC_128
-			|| context_secure_method == PCS_SECURE_AES_CBC_192
-			|| context_secure_method == PCS_SECURE_AES_CBC_256) {
-			int secure_method = get_data_secure_method(res, sz);
-			if (secure_method == PCS_SECURE_AES_CBC_128
-				|| secure_method == PCS_SECURE_AES_CBC_192
-				|| secure_method == PCS_SECURE_AES_CBC_256) {
-				char *buf;
-				size_t bufsz;
-				if (decrypt_data(res, sz, &buf, &bufsz, context->secure_key)) {
-					printf("Error: can't decrypt the data.");
-					return -1;
-				}
-				buf[bufsz] = '\0';
-				printf("%s\n\n", buf);
-				pcs_free(buf);
-				return 0;
-			}
-		}
-	}
+    if (context->secure_enable) {
+        int context_secure_method = get_secure_method(context);
+        if (context_secure_method == PCS_SECURE_AES_CBC_128
+            || context_secure_method == PCS_SECURE_AES_CBC_192
+            || context_secure_method == PCS_SECURE_AES_CBC_256) {
+            int secure_method = get_data_secure_method(res, sz);
+            if (secure_method == PCS_SECURE_AES_CBC_128
+                || secure_method == PCS_SECURE_AES_CBC_192
+                || secure_method == PCS_SECURE_AES_CBC_256) {
+                char* buf;
+                size_t bufsz;
+                if (decrypt_data(res, sz, &buf, &bufsz, context->secure_key)) {
+                    printf("Error: can't decrypt the data.");
+                    return -1;
+                }
+                buf[bufsz] = '\0';
+                printf("%s\n\n", buf);
+                pcs_free(buf);
+                return 0;
+            }
+        }
+    }
 
-	printf("%s\n\n", res);
-	return 0;
+    printf("%s\n\n", res);
+    return 0;
 }
 
-/*Êõ¥ÊîπÁΩëÁõòÂΩìÂâçÂ∑•‰ΩúÁõÆÂΩï*/
-static int cmd_cd(ShellContext *context, struct args *arg)
+/*∏¸∏ƒÕ¯≈Ãµ±«∞π§◊˜ƒø¬º*/
+static int cmd_cd(ShellContext* context, struct args* arg)
 {
-	char *p;
-	PcsFileInfo *meta;
-	if (test_arg(arg, 1, 1, "h", "help", NULL)) {
-		usage_cd();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_cd();
-		return 0;
-	}
-	if (!is_login(context, NULL)) return -1;
-	p = combin_net_disk_path(context->workdir, arg->argv[0]);
-	if (strcmp(p, "/")) {
-		meta = pcs_meta(context->pcs, p);
-		if (!meta) {
-			fprintf(stderr, "Error: The target directory not exist, or have error: %s\n", pcs_strerror(context->pcs));
-			pcs_free(p);
-			return -1;
-		}
-		if (!meta->isdir) {
-			fprintf(stderr, "Error: The target is not directory\n");
-			pcs_free(p);
-			pcs_fileinfo_destroy(meta);
-			return -1;
-		}
-		pcs_fileinfo_destroy(meta);
-	}
-	if (context->workdir) pcs_free(context->workdir);
-	context->workdir = pcs_utils_strdup(p);
-	pcs_free(p);
-	printf("Work directory changed to %s\n", context->workdir);
-	return 0;
+    char* p;
+    PcsFileInfo* meta;
+    if (test_arg(arg, 1, 1, "h", "help", NULL)) {
+        usage_cd();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_cd();
+        return 0;
+    }
+    if (!is_login(context, NULL)) {
+        return -1;
+    }
+    p = combin_net_disk_path(context->workdir, arg->argv[0]);
+    if (strcmp(p, "/")) {
+        meta = pcs_meta(context->pcs, p);
+        if (!meta) {
+            fprintf(stderr, "Error: The target directory not exist, or have error: %s\n", pcs_strerror(context->pcs));
+            pcs_free(p);
+            return -1;
+        }
+        if (!meta->isdir) {
+            fprintf(stderr, "Error: The target is not directory\n");
+            pcs_free(p);
+            pcs_fileinfo_destroy(meta);
+            return -1;
+        }
+        pcs_fileinfo_destroy(meta);
+    }
+    if (context->workdir) {
+        pcs_free(context->workdir);
+    }
+    context->workdir = pcs_utils_strdup(p);
+    pcs_free(p);
+    printf("Work directory changed to %s\n", context->workdir);
+    return 0;
 }
 
-/*Â§çÂà∂ÁΩëÁõòÊñá‰ª∂*/
-static int cmd_copy(ShellContext *context, struct args *arg)
+/*∏¥÷∆Õ¯≈ÃŒƒº˛*/
+static int cmd_copy(ShellContext* context, struct args* arg)
 {
-	PcsPanApiRes *res;
-	PcsPanApiResInfoList *info;
-	PcsSList2 slist;
-	if (test_arg(arg, 2, 2, "h", "help", NULL)) {
-		usage_copy();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_copy();
-		return 0;
-	}
-	if (!is_login(context, NULL)) return -1;
+    PcsPanApiRes* res;
+    PcsPanApiResInfoList* info;
+    PcsSList2 slist;
+    if (test_arg(arg, 2, 2, "h", "help", NULL)) {
+        usage_copy();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_copy();
+        return 0;
+    }
+    if (!is_login(context, NULL)) {
+        return -1;
+    }
 
-	slist.string1 = combin_net_disk_path(context->workdir, arg->argv[0]); /* path */
-	slist.string2 = combin_net_disk_path(context->workdir, arg->argv[1]); /* new_name */
-	slist.next = NULL;
-	if (strcmp(slist.string1, "/") == 0) {
-		fprintf(stderr, "Error: Can't copy root directory.");
-		pcs_free(slist.string1);
-		pcs_free(slist.string2);
-		return -1;
-	}
-	if (strcmp(slist.string2, "/") == 0) {
-		fprintf(stderr, "Error: The new name can't be root directory.");
-		pcs_free(slist.string1);
-		pcs_free(slist.string2);
-		return -1;
-	}
+    slist.string1 = combin_net_disk_path(context->workdir, arg->argv[0]); /* path */
+    slist.string2 = combin_net_disk_path(context->workdir, arg->argv[1]); /* new_name */
+    slist.next = NULL;
+    if (strcmp(slist.string1, "/") == 0) {
+        fprintf(stderr, "Error: Can't copy root directory.");
+        pcs_free(slist.string1);
+        pcs_free(slist.string2);
+        return -1;
+    }
+    if (strcmp(slist.string2, "/") == 0) {
+        fprintf(stderr, "Error: The new name can't be root directory.");
+        pcs_free(slist.string1);
+        pcs_free(slist.string2);
+        return -1;
+    }
 
-	res = pcs_copy(context->pcs, &slist);
-	if (!res) {
-		fprintf(stderr, "Error: %s src=%s, dst=%s.\n", pcs_strerror(context->pcs), slist.string1, slist.string2);
-		pcs_free(slist.string1);
-		pcs_free(slist.string2);
-		return -1;
-	}
-	info = res->info_list;
-	if (info->info.error) {
-		fprintf(stderr, "Error: unknow. src=%s, dst=%s. \n", slist.string1, slist.string2);
-		pcs_pan_api_res_destroy(res);
-		pcs_free(slist.string1);
-		pcs_free(slist.string2);
-		return -1;
-	}
-	printf("Copy %s to %s Success.\n", slist.string1, slist.string2);
-	pcs_pan_api_res_destroy(res);
-	pcs_free(slist.string1);
-	pcs_free(slist.string2);
-	return 0;
+    res = pcs_copy(context->pcs, &slist);
+    if (!res) {
+        fprintf(stderr, "Error: %s src=%s, dst=%s.\n", pcs_strerror(context->pcs), slist.string1, slist.string2);
+        pcs_free(slist.string1);
+        pcs_free(slist.string2);
+        return -1;
+    }
+    info = res->info_list;
+    if (info->info.error) {
+        fprintf(stderr, "Error: unknow. src=%s, dst=%s. \n", slist.string1, slist.string2);
+        pcs_pan_api_res_destroy(res);
+        pcs_free(slist.string1);
+        pcs_free(slist.string2);
+        return -1;
+    }
+    printf("Copy %s to %s Success.\n", slist.string1, slist.string2);
+    pcs_pan_api_res_destroy(res);
+    pcs_free(slist.string1);
+    pcs_free(slist.string2);
+    return 0;
 }
 
 #pragma region cmd_compare
 
 typedef struct compare_arg compare_arg;
-struct compare_arg
-{
-	int			recursive;		/*ÊòØÂê¶ÈÄíÂΩí*/
-	int			print_eq;		/*ÊòØÂê¶ÊâìÂç∞Êú™ÊîπÂä®ÁöÑÊñá‰ª∂*/
-	int			print_left;		/*ÊòØÂê¶ÊâìÂç∞ÈúÄ‰∏ãËΩΩÁöÑÊñá‰ª∂*/
-	int			print_right;	/*ÊòØÂê¶ÊâìÂç∞ÈúÄ‰∏ä‰º†ÁöÑÊñá‰ª∂*/
-	int			print_confuse;	/*ÊòØÂê¶ÊâìÂç∞Êó†Ê≥ïÁ°ÆÂÆöÊòØ‰∏ãËΩΩËøòÊòØ‰∏ä‰º†ÁöÑÊñá‰ª∂*/
-	int			dry_run;		/*Áî®‰∫éÊºîÁ§∫Ôºå‰∏çÊâßË°å‰ªª‰Ωï‰∏ä‰º†Âíå‰∏ãËΩΩÊìç‰Ωú*/
+struct compare_arg {
+    int         recursive;      /* «∑Òµ›πÈ*/
+    int         print_eq;       /* «∑Ò¥Ú”°Œ¥∏ƒ∂ØµƒŒƒº˛*/
+    int         print_left;     /* «∑Ò¥Ú”°–Ëœ¬‘ÿµƒŒƒº˛*/
+    int         print_right;    /* «∑Ò¥Ú”°–Ë…œ¥´µƒŒƒº˛*/
+    int         print_confuse;  /* «∑Ò¥Ú”°Œﬁ∑®»∑∂® «œ¬‘ÿªπ «…œ¥´µƒŒƒº˛*/
+    int         dry_run;        /*”√”⁄—› æ£¨≤ª÷¥––»Œ∫Œ…œ¥´∫Õœ¬‘ÿ≤Ÿ◊˜*/
 
-	char	*local_file;	/*Êú¨Âú∞Ë∑ØÂæÑ*/
-	const char	*remote_file;	/*ËøúÁ´ØË∑ØÂæÑ*/
+    char*    local_file;    /*±æµÿ¬∑æ∂*/
+    const char*  remote_file;   /*‘∂∂À¬∑æ∂*/
 
-	int			check_local_dir_exist;
+    int         check_local_dir_exist;
 
-	/*ÂΩìStateÂáÜÂ§áÂ•ΩÂêéË∞ÉÁî®‰∏ÄÊ¨°Êú¨ÊñπÊ≥ï*/
-	void (*onRBEnumerateStatePrepared)(ShellContext *context, compare_arg *arg, rb_red_blk_tree *rb, struct RBEnumerateState *state, void *st);
+    /*µ±State◊º±∏∫√∫Ûµ˜”√“ª¥Œ±æ∑Ω∑®*/
+    void (*onRBEnumerateStatePrepared)(ShellContext* context, compare_arg* arg, rb_red_blk_tree* rb, struct RBEnumerateState* state, void* st);
 };
 
 /*
- * Ëß£ÊûêcompareÁöÑÂèÇÊï∞„ÄÇ
- * ÊàêÂäüËøîÂõû0ÔºõÂ§±Ë¥•ËøîÂõûÈùû0ÂÄº
+ * Ω‚Œˆcompareµƒ≤Œ ˝°£
+ * ≥…π¶∑µªÿ0£ª ß∞‹∑µªÿ∑«0÷µ
 */
-static int parse_compare_args(struct args *g, compare_arg *cmpArg)
+static int parse_compare_args(struct args* g, compare_arg* cmpArg)
 {
-	cmpArg->print_confuse = has_opt(g, "c");
-	cmpArg->print_left = has_opt(g, "d");
-	cmpArg->print_eq = has_opt(g, "e");
-	cmpArg->dry_run = has_opt(g, "n");
-	cmpArg->recursive = has_opt(g, "r");
-	cmpArg->print_right = has_opt(g, "u");
+    cmpArg->print_confuse = has_opt(g, "c");
+    cmpArg->print_left = has_opt(g, "d");
+    cmpArg->print_eq = has_opt(g, "e");
+    cmpArg->dry_run = has_opt(g, "n");
+    cmpArg->recursive = has_opt(g, "r");
+    cmpArg->print_right = has_opt(g, "u");
 
-	cmpArg->local_file = u8_is_utf8_sys() ? g->argv[0] : utf82mbs(g->argv[0]);
-	cmpArg->remote_file = g->argv[1];
-	
-	return 0;
+    cmpArg->local_file = u8_is_utf8_sys() ? g->argv[0] : utf82mbs(g->argv[0]);
+    cmpArg->remote_file = g->argv[1];
+
+    return 0;
 }
 
 /*
-* ÊØîËæÉ‰∏§‰∏™Êñá‰ª∂ÁöÑÂºÇÂêå„ÄÇ
-*   local       - Êú¨Âú∞Êñá‰ª∂ÂØπË±°
-*   remote		- ÁΩëÁõòÊñá‰ª∂ÂØπË±°
-*   skip        - ÁõÆÂΩïË∑≥ËøáÁöÑÂ≠óËäÇÊï∞„ÄÇ
+* ±»Ωœ¡Ω∏ˆŒƒº˛µƒ“ÏÕ¨°£
+*   local       - ±æµÿŒƒº˛∂‘œÛ
+*   remote      - Õ¯≈ÃŒƒº˛∂‘œÛ
+*   skip        - ƒø¬ºÃ¯π˝µƒ◊÷Ω⁄ ˝°£
 */
-static MyMeta *compare_file(const LocalFileInfo *local, const PcsFileInfo *remote)
+static MyMeta* compare_file(const LocalFileInfo* local, const PcsFileInfo* remote)
 {
-	MyMeta *meta = NULL;
+    MyMeta* meta = NULL;
 
-	meta = meta_create(local->path, NULL);
-	meta->flag |= FLAG_ON_LOCAL;
-	meta->local_mtime = local->mtime;
-	meta->local_isdir = local->isdir;
+    meta = meta_create(local->path, NULL);
+    meta->flag |= FLAG_ON_LOCAL;
+    meta->local_mtime = local->mtime;
+    meta->local_isdir = local->isdir;
 
-	if (remote) {
-		meta->flag |= FLAG_ON_REMOTE;
-		meta->remote_path = pcs_utils_strdup(remote->path);
-		meta->remote_mtime = remote->server_mtime;
-		meta->remote_isdir = remote->isdir;
-		if (!remote->isdir && remote->md5) {
-			meta->md5 = pcs_utils_strdup(remote->md5);
-		}
-	}
+    if (remote) {
+        meta->flag |= FLAG_ON_REMOTE;
+        meta->remote_path = pcs_utils_strdup(remote->path);
+        meta->remote_mtime = remote->server_mtime;
+        meta->remote_isdir = remote->isdir;
+        if (!remote->isdir && remote->md5) {
+            meta->md5 = pcs_utils_strdup(remote->md5);
+        }
+    }
 
-	decide_op(meta);
+    decide_op(meta);
 
-	return meta;
+    return meta;
 }
 
 /*
-* ÂàóÂá∫ÁΩëÁõòÁõÆÂΩïÊñá‰ª∂ÔºåÂπ∂ÊääÁªìÊûúÂêàÂπ∂Âà∞‰ª£Ë°®Êú¨Âú∞Êñá‰ª∂ÂÖÉÊï∞ÊçÆÁöÑÁ∫¢ÈªëÊ†ë‰∏≠„ÄÇ
-*   context     - ‰∏ä‰∏ãÊñá
-*   rb          - Ëá™Â∑±Áª¥Êä§ÁöÑ‰∏Ä‰∏™Êñá‰ª∂ÂÖÉÊï∞ÊçÆ
-*   remote_dir  - ÁΩëÁõòÊñá‰ª∂ÂØπË±°
-*   recursive   - Ë°®Á§∫ÊòØÂê¶ÈÄíÂΩí
-*   skip        - ‰ªé‰ªÄ‰πà‰ΩçÁΩÆÂºÄÂßãÊà™ÂèñË∑ØÂæÑÔºåÊà™ÂèñÂêéÁöÑË∑ØÂæÑ‰Ωú‰∏∫Á∫¢ÈªëÊ†ë‰∏≠È°πÁöÑKey
-*   total_cnt   - Áî®‰∫éÁªüËÆ°
-*   check_local_dir_exist - Â¶ÇÊûú‰º†ÂÖ•Èùû0ÂÄºÁöÑËØùÔºå
-*                     Â∞ÜÂà§Êñ≠ÁΩëÁõòÁõÆÂΩïÂú®Êú¨Âú∞ÊòØÂê¶Â≠òÂú®ÔºåÂè™ÊúâÂ≠òÂú®Êó∂ÔºåÊâç‰ºöÁªßÁª≠Âä†ËΩΩÂÖ∂‰∏ãÊñá‰ª∂ÂíåÁõÆÂΩï
-* ÊàêÂäüÂàôËøîÂõû0ÔºõÂê¶ÂàôËøîÂõûÈùû0ÂÄº
+* ¡–≥ˆÕ¯≈Ãƒø¬ºŒƒº˛£¨≤¢∞—Ω·π˚∫œ≤¢µΩ¥˙±Ì±æµÿŒƒº˛‘™ ˝æ›µƒ∫Ï∫⁄ ˜÷–°£
+*   context     - …œœ¬Œƒ
+*   rb          - ◊‘º∫Œ¨ª§µƒ“ª∏ˆŒƒº˛‘™ ˝æ›
+*   remote_dir  - Õ¯≈ÃŒƒº˛∂‘œÛ
+*   recursive   - ±Ì æ «∑Òµ›πÈ
+*   skip        - ¥” ≤√¥Œª÷√ø™ ºΩÿ»°¬∑æ∂£¨Ωÿ»°∫Ûµƒ¬∑æ∂◊˜Œ™∫Ï∫⁄ ˜÷–œÓµƒKey
+*   total_cnt   - ”√”⁄Õ≥º∆
+*   check_local_dir_exist - »Áπ˚¥´»Î∑«0÷µµƒª∞£¨
+*                     Ω´≈–∂œÕ¯≈Ãƒø¬º‘⁄±æµÿ «∑Ò¥Ê‘⁄£¨÷ª”–¥Ê‘⁄ ±£¨≤≈ª·ºÃ–¯º”‘ÿ∆‰œ¬Œƒº˛∫Õƒø¬º
+* ≥…π¶‘Ú∑µªÿ0£ª∑Ò‘Ú∑µªÿ∑«0÷µ
 */
-static int combin_with_remote_dir_files(ShellContext *context, rb_red_blk_tree *rb,
-	const char *remote_dir, int recursive, int skip, int *total_cnt, int check_local_dir_exist)
+static int combin_with_remote_dir_files(ShellContext* context, rb_red_blk_tree* rb,
+                                        const char* remote_dir, int recursive, int skip, int* total_cnt, int check_local_dir_exist)
 {
-	PcsFileInfoList *list = NULL;
-	PcsFileInfoListIterater iterater;
-	PcsFileInfo *info = NULL;
-	int page_index = 1,
-		page_size = 1000;
-	int cnt = 0, second;
-	rb_red_blk_node *rbn;
-	MyMeta *meta;
+    PcsFileInfoList* list = NULL;
+    PcsFileInfoListIterater iterater;
+    PcsFileInfo* info = NULL;
+    int page_index = 1,
+        page_size = 1000;
+    int cnt = 0, second;
+    rb_red_blk_node* rbn;
+    MyMeta* meta;
 
-	while (1) {
-		list = pcs_list(context->pcs, remote_dir,
-			page_index, page_size,
-			"name", PcsFalse);
-		if (!list) {
-			if (pcs_strerror(context->pcs)) {
-				fprintf(stderr, "Error: %s \n", pcs_strerror(context->pcs));
-				if (context->timeout_retry && strstr(pcs_strerror(context->pcs), "Can't get response from the remote server") >= 0) {
-					second = 10;
-					while (second > 0) {
-						printf("Retry after %d second...\n", second);
-						sleep(1);
-						second--;
-					}
-					//printf("Retrying...\n");
-					continue;
-				}
-				return -1;
-			}
-			return 0;
-		}
+    while (1) {
+        list = pcs_list(context->pcs, remote_dir,
+                        page_index, page_size,
+                        "name", PcsFalse);
+        if (!list) {
+            if (pcs_strerror(context->pcs)) {
+                fprintf(stderr, "Error: %s \n", pcs_strerror(context->pcs));
+                if (context->timeout_retry && strstr(pcs_strerror(context->pcs), "Can't get response from the remote server") >= 0) {
+                    second = 10;
+                    while (second > 0) {
+                        printf("Retry after %d second...\n", second);
+                        sleep(1);
+                        second--;
+                    }
+                    //printf("Retrying...\n");
+                    continue;
+                }
+                return -1;
+            }
+            return 0;
+        }
 
-		cnt = list->count;
-		if (total_cnt) (*total_cnt) += cnt;
-		if (total_cnt && cnt > 0) {
-			printf("Fetch %d                     \r", *total_cnt);
-			fflush(stdout);
-		}
+        cnt = list->count;
+        if (total_cnt) {
+            (*total_cnt) += cnt;
+        }
+        if (total_cnt && cnt > 0) {
+            printf("Fetch %d                     \r", *total_cnt);
+            fflush(stdout);
+        }
 
-		pcs_filist_iterater_init(list, &iterater, PcsFalse);
-		while (pcs_filist_iterater_next(&iterater)) {
-			info = iterater.current;
-			rbn = RBExactQuery(rb, (void *)(info->path + skip));
-			if (rbn) {
-				meta = (MyMeta *)rbn->info;
-				meta->flag |= FLAG_ON_REMOTE;
-				if (meta->remote_path) pcs_free(meta->remote_path);
-				meta->remote_path = pcs_utils_strdup(info->path + skip);
-				meta->remote_mtime = info->server_mtime;
-				meta->remote_isdir = info->isdir;
-				if (!info->isdir && info->md5) {
-					meta->md5 = pcs_utils_strdup(info->md5);
-				}
-			}
-			else {
-				meta = meta_create(info->path + skip, NULL);
-				meta->flag |= FLAG_ON_REMOTE;
-				meta->remote_path = pcs_utils_strdup(info->path + skip);
-				meta->remote_mtime = info->server_mtime;
-				meta->remote_isdir = info->isdir;
-				if (!info->isdir && info->md5) {
-					meta->md5 = pcs_utils_strdup(info->md5);
-				}
-				RBTreeInsert(rb, (void *)meta->path, (void *)meta);
-			}
-		}
+        pcs_filist_iterater_init(list, &iterater, PcsFalse);
+        while (pcs_filist_iterater_next(&iterater)) {
+            info = iterater.current;
+            rbn = RBExactQuery(rb, (void*)(info->path + skip));
+            if (rbn) {
+                meta = (MyMeta*)rbn->info;
+                meta->flag |= FLAG_ON_REMOTE;
+                if (meta->remote_path) {
+                    pcs_free(meta->remote_path);
+                }
+                meta->remote_path = pcs_utils_strdup(info->path + skip);
+                meta->remote_mtime = info->server_mtime;
+                meta->remote_isdir = info->isdir;
+                if (!info->isdir && info->md5) {
+                    meta->md5 = pcs_utils_strdup(info->md5);
+                }
+            } else {
+                meta = meta_create(info->path + skip, NULL);
+                meta->flag |= FLAG_ON_REMOTE;
+                meta->remote_path = pcs_utils_strdup(info->path + skip);
+                meta->remote_mtime = info->server_mtime;
+                meta->remote_isdir = info->isdir;
+                if (!info->isdir && info->md5) {
+                    meta->md5 = pcs_utils_strdup(info->md5);
+                }
+                RBTreeInsert(rb, (void*)meta->path, (void*)meta);
+            }
+        }
 
-		if (recursive) {
-			pcs_filist_iterater_init(list, &iterater, PcsFalse);
-			while (pcs_filist_iterater_next(&iterater)) {
-				info = iterater.current;
-				if (info->isdir) {
-					if (check_local_dir_exist) {
-						rbn = RBExactQuery(rb, (void *)(info->path + skip));
-						if (rbn && ((meta = (MyMeta *)rbn->info)->flag & FLAG_ON_LOCAL)) {
-							if (combin_with_remote_dir_files(context, rb, info->path, recursive, skip, total_cnt, check_local_dir_exist)) {
-								pcs_filist_destroy(list); 
-								return -1;
-							}
-						}
-					}
-					else if (combin_with_remote_dir_files(context, rb, info->path, recursive, skip, total_cnt, check_local_dir_exist)) {
-						pcs_filist_destroy(list); 
-						return -1;
-					}
-				}
-			}
-		}
-		pcs_filist_destroy(list);
-		if (cnt < page_size) {
-			break;
-		}
-		page_index++;
-	}
-	return 0;
+        if (recursive) {
+            pcs_filist_iterater_init(list, &iterater, PcsFalse);
+            while (pcs_filist_iterater_next(&iterater)) {
+                info = iterater.current;
+                if (info->isdir) {
+                    if (check_local_dir_exist) {
+                        rbn = RBExactQuery(rb, (void*)(info->path + skip));
+                        if (rbn && ((meta = (MyMeta*)rbn->info)->flag & FLAG_ON_LOCAL)) {
+                            if (combin_with_remote_dir_files(context, rb, info->path, recursive, skip, total_cnt, check_local_dir_exist)) {
+                                pcs_filist_destroy(list);
+                                return -1;
+                            }
+                        }
+                    } else if (combin_with_remote_dir_files(context, rb, info->path, recursive, skip, total_cnt, check_local_dir_exist)) {
+                        pcs_filist_destroy(list);
+                        return -1;
+                    }
+                }
+            }
+        }
+        pcs_filist_destroy(list);
+        if (cnt < page_size) {
+            break;
+        }
+        page_index++;
+    }
+    return 0;
 }
 
-static int on_compared_file(ShellContext *context, compare_arg *arg, MyMeta *mm, void *state)
+static int on_compared_file(ShellContext* context, compare_arg* arg, MyMeta* mm, void* state)
 {
-	int first, second, other;
-	first = 0; second = strlen(mm->path); other = 13;
-	if (second < 10) second = 10;
-	print_meta_list_head(first, second, other);
-	print_meta_list_row(first, second, other, mm);
-	print_meta_list_notes(first, second, other);
-	return 0;
+    int first, second, other;
+    first = 0;
+    second = strlen(mm->path);
+    other = 13;
+    if (second < 10) {
+        second = 10;
+    }
+    print_meta_list_head(first, second, other);
+    print_meta_list_row(first, second, other, mm);
+    print_meta_list_notes(first, second, other);
+    return 0;
 }
 
-static int on_compared_dir(ShellContext *context, compare_arg *arg, rb_red_blk_tree *rb, void *st)
+static int on_compared_dir(ShellContext* context, compare_arg* arg, rb_red_blk_tree* rb, void* st)
 {
-	struct RBEnumerateState state = { 0 };
-	int printed_count = 0;
-	if (!arg->print_eq && !arg->print_left && !arg->print_right && !arg->print_confuse) {
-		arg->print_left = arg->print_right = arg->print_confuse = 1;
-	}
-	if (arg->print_eq) state.print_op |= OP_EQ;
-	if (arg->print_left) state.print_op |= OP_LEFT;
-	if (arg->print_right) state.print_op |= OP_RIGHT;
-	//if (arg->print_confuse) state.print_op |= OP_CONFUSE;
-	state.print_flag = FLAG_ON_LOCAL | FLAG_ON_REMOTE;
-	state.no_print_flag = FLAG_PARENT_NOT_ON_REMOTE;
-	state.tree = rb;
-	state.context = context;
-	state.page_size = context->list_page_size;
-	state.page_index = 1;
-	state.page_enable = 1;
-	state.dry_run = arg->dry_run;
-	state.local_basedir = arg->local_file;
-	state.remote_basedir = arg->remote_file;
-	rb->enumerateInfoState = &state;
-	rb->EnumerateInfo = &rb_decide_op;
-	printf("Comparing...\n");
-	RBTreeEnumerateInfo(rb);
-	if (state.cnt_total > 0) putchar('\n');
-	printf("Completed\n");
-	state.first = 0;
-	if (state.second < 10) state.second = 10;
-	state.other = 13;
-	if (arg->onRBEnumerateStatePrepared) {
-		(*arg->onRBEnumerateStatePrepared)(context, arg, rb, &state, st);
-	}
-	else {
-		printf("\nPrint Download: %s, Print Upload: %s, Print Confuse: %s, Print Equal: %s\n",
-			arg->print_left ? "on" : "off",
-			arg->print_right ? "on" : "off",
-			arg->print_confuse ? "on" : "off",
-			arg->print_eq ? "on" : "off");
-	}
-	rb->EnumerateInfo = &rb_print_meta;
-	if (state.print_op && state.print_flag) {
-		printf("Printing|Synching...\n");
-		RBTreeEnumerateInfo(rb);
-		printed_count += state.printed_count;
-		printf("Completed\n");
-		/*if (state.printed_count == 0)
-			print_meta_list_head(state.first, state.second, state.other);
-		print_notes = 1;
-		print_head = 0;*/
-	}
-	if (state.cnt_confuse > 0 && arg->print_confuse && !(state.print_op & OP_CONFUSE)) {
-		//printf("\nwarning: There are number of confuse items. The confuse means that don't know how to process.\n");
-		state.print_op = OP_CONFUSE;
-		state.page_index = 1;
-		state.printed_count = 0;
-		state.prefixion = "[Confuse] ";
-		putchar('\n');
-		printf("Printing Confuse...\n");
-		RBTreeEnumerateInfo(rb);
-		printf("Completed\n");
-		printed_count += state.printed_count;
-	}
-	if (printed_count == 0) {
-		print_meta_list_head(state.first, state.second, state.other);
-	}
-	putchar('\n');
-	print_meta_list_statistic(&state, state.print_fail);
-	putchar('\n');
-	print_meta_list_notes(state.first, state.second, state.other);
-	return 0;
+    struct RBEnumerateState state = { 0 };
+    int printed_count = 0;
+    if (!arg->print_eq && !arg->print_left && !arg->print_right && !arg->print_confuse) {
+        arg->print_left = arg->print_right = arg->print_confuse = 1;
+    }
+    if (arg->print_eq) {
+        state.print_op |= OP_EQ;
+    }
+    if (arg->print_left) {
+        state.print_op |= OP_LEFT;
+    }
+    if (arg->print_right) {
+        state.print_op |= OP_RIGHT;
+    }
+    //if (arg->print_confuse) state.print_op |= OP_CONFUSE;
+    state.print_flag = FLAG_ON_LOCAL | FLAG_ON_REMOTE;
+    state.no_print_flag = FLAG_PARENT_NOT_ON_REMOTE;
+    state.tree = rb;
+    state.context = context;
+    state.page_size = context->list_page_size;
+    state.page_index = 1;
+    state.page_enable = 1;
+    state.dry_run = arg->dry_run;
+    state.local_basedir = arg->local_file;
+    state.remote_basedir = arg->remote_file;
+    rb->enumerateInfoState = &state;
+    rb->EnumerateInfo = &rb_decide_op;
+    printf("Comparing...\n");
+    RBTreeEnumerateInfo(rb);
+    if (state.cnt_total > 0) {
+        putchar('\n');
+    }
+    printf("Completed\n");
+    state.first = 0;
+    if (state.second < 10) {
+        state.second = 10;
+    }
+    state.other = 13;
+    if (arg->onRBEnumerateStatePrepared) {
+        (*arg->onRBEnumerateStatePrepared)(context, arg, rb, &state, st);
+    } else {
+        printf("\nPrint Download: %s, Print Upload: %s, Print Confuse: %s, Print Equal: %s\n",
+               arg->print_left ? "on" : "off",
+               arg->print_right ? "on" : "off",
+               arg->print_confuse ? "on" : "off",
+               arg->print_eq ? "on" : "off");
+    }
+    rb->EnumerateInfo = &rb_print_meta;
+    if (state.print_op && state.print_flag) {
+        printf("Printing|Synching...\n");
+        RBTreeEnumerateInfo(rb);
+        printed_count += state.printed_count;
+        printf("Completed\n");
+        /*if (state.printed_count == 0)
+            print_meta_list_head(state.first, state.second, state.other);
+        print_notes = 1;
+        print_head = 0;*/
+    }
+    if (state.cnt_confuse > 0 && arg->print_confuse && !(state.print_op & OP_CONFUSE)) {
+        //printf("\nwarning: There are number of confuse items. The confuse means that don't know how to process.\n");
+        state.print_op = OP_CONFUSE;
+        state.page_index = 1;
+        state.printed_count = 0;
+        state.prefixion = "[Confuse] ";
+        putchar('\n');
+        printf("Printing Confuse...\n");
+        RBTreeEnumerateInfo(rb);
+        printf("Completed\n");
+        printed_count += state.printed_count;
+    }
+    if (printed_count == 0) {
+        print_meta_list_head(state.first, state.second, state.other);
+    }
+    putchar('\n');
+    print_meta_list_statistic(&state, state.print_fail);
+    putchar('\n');
+    print_meta_list_notes(state.first, state.second, state.other);
+    return 0;
 }
 
-static int compare(ShellContext *context, compare_arg *arg, 
-	int (*onComparedFile)(ShellContext *context, compare_arg *arg, MyMeta *mm, void *state),
-	void *comparedFileState,
-	int(*onComparedDir)(ShellContext *context, compare_arg *arg, rb_red_blk_tree *rb, void *state),
-	void *comparedDirState)
+static int compare(ShellContext* context, compare_arg* arg,
+                   int (*onComparedFile)(ShellContext* context, compare_arg* arg, MyMeta* mm, void* state),
+                   void* comparedFileState,
+                   int(*onComparedDir)(ShellContext* context, compare_arg* arg, rb_red_blk_tree* rb, void* state),
+                   void* comparedDirState)
 {
-	char *path = NULL;
+    char* path = NULL;
 
-	LocalFileInfo *local = NULL;
-	PcsFileInfo *remote = NULL;
+    LocalFileInfo* local = NULL;
+    PcsFileInfo* remote = NULL;
 
-	/*Ê£ÄÊü•Êú¨Âú∞Êñá‰ª∂ - ÂºÄÂßã*/
-	local = GetLocalFileInfo(arg->local_file);
-	if (!local) {
-		fprintf(stderr, "Error: The local file not exist.\n");
-		return -1;
-	}
-	/*Ê£ÄÊü•Êú¨Âú∞Êñá‰ª∂ - ÁªìÊùü*/
+    /*ºÏ≤È±æµÿŒƒº˛ - ø™ º*/
+    local = GetLocalFileInfo(arg->local_file);
+    if (!local) {
+        fprintf(stderr, "Error: The local file not exist.\n");
+        return -1;
+    }
+    /*ºÏ≤È±æµÿŒƒº˛ - Ω· ¯*/
 
-	//Ê£ÄÊü•ÊòØÂê¶Â∑≤ÁªèÁôªÂΩï
-	if (!is_login(context, NULL)) {
-		DestroyLocalFileInfo(local);
-		return -1;
-	}
+    //ºÏ≤È «∑Ò“—æ≠µ«¬º
+    if (!is_login(context, NULL)) {
+        DestroyLocalFileInfo(local);
+        return -1;
+    }
 
-	//ÊãºÊé•Âá∫ÁΩëÁõòÊñá‰ª∂ÁöÑÂÆåÊï¥Ë∑ØÂæÑ
-	path = combin_net_disk_path(context->workdir, arg->remote_file);
-	if (!path) {
-		DestroyLocalFileInfo(local);
-		return -1;
-	}
-	if (strcmp(path, "/") == 0) {
-		remote = pcs_fileinfo_create();
-		remote->path = pcs_utils_strdup("/");
-		remote->isdir = PcsTrue;
-	}
-	else {
-		/*Ëé∑ÂèñÁΩëÁõòÊñá‰ª∂ÂÖÉÊï∞ÊçÆ*/
-		remote = pcs_meta(context->pcs, path);
-		if (!remote) {
-			fprintf(stderr, "Error: The remote file not exist, or have error: %s\n", pcs_strerror(context->pcs));
-			DestroyLocalFileInfo(local);
-			pcs_free(path);
-			return -1;
-		}
-	}
+    //∆¥Ω”≥ˆÕ¯≈ÃŒƒº˛µƒÕÍ’˚¬∑æ∂
+    path = combin_net_disk_path(context->workdir, arg->remote_file);
+    if (!path) {
+        DestroyLocalFileInfo(local);
+        return -1;
+    }
+    if (strcmp(path, "/") == 0) {
+        remote = pcs_fileinfo_create();
+        remote->path = pcs_utils_strdup("/");
+        remote->isdir = PcsTrue;
+    } else {
+        /*ªÒ»°Õ¯≈ÃŒƒº˛‘™ ˝æ›*/
+        remote = pcs_meta(context->pcs, path);
+        if (!remote) {
+            fprintf(stderr, "Error: The remote file not exist, or have error: %s\n", pcs_strerror(context->pcs));
+            DestroyLocalFileInfo(local);
+            pcs_free(path);
+            return -1;
+        }
+    }
 
-	/*Êú¨Âú∞ÊòØÊñá‰ª∂ÔºåËøúÁ´ØÊòØÁõÆÂΩï*/
-	if (!local->isdir && remote->isdir) {
-		fprintf(stderr, "Error: Can't compare the file with directory.\n");
-		DestroyLocalFileInfo(local);
-		pcs_fileinfo_destroy(remote);
-		pcs_free(path);
-		return -1;
-	}
+    /*±æµÿ «Œƒº˛£¨‘∂∂À «ƒø¬º*/
+    if (!local->isdir && remote->isdir) {
+        fprintf(stderr, "Error: Can't compare the file with directory.\n");
+        DestroyLocalFileInfo(local);
+        pcs_fileinfo_destroy(remote);
+        pcs_free(path);
+        return -1;
+    }
 
-	/*Êú¨Âú∞ÊòØÁõÆÂΩïÔºåËøúÁ´ØÊòØÊñá‰ª∂*/
-	if (local->isdir && !remote->isdir) {
-		fprintf(stderr, "Error: Can't compare the directory with file.\n");
-		DestroyLocalFileInfo(local);
-		pcs_fileinfo_destroy(remote);
-		pcs_free(path);
-		return -1;
-	}
+    /*±æµÿ «ƒø¬º£¨‘∂∂À «Œƒº˛*/
+    if (local->isdir && !remote->isdir) {
+        fprintf(stderr, "Error: Can't compare the directory with file.\n");
+        DestroyLocalFileInfo(local);
+        pcs_fileinfo_destroy(remote);
+        pcs_free(path);
+        return -1;
+    }
 
-	/*Êú¨Âú∞ÂíåËøúÁ´ØÈÉΩÊòØÊñá‰ª∂*/
-	if (!local->isdir && !remote->isdir) {
-		MyMeta *mm = NULL;
-		int rc;
-		mm = compare_file(local, remote);
-		if (onComparedFile)
-			rc = (*onComparedFile)(context, arg, mm, comparedFileState);
-		meta_destroy(mm);
-		DestroyLocalFileInfo(local);
-		pcs_fileinfo_destroy(remote);
-		pcs_free(path);
-		return rc;
-	}
+    /*±æµÿ∫Õ‘∂∂À∂º «Œƒº˛*/
+    if (!local->isdir && !remote->isdir) {
+        MyMeta* mm = NULL;
+        int rc;
+        mm = compare_file(local, remote);
+        if (onComparedFile) {
+            rc = (*onComparedFile)(context, arg, mm, comparedFileState);
+        }
+        meta_destroy(mm);
+        DestroyLocalFileInfo(local);
+        pcs_fileinfo_destroy(remote);
+        pcs_free(path);
+        return rc;
+    }
 
-	/*Êú¨Âú∞ÂíåËøúÁ´ØÈÉΩÊòØÁõÆÂΩï*/
-	if (local->isdir && remote->isdir) {
-		rb_red_blk_tree *rb = NULL;
-		int skip = 0, total_cnt = 0;
-		int rc;
-		printf("Scanning local file system...\n");
-		rb = meta_load(arg->local_file, arg->recursive);
-		if (!rb) {
-			fprintf(stderr, "Error: Can't list the local directory.\n");
-			DestroyLocalFileInfo(local);
-			pcs_fileinfo_destroy(remote);
-			pcs_free(path);
-			return -1;
-		}
-		printf("Completed\n");
-		skip = strlen(remote->path);
-		if (remote->path[skip - 1] != '/' && remote->path[skip - 1] != '\\') skip++;
-		printf("Fetching net disk file list...\n");
-		if (combin_with_remote_dir_files(context, rb, remote->path, arg->recursive, skip, &total_cnt, arg->check_local_dir_exist)) {
-			fprintf(stderr, "Error: Can't list the remote directory.\n");
-			RBTreeDestroy(rb);
-			DestroyLocalFileInfo(local);
-			pcs_fileinfo_destroy(remote);
-			pcs_free(path);
-			return -1;
-		}
-		if (total_cnt > 0) putchar('\n');
-		printf("Completed\n");
-		if (onComparedDir)
-			rc = (*onComparedDir)(context, arg, rb, comparedDirState);
-		RBTreeDestroy(rb);
-		DestroyLocalFileInfo(local);
-		pcs_fileinfo_destroy(remote);
-		pcs_free(path);
-		return rc;
-	}
-	DestroyLocalFileInfo(local);
-	pcs_fileinfo_destroy(remote);
-	pcs_free(path);
-	return -1;
+    /*±æµÿ∫Õ‘∂∂À∂º «ƒø¬º*/
+    if (local->isdir && remote->isdir) {
+        rb_red_blk_tree* rb = NULL;
+        int skip = 0, total_cnt = 0;
+        int rc;
+        printf("Scanning local file system...\n");
+        rb = meta_load(arg->local_file, arg->recursive);
+        if (!rb) {
+            fprintf(stderr, "Error: Can't list the local directory.\n");
+            DestroyLocalFileInfo(local);
+            pcs_fileinfo_destroy(remote);
+            pcs_free(path);
+            return -1;
+        }
+        printf("Completed\n");
+        skip = strlen(remote->path);
+        if (remote->path[skip - 1] != '/' && remote->path[skip - 1] != '\\') {
+            skip++;
+        }
+        printf("Fetching net disk file list...\n");
+        if (combin_with_remote_dir_files(context, rb, remote->path, arg->recursive, skip, &total_cnt, arg->check_local_dir_exist)) {
+            fprintf(stderr, "Error: Can't list the remote directory.\n");
+            RBTreeDestroy(rb);
+            DestroyLocalFileInfo(local);
+            pcs_fileinfo_destroy(remote);
+            pcs_free(path);
+            return -1;
+        }
+        if (total_cnt > 0) {
+            putchar('\n');
+        }
+        printf("Completed\n");
+        if (onComparedDir) {
+            rc = (*onComparedDir)(context, arg, rb, comparedDirState);
+        }
+        RBTreeDestroy(rb);
+        DestroyLocalFileInfo(local);
+        pcs_fileinfo_destroy(remote);
+        pcs_free(path);
+        return rc;
+    }
+    DestroyLocalFileInfo(local);
+    pcs_fileinfo_destroy(remote);
+    pcs_free(path);
+    return -1;
 }
 
-/*ÊØîËæÉÊú¨Âú∞ÂíåÁΩëÁõòÁõÆÂΩïÁöÑÂºÇÂêå*/
-static int cmd_compare(ShellContext *context, struct args *arg)
+/*±»Ωœ±æµÿ∫ÕÕ¯≈Ãƒø¬ºµƒ“ÏÕ¨*/
+static int cmd_compare(ShellContext* context, struct args* arg)
 {
-	compare_arg cmpArg = { 0 };
+    compare_arg cmpArg = { 0 };
 
-	if (test_arg(arg, 2, 2, "c", "d", "e", "r", "u", "h", "help", NULL)) {
-		usage_compare();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_compare();
-		return 0;
-	}
-	if (parse_compare_args(arg, &cmpArg)) {
-		usage_compare();
-		return -1;
-	}
-	cmpArg.check_local_dir_exist = 1;
+    if (test_arg(arg, 2, 2, "c", "d", "e", "r", "u", "h", "help", NULL)) {
+        usage_compare();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_compare();
+        return 0;
+    }
+    if (parse_compare_args(arg, &cmpArg)) {
+        usage_compare();
+        return -1;
+    }
+    cmpArg.check_local_dir_exist = 1;
 
-	int rc = compare(context, &cmpArg, &on_compared_file, NULL, &on_compared_dir, NULL);
-	if (!u8_is_utf8_sys()) {
-		pcs_free(cmpArg.local_file);
-	}
-	return rc;
+    int rc = compare(context, &cmpArg, &on_compared_file, NULL, &on_compared_dir, NULL);
+    if (!u8_is_utf8_sys()) {
+        pcs_free(cmpArg.local_file);
+    }
+    return rc;
 }
 
 #pragma endregion
 
-/*ÊâìÂç∞Âá∫‰∏ä‰∏ãÊñá*/
-static int cmd_context(ShellContext *context, struct args *arg)
+/*¥Ú”°≥ˆ…œœ¬Œƒ*/
+static int cmd_context(ShellContext* context, struct args* arg)
 {
-	char *json;
-	if (test_arg(arg, 0, 0, "h", "help", NULL)) {
-		usage_context();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_context();
-		return 0;
-	}
-	json = context2str(context);
-	assert(json);
-	printf("%s\n", json);
-	pcs_free(json);
-	return 0;
+    char* json;
+    if (test_arg(arg, 0, 0, "h", "help", NULL)) {
+        usage_context();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_context();
+        return 0;
+    }
+    json = context2str(context);
+    assert(json);
+    printf("%s\n", json);
+    pcs_free(json);
+    return 0;
 }
 
-/*‰∏ãËΩΩ*/
-static int cmd_download(ShellContext *context, struct args *arg)
+/*œ¬‘ÿ*/
+static int cmd_download(ShellContext* context, struct args* arg)
 {
-	int is_force = 0;
-	char *path = NULL, *errmsg = NULL;
-	char *relPath = NULL, *locPath = NULL;
+    int is_force = 0;
+    char* path = NULL, *errmsg = NULL;
+    char* relPath = NULL, *locPath = NULL;
 
-	LocalFileInfo *local;
-	PcsFileInfo *meta;
+    LocalFileInfo* local;
+    PcsFileInfo* meta;
 
-	if (test_arg(arg, 2, 2, "f", "h", "help", NULL)) {
-		usage_download();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_download();
-		return 0;
-	}
+    if (test_arg(arg, 2, 2, "f", "h", "help", NULL)) {
+        usage_download();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_download();
+        return 0;
+    }
 
-	is_force = has_opt(arg, "f");
-	relPath = arg->argv[0];
-	locPath = u8_is_utf8_sys() ? arg->argv[1] : utf82mbs(arg->argv[1]);
+    is_force = has_opt(arg, "f");
+    relPath = arg->argv[0];
+    locPath = u8_is_utf8_sys() ? arg->argv[1] : utf82mbs(arg->argv[1]);
 
-	/*Ê£ÄÊü•Êú¨Âú∞Êñá‰ª∂ - ÂºÄÂßã*/
-	local = GetLocalFileInfo(locPath);
-	if (local && local->isdir) {
-		fprintf(stderr, "Error: The local file exist, but it's a directory.\n");
-		DestroyLocalFileInfo(local);
-		if (!u8_is_utf8_sys()) pcs_free(locPath);
-		return -1;
-	}
-	else if (local && !local->isdir) {
-		if (!is_force) {
-			fprintf(stderr, "Error: The local file: %s exist. You can specify '-f' to force override.\n", arg->argv[1]);
-			DestroyLocalFileInfo(local);
-			if (!u8_is_utf8_sys()) pcs_free(locPath);
-			return -1;
-		}
-	}
-	if (local) DestroyLocalFileInfo(local);
-	/*Ê£ÄÊü•Êú¨Âú∞Êñá‰ª∂ - ÁªìÊùü*/
+    /*ºÏ≤È±æµÿŒƒº˛ - ø™ º*/
+    local = GetLocalFileInfo(locPath);
+    if (local && local->isdir) {
+        fprintf(stderr, "Error: The local file exist, but it's a directory.\n");
+        DestroyLocalFileInfo(local);
+        if (!u8_is_utf8_sys()) {
+            pcs_free(locPath);
+        }
+        return -1;
+    } else if (local && !local->isdir) {
+        if (!is_force) {
+            fprintf(stderr, "Error: The local file: %s exist. You can specify '-f' to force override.\n", arg->argv[1]);
+            DestroyLocalFileInfo(local);
+            if (!u8_is_utf8_sys()) {
+                pcs_free(locPath);
+            }
+            return -1;
+        }
+    }
+    if (local) {
+        DestroyLocalFileInfo(local);
+    }
+    /*ºÏ≤È±æµÿŒƒº˛ - Ω· ¯*/
 
-	//Ê£ÄÊü•ÊòØÂê¶Â∑≤ÁªèÁôªÂΩï
-	if (!is_login(context, NULL)) {
-		if (!u8_is_utf8_sys()) pcs_free(locPath);
-		return -1;
-	}
+    //ºÏ≤È «∑Ò“—æ≠µ«¬º
+    if (!is_login(context, NULL)) {
+        if (!u8_is_utf8_sys()) {
+            pcs_free(locPath);
+        }
+        return -1;
+    }
 
-	path = combin_net_disk_path(context->workdir, relPath);
-	if (strcmp(path, "/") == 0) {
-		fprintf(stderr, "Error: Can't download root directory. \nYou can use 'synch -cd' command to download the directory.\n");
-		pcs_free(path);
-		if (!u8_is_utf8_sys()) pcs_free(locPath);
-		return -1;
-	}
+    path = combin_net_disk_path(context->workdir, relPath);
+    if (strcmp(path, "/") == 0) {
+        fprintf(stderr, "Error: Can't download root directory. \nYou can use 'synch -cd' command to download the directory.\n");
+        pcs_free(path);
+        if (!u8_is_utf8_sys()) {
+            pcs_free(locPath);
+        }
+        return -1;
+    }
 
-	/*Ê£ÄÊü•ÁΩëÁõòÊñá‰ª∂ - ÂºÄÂßã*/
-	meta = pcs_meta(context->pcs, path);
-	if (!meta) {
-		fprintf(stderr, "Error: The remote file not exist, or have error: %s\n", pcs_strerror(context->pcs));
-		pcs_free(path);
-		if (!u8_is_utf8_sys()) pcs_free(locPath);
-		return -1;
-	}
-	if (meta->isdir) {
-		fprintf(stderr, "Error: The remote file is directory. \nYou can use 'synch -cd' command to download the directory.\n");
-		pcs_fileinfo_destroy(meta);
-		pcs_free(path);
-		if (!u8_is_utf8_sys()) pcs_free(locPath);
-		return -1;
-	}
-	/*Ê£ÄÊü•ÁΩëÁõòÊñá‰ª∂ - ÁªìÊùü*/
+    /*ºÏ≤ÈÕ¯≈ÃŒƒº˛ - ø™ º*/
+    meta = pcs_meta(context->pcs, path);
+    if (!meta) {
+        fprintf(stderr, "Error: The remote file not exist, or have error: %s\n", pcs_strerror(context->pcs));
+        pcs_free(path);
+        if (!u8_is_utf8_sys()) {
+            pcs_free(locPath);
+        }
+        return -1;
+    }
+    if (meta->isdir) {
+        fprintf(stderr, "Error: The remote file is directory. \nYou can use 'synch -cd' command to download the directory.\n");
+        pcs_fileinfo_destroy(meta);
+        pcs_free(path);
+        if (!u8_is_utf8_sys()) {
+            pcs_free(locPath);
+        }
+        return -1;
+    }
+    /*ºÏ≤ÈÕ¯≈ÃŒƒº˛ - Ω· ¯*/
 
-	/*ÂºÄÂßã‰∏ãËΩΩ*/
+    /*ø™ ºœ¬‘ÿ*/
 
-	if (do_download(context,
-		locPath, meta->path, meta->server_mtime,
-		"", context->workdir, meta->md5,
-		&errmsg, NULL)) {
-		fprintf(stderr, "Error: %s\n", errmsg);
-		pcs_fileinfo_destroy(meta);
-		if (errmsg) pcs_free(errmsg);
-		pcs_free(path);
-		if (!u8_is_utf8_sys()) pcs_free(locPath);
-		return -1;
-	}
-	printf("Download %s to %s Success.\n", meta->path, arg->argv[1]);
-	pcs_fileinfo_destroy(meta);
-	if (errmsg) pcs_free(errmsg);
-	pcs_free(path);
-	if (!u8_is_utf8_sys()) pcs_free(locPath);
-	return 0;
+    if (do_download(context,
+                    locPath, meta->path, meta->server_mtime,
+                    "", context->workdir, meta->md5,
+                    &errmsg, NULL)) {
+        fprintf(stderr, "Error: %s\n", errmsg);
+        pcs_fileinfo_destroy(meta);
+        if (errmsg) {
+            pcs_free(errmsg);
+        }
+        pcs_free(path);
+        if (!u8_is_utf8_sys()) {
+            pcs_free(locPath);
+        }
+        return -1;
+    }
+    printf("Download %s to %s Success.\n", meta->path, arg->argv[1]);
+    pcs_fileinfo_destroy(meta);
+    if (errmsg) {
+        pcs_free(errmsg);
+    }
+    pcs_free(path);
+    if (!u8_is_utf8_sys()) {
+        pcs_free(locPath);
+    }
+    return 0;
 }
 
-/*ËæìÂá∫ÊñáÊú¨Âà∞ÁΩëÁõòÊüê‰∏Ä‰∏™Êñá‰ª∂*/
-static int cmd_echo(ShellContext *context, struct args *arg)
+/* ‰≥ˆŒƒ±æµΩÕ¯≈Ãƒ≥“ª∏ˆŒƒº˛*/
+static int cmd_echo(ShellContext* context, struct args* arg)
 {
-	int is_append = 0;
-	char *path = NULL, *t = NULL;
-	const char *relPath = NULL, *text = NULL;
-	size_t sz;
-	PcsFileInfo *f;
-	PcsFileInfo *meta;
-	char *buf;
-	size_t bufsz;
-	int need_free = 0;
+    int is_append = 0;
+    char* path = NULL, *t = NULL;
+    const char* relPath = NULL, *text = NULL;
+    size_t sz;
+    PcsFileInfo* f;
+    PcsFileInfo* meta;
+    char* buf;
+    size_t bufsz;
+    int need_free = 0;
 
-	if (test_arg(arg, 2, 2, "a", "h", "help", NULL)) {
-		usage_echo();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_echo();
-		return 0;
-	}
-	is_append = has_opt(arg, "a");
-	relPath = arg->argv[0];
-	text = arg->argv[1];
+    if (test_arg(arg, 2, 2, "a", "h", "help", NULL)) {
+        usage_echo();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_echo();
+        return 0;
+    }
+    is_append = has_opt(arg, "a");
+    relPath = arg->argv[0];
+    text = arg->argv[1];
 
-	if (!is_login(context, NULL)) return -1;
-	path = combin_net_disk_path(context->workdir, relPath);
-	assert(path);
-	sz = strlen(text);
+    if (!is_login(context, NULL)) {
+        return -1;
+    }
+    path = combin_net_disk_path(context->workdir, relPath);
+    assert(path);
+    sz = strlen(text);
 
-	if (strcmp(path, "/") == 0) {
-		fprintf(stderr, "Error: Can't specify root directory, you should specify the file name.\n");
-		pcs_free(path);
-		return -1;
-	}
+    if (strcmp(path, "/") == 0) {
+        fprintf(stderr, "Error: Can't specify root directory, you should specify the file name.\n");
+        pcs_free(path);
+        return -1;
+    }
 
-	/*Ê£ÄÊü•ÁΩëÁõòÊñá‰ª∂ - ÂºÄÂßã*/
-	meta = pcs_meta(context->pcs, path);
-	if (meta && meta->isdir) {
-		fprintf(stderr, "Error: The remote file is directory. \n");
-		pcs_fileinfo_destroy(meta);
-		pcs_free(path);
-		return -1;
-	}
-	if (meta) {
-		pcs_fileinfo_destroy(meta);
-		meta = NULL;
-	}
-	/*Ê£ÄÊü•ÁΩëÁõòÊñá‰ª∂ - ÁªìÊùü*/
+    /*ºÏ≤ÈÕ¯≈ÃŒƒº˛ - ø™ º*/
+    meta = pcs_meta(context->pcs, path);
+    if (meta && meta->isdir) {
+        fprintf(stderr, "Error: The remote file is directory. \n");
+        pcs_fileinfo_destroy(meta);
+        pcs_free(path);
+        return -1;
+    }
+    if (meta) {
+        pcs_fileinfo_destroy(meta);
+        meta = NULL;
+    }
+    /*ºÏ≤ÈÕ¯≈ÃŒƒº˛ - Ω· ¯*/
 
-	if (is_append) {
-		const char *org;
-		size_t len;
-		//Ëé∑ÂèñÊñá‰ª∂ÁöÑÂÜÖÂÆπ
-		org = pcs_cat(context->pcs, path, &len);
-		if (org == NULL) {
-			//fprintf(stderr, "Error: %s path=%s.\n", pcs_strerror(context->pcs), path);
-			//pcs_free(path);
-			//return -1;
-			org = "";
-			len = 0;
-		}
-		buf = (char *)org;
-		if (len > 0 && context->secure_enable) {
-			int context_secure_method = get_secure_method(context);
-			if (context_secure_method == PCS_SECURE_AES_CBC_128
-				|| context_secure_method == PCS_SECURE_AES_CBC_192
-				|| context_secure_method == PCS_SECURE_AES_CBC_256) {
-				int secure_method = get_data_secure_method(org, len);
-				if (secure_method == PCS_SECURE_AES_CBC_128
-					|| secure_method == PCS_SECURE_AES_CBC_192
-					|| secure_method == PCS_SECURE_AES_CBC_256) {
-					if (decrypt_data(org, len, &buf, &bufsz, context->secure_key)) {
-						printf("Error: can't decrypt the data.");
-						return -1;
-					}
-					buf[bufsz] = '\0';
-					len = bufsz;
-					need_free = 1;
-				}
-			}
-		}
-		//ÊãºÊé•‰∏§‰∏™Â≠óÁ¨¶‰∏≤
-		t = (char *)pcs_malloc(sz + len + 1);
-		assert(t);
-		if (len > 0)
-			memcpy(t, buf, len);
-		memcpy(t + len, text, sz + 1);
-		sz += len;
-		if (need_free) pcs_free(buf);
-	}
-	else {
-		t = (char *)text;
-	}
-	need_free = (t != text) ? 1 : 0;
-	buf = t;
-	if (context->secure_enable) {
-		int context_secure_method = get_secure_method(context);
-		if (context_secure_method == PCS_SECURE_AES_CBC_128
-			|| context_secure_method == PCS_SECURE_AES_CBC_192
-			|| context_secure_method == PCS_SECURE_AES_CBC_256) {
-			if (encrypt_data(t, sz, &buf, &bufsz, context_secure_method, context->secure_key)) {
-				printf("Error: can't encrypt the data.");
-				return -1;
-			}
-			sz = bufsz;
-			if (need_free) pcs_free(t);
-			need_free = 1;
-		}
-	}
+    if (is_append) {
+        const char* org;
+        size_t len;
+        //ªÒ»°Œƒº˛µƒƒ⁄»›
+        org = pcs_cat(context->pcs, path, &len);
+        if (org == NULL) {
+            //fprintf(stderr, "Error: %s path=%s.\n", pcs_strerror(context->pcs), path);
+            //pcs_free(path);
+            //return -1;
+            org = "";
+            len = 0;
+        }
+        buf = (char*)org;
+        if (len > 0 && context->secure_enable) {
+            int context_secure_method = get_secure_method(context);
+            if (context_secure_method == PCS_SECURE_AES_CBC_128
+                || context_secure_method == PCS_SECURE_AES_CBC_192
+                || context_secure_method == PCS_SECURE_AES_CBC_256) {
+                int secure_method = get_data_secure_method(org, len);
+                if (secure_method == PCS_SECURE_AES_CBC_128
+                    || secure_method == PCS_SECURE_AES_CBC_192
+                    || secure_method == PCS_SECURE_AES_CBC_256) {
+                    if (decrypt_data(org, len, &buf, &bufsz, context->secure_key)) {
+                        printf("Error: can't decrypt the data.");
+                        return -1;
+                    }
+                    buf[bufsz] = '\0';
+                    len = bufsz;
+                    need_free = 1;
+                }
+            }
+        }
+        //∆¥Ω”¡Ω∏ˆ◊÷∑˚¥Æ
+        t = (char*)pcs_malloc(sz + len + 1);
+        assert(t);
+        if (len > 0) {
+            memcpy(t, buf, len);
+        }
+        memcpy(t + len, text, sz + 1);
+        sz += len;
+        if (need_free) {
+            pcs_free(buf);
+        }
+    } else {
+        t = (char*)text;
+    }
+    need_free = (t != text) ? 1 : 0;
+    buf = t;
+    if (context->secure_enable) {
+        int context_secure_method = get_secure_method(context);
+        if (context_secure_method == PCS_SECURE_AES_CBC_128
+            || context_secure_method == PCS_SECURE_AES_CBC_192
+            || context_secure_method == PCS_SECURE_AES_CBC_256) {
+            if (encrypt_data(t, sz, &buf, &bufsz, context_secure_method, context->secure_key)) {
+                printf("Error: can't encrypt the data.");
+                return -1;
+            }
+            sz = bufsz;
+            if (need_free) {
+                pcs_free(t);
+            }
+            need_free = 1;
+        }
+    }
 
-	f = pcs_upload_buffer(context->pcs, path, PcsTrue, buf, sz,
-		convert_to_real_speed(context->max_upload_speed_per_thread));
-	if (!f) {
-		fprintf(stderr, "Error: %s. path = %s\n", pcs_strerror(context->pcs), path);
-		pcs_free(path);
-		if (need_free) pcs_free(buf);
-		return -1;
-	}
-	printf("Success. You can use '%s cat %s' to print the file content.\n", app_name, path);
-	pcs_fileinfo_destroy(f);
-	pcs_free(path);
-	if (need_free) pcs_free(buf);
-	return 0;
+    f = pcs_upload_buffer(context->pcs, path, PcsTrue, buf, sz,
+                          convert_to_real_speed(context->max_upload_speed_per_thread));
+    if (!f) {
+        fprintf(stderr, "Error: %s. path = %s\n", pcs_strerror(context->pcs), path);
+        pcs_free(path);
+        if (need_free) {
+            pcs_free(buf);
+        }
+        return -1;
+    }
+    printf("Success. You can use '%s cat %s' to print the file content.\n", app_name, path);
+    pcs_fileinfo_destroy(f);
+    pcs_free(path);
+    if (need_free) {
+        pcs_free(buf);
+    }
+    return 0;
 }
 
-static int cmd_encode(ShellContext *context, struct args *arg)
+static int cmd_encode(ShellContext* context, struct args* arg)
 {
-	int encrypt = 0, decrypt = 0, force = 0, secure_method;
-	char *src = NULL, *dst = NULL;
-	LocalFileInfo *dstInfo;
-	if (test_arg(arg, 2, 2, "d", "e", "f", "h", "help", NULL)) {
-		usage_encode();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_encode();
-		return 0;
-	}
+    int encrypt = 0, decrypt = 0, force = 0, secure_method;
+    char* src = NULL, *dst = NULL;
+    LocalFileInfo* dstInfo;
+    if (test_arg(arg, 2, 2, "d", "e", "f", "h", "help", NULL)) {
+        usage_encode();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_encode();
+        return 0;
+    }
 
-	if (has_opt(arg, "d"))
-		decrypt = 1;
-	if (has_opt(arg, "e"))
-		encrypt = 1;
-	if (has_opt(arg, "f"))
-		force = 1;
+    if (has_opt(arg, "d")) {
+        decrypt = 1;
+    }
+    if (has_opt(arg, "e")) {
+        encrypt = 1;
+    }
+    if (has_opt(arg, "f")) {
+        force = 1;
+    }
 
-	if (encrypt && decrypt) {
-		usage_encode();
-		return -1;
-	}
+    if (encrypt && decrypt) {
+        usage_encode();
+        return -1;
+    }
 
-	if (!encrypt && !decrypt)
-		decrypt = 1;
+    if (!encrypt && !decrypt) {
+        decrypt = 1;
+    }
 
-	if (u8_is_utf8_sys()) {
-		src = arg->argv[0];
-		dst = arg->argv[1];
-	}
-	else {
-		src = utf82mbs(arg->argv[0]);
-		dst = utf82mbs(arg->argv[1]);
-	}
-	dstInfo = GetLocalFileInfo(dst);
-	if (dstInfo) {
-		if (dstInfo->isdir) {
-			fprintf(stderr, "Error: The dest is directory. %s", arg->argv[1]);
-			DestroyLocalFileInfo(dstInfo);
-			if (!u8_is_utf8_sys()) {
-				pcs_free(src);
-				pcs_free(dst);
-			}
-			return -1;
-		}
-		else if (!force) {
-			fprintf(stderr, "Error: The dest is exist. You can use '-f' to force override. %s", arg->argv[1]);
-			DestroyLocalFileInfo(dstInfo);
-			if (!u8_is_utf8_sys()) {
-				pcs_free(src);
-				pcs_free(dst);
-			}
-			return -1;
-		}
-		DestroyLocalFileInfo(dstInfo);
-	}
+    if (u8_is_utf8_sys()) {
+        src = arg->argv[0];
+        dst = arg->argv[1];
+    } else {
+        src = utf82mbs(arg->argv[0]);
+        dst = utf82mbs(arg->argv[1]);
+    }
+    dstInfo = GetLocalFileInfo(dst);
+    if (dstInfo) {
+        if (dstInfo->isdir) {
+            fprintf(stderr, "Error: The dest is directory. %s", arg->argv[1]);
+            DestroyLocalFileInfo(dstInfo);
+            if (!u8_is_utf8_sys()) {
+                pcs_free(src);
+                pcs_free(dst);
+            }
+            return -1;
+        } else if (!force) {
+            fprintf(stderr, "Error: The dest is exist. You can use '-f' to force override. %s", arg->argv[1]);
+            DestroyLocalFileInfo(dstInfo);
+            if (!u8_is_utf8_sys()) {
+                pcs_free(src);
+                pcs_free(dst);
+            }
+            return -1;
+        }
+        DestroyLocalFileInfo(dstInfo);
+    }
 
-	if (encrypt) {
-		char *msg = NULL;
-		secure_method = get_secure_method(context);
-		if (secure_method != PCS_SECURE_AES_CBC_128 && secure_method != PCS_SECURE_AES_CBC_192 && secure_method != PCS_SECURE_AES_CBC_256) {
-			fprintf(stderr, "Error: You have not set the encrypt method, the method should be one of [aes-cbc-128|aes-cbc-192|aes-cbc-256]. You can set it by '%s set'.\n", app_name);
-			if (!u8_is_utf8_sys()) {
-				pcs_free(src);
-				pcs_free(dst);
-			}
-			return -1;
-		}
-		if (!context->secure_key || strlen(context->secure_key) == 0) {
-			fprintf(stderr, "Error: You have not set the encrypt key. You can set it by '%s set'.", app_name);
-			if (!u8_is_utf8_sys()) {
-				pcs_free(src);
-				pcs_free(dst);
-			}
-			return -1;
-		}
-		if (encrypt_file(src, dst, secure_method, context->secure_key, &msg)) {
-			fprintf(stderr, "Error: %s\n", msg);
-			if (!u8_is_utf8_sys()) {
-				pcs_free(src);
-				pcs_free(dst);
-			}
-			return -1;
-		}
-	}
-	else if (decrypt) {
-		char *msg = NULL;
-		if (!context->secure_key || strlen(context->secure_key) == 0) {
-			fprintf(stderr, "Error: You have not set the encrypt key. You can set it by '%s set'.", app_name);
-			if (!u8_is_utf8_sys()) {
-				pcs_free(src);
-				pcs_free(dst);
-			}
-			return -1;
-		}
-		if (decrypt_file(src, dst, context->secure_key, &msg)) {
-			fprintf(stderr, "Error: %s\n", msg);
-			if (!u8_is_utf8_sys()) {
-				pcs_free(src);
-				pcs_free(dst);
-			}
-			return -1;
-		}
-	}
-	else {
-		usage_encode();
-		if (!u8_is_utf8_sys()) {
-			pcs_free(src);
-			pcs_free(dst);
-		}
-		return -1;
-	}
-	if (!u8_is_utf8_sys()) {
-		pcs_free(src);
-		pcs_free(dst);
-	}
-	return 0;
+    if (encrypt) {
+        char* msg = NULL;
+        secure_method = get_secure_method(context);
+        if (secure_method != PCS_SECURE_AES_CBC_128 && secure_method != PCS_SECURE_AES_CBC_192 && secure_method != PCS_SECURE_AES_CBC_256) {
+            fprintf(stderr, "Error: You have not set the encrypt method, the method should be one of [aes-cbc-128|aes-cbc-192|aes-cbc-256]. You can set it by '%s set'.\n", app_name);
+            if (!u8_is_utf8_sys()) {
+                pcs_free(src);
+                pcs_free(dst);
+            }
+            return -1;
+        }
+        if (!context->secure_key || strlen(context->secure_key) == 0) {
+            fprintf(stderr, "Error: You have not set the encrypt key. You can set it by '%s set'.", app_name);
+            if (!u8_is_utf8_sys()) {
+                pcs_free(src);
+                pcs_free(dst);
+            }
+            return -1;
+        }
+        if (encrypt_file(src, dst, secure_method, context->secure_key, &msg)) {
+            fprintf(stderr, "Error: %s\n", msg);
+            if (!u8_is_utf8_sys()) {
+                pcs_free(src);
+                pcs_free(dst);
+            }
+            return -1;
+        }
+    } else if (decrypt) {
+        char* msg = NULL;
+        if (!context->secure_key || strlen(context->secure_key) == 0) {
+            fprintf(stderr, "Error: You have not set the encrypt key. You can set it by '%s set'.", app_name);
+            if (!u8_is_utf8_sys()) {
+                pcs_free(src);
+                pcs_free(dst);
+            }
+            return -1;
+        }
+        if (decrypt_file(src, dst, context->secure_key, &msg)) {
+            fprintf(stderr, "Error: %s\n", msg);
+            if (!u8_is_utf8_sys()) {
+                pcs_free(src);
+                pcs_free(dst);
+            }
+            return -1;
+        }
+    } else {
+        usage_encode();
+        if (!u8_is_utf8_sys()) {
+            pcs_free(src);
+            pcs_free(dst);
+        }
+        return -1;
+    }
+    if (!u8_is_utf8_sys()) {
+        pcs_free(src);
+        pcs_free(dst);
+    }
+    return 0;
 }
 
-/*Ê†πÊçÆ MD5 Âíå Ââç 256 Â≠óËäÇÁöÑÊñá‰ª∂Á¢éÁâáÔºåÊù•ÊâæÂõûÊñá‰ª∂*/
-static int cmd_fix(ShellContext *context, struct args *arg)
+/*∏˘æ› MD5 ∫Õ «∞ 256 ◊÷Ω⁄µƒŒƒº˛ÀÈ∆¨£¨¿¥’“ªÿŒƒº˛*/
+static int cmd_fix(ShellContext* context, struct args* arg)
 {
-	int is_force = 0;
-	const char *content_md5 = NULL;
-	char *path = NULL, *errmsg = NULL;
-	char *remotePath = NULL, *scrapFile = NULL;
-	char slice_md5[33] = { 0 };
-	int64_t content_length;
+    int is_force = 0;
+    const char* content_md5 = NULL;
+    char* path = NULL, *errmsg = NULL;
+    char* remotePath = NULL, *scrapFile = NULL;
+    char slice_md5[33] = { 0 };
+    int64_t content_length;
 
-	LocalFileInfo *local;
-	PcsFileInfo *meta;
+    LocalFileInfo* local;
+    PcsFileInfo* meta;
 
-	if (test_arg(arg, 4, 4, "f", "h", "help", NULL)) {
-		usage_fix();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_fix();
-		return 0;
-	}
+    if (test_arg(arg, 4, 4, "f", "h", "help", NULL)) {
+        usage_fix();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_fix();
+        return 0;
+    }
 
-	is_force = has_opt(arg, "f");
-	content_md5 = arg->argv[0];
-	content_length = atoll(arg->argv[1]);
-	scrapFile = u8_is_utf8_sys() ? arg->argv[1] : utf82mbs(arg->argv[2]);
-	remotePath = arg->argv[3];
+    is_force = has_opt(arg, "f");
+    content_md5 = arg->argv[0];
+    content_length = atoll(arg->argv[1]);
+    scrapFile = u8_is_utf8_sys() ? arg->argv[1] : utf82mbs(arg->argv[2]);
+    remotePath = arg->argv[3];
 
-	if (strnlen(content_md5, 33) != 32) {
-		fprintf(stderr, "Error: Invalid 'md5'.\n");
-		if (!u8_is_utf8_sys()) pcs_free(scrapFile);
-		return -1;
-	}
+    if (strnlen(content_md5, 33) != 32) {
+        fprintf(stderr, "Error: Invalid 'md5'.\n");
+        if (!u8_is_utf8_sys()) {
+            pcs_free(scrapFile);
+        }
+        return -1;
+    }
 
-	/*Ê£ÄÊü•Êú¨Âú∞Êñá‰ª∂ - ÂºÄÂßã*/
-	local = GetLocalFileInfo(scrapFile);
-	if (!local) {
-		fprintf(stderr, "Error: The 'scrap' not exist.\n");
-		if (!u8_is_utf8_sys()) pcs_free(scrapFile);
-		return -1;
-	}
-	else if (local->isdir) {
-		fprintf(stderr, "Error: The 'scrap' is directory: %s. \n", arg->argv[1]);
-		DestroyLocalFileInfo(local);
-		if (!u8_is_utf8_sys()) pcs_free(scrapFile);
-		return -1;
-	}
-	if (local->size < PCS_RAPIDUPLOAD_THRESHOLD) {
-		DestroyLocalFileInfo(local);
-		if (!u8_is_utf8_sys()) pcs_free(scrapFile);
-		fprintf(stderr, "The scrap size is not satisfied, the file must be great than %d.", PCS_RAPIDUPLOAD_THRESHOLD);
-		return -1;
-	}
-	/*Ê£ÄÊü•Êú¨Âú∞Êñá‰ª∂ - ÁªìÊùü*/
+    /*ºÏ≤È±æµÿŒƒº˛ - ø™ º*/
+    local = GetLocalFileInfo(scrapFile);
+    if (!local) {
+        fprintf(stderr, "Error: The 'scrap' not exist.\n");
+        if (!u8_is_utf8_sys()) {
+            pcs_free(scrapFile);
+        }
+        return -1;
+    } else if (local->isdir) {
+        fprintf(stderr, "Error: The 'scrap' is directory: %s. \n", arg->argv[1]);
+        DestroyLocalFileInfo(local);
+        if (!u8_is_utf8_sys()) {
+            pcs_free(scrapFile);
+        }
+        return -1;
+    }
+    if (local->size < PCS_RAPIDUPLOAD_THRESHOLD) {
+        DestroyLocalFileInfo(local);
+        if (!u8_is_utf8_sys()) {
+            pcs_free(scrapFile);
+        }
+        fprintf(stderr, "The scrap size is not satisfied, the file must be great than %d.", PCS_RAPIDUPLOAD_THRESHOLD);
+        return -1;
+    }
+    /*ºÏ≤È±æµÿŒƒº˛ - Ω· ¯*/
 
-	//Ê£ÄÊü•ÊòØÂê¶Â∑≤ÁªèÁôªÂΩï
-	if (!is_login(context, NULL)) {
-		DestroyLocalFileInfo(local);
-		if (!u8_is_utf8_sys()) pcs_free(scrapFile);
-		return -1;
-	}
+    //ºÏ≤È «∑Ò“—æ≠µ«¬º
+    if (!is_login(context, NULL)) {
+        DestroyLocalFileInfo(local);
+        if (!u8_is_utf8_sys()) {
+            pcs_free(scrapFile);
+        }
+        return -1;
+    }
 
-	path = combin_net_disk_path(context->workdir, remotePath);
-	if (!path) {
-		assert(path);
-		DestroyLocalFileInfo(local);
-		if (!u8_is_utf8_sys()) pcs_free(scrapFile);
-		return -1;
-	}
+    path = combin_net_disk_path(context->workdir, remotePath);
+    if (!path) {
+        assert(path);
+        DestroyLocalFileInfo(local);
+        if (!u8_is_utf8_sys()) {
+            pcs_free(scrapFile);
+        }
+        return -1;
+    }
 
-	if (strcmp(path, "/") == 0) {
-		char *tmp = combin_net_disk_path(path, local->filename);
-		pcs_free(path);
-		path = tmp;
-	}
+    if (strcmp(path, "/") == 0) {
+        char* tmp = combin_net_disk_path(path, local->filename);
+        pcs_free(path);
+        path = tmp;
+    }
 
-	/*Ê£ÄÊü•ÁΩëÁõòÊñá‰ª∂ - ÂºÄÂßã*/
-	meta = pcs_meta(context->pcs, path);
-	if (meta && meta->isdir) {
-		char *tmp = combin_net_disk_path(path, local->filename);
-		pcs_free(path);
-		path = tmp;
-		pcs_fileinfo_destroy(meta);
-		meta = pcs_meta(context->pcs, path);
-	}
-	DestroyLocalFileInfo(local);
-	if (meta && meta->isdir) {
-		fprintf(stderr, "Error: The remote file exist, and it is directory. %s\n", path);
-		pcs_fileinfo_destroy(meta);
-		pcs_free(path);
-		if (!u8_is_utf8_sys()) pcs_free(scrapFile);
-		return -1;
-	}
-	else if (meta && !is_force) {
-		fprintf(stderr, "Error: The remote file exist. You can specify '-f' to force override. %s\n", path);
-		pcs_fileinfo_destroy(meta);
-		pcs_free(path);
-		if (!u8_is_utf8_sys()) pcs_free(scrapFile);
-		return -1;
-	}
-	else if (meta && is_force) {
-		char *diskName = pcs_utils_filename(meta->path);
-		pcs_free(diskName);
-	}
-	if (meta) {
-		pcs_fileinfo_destroy(meta);
-		meta = NULL;
-	}
-	/*Ê£ÄÊü•ÁΩëÁõòÊñá‰ª∂ - ÁªìÊùü*/
+    /*ºÏ≤ÈÕ¯≈ÃŒƒº˛ - ø™ º*/
+    meta = pcs_meta(context->pcs, path);
+    if (meta && meta->isdir) {
+        char* tmp = combin_net_disk_path(path, local->filename);
+        pcs_free(path);
+        path = tmp;
+        pcs_fileinfo_destroy(meta);
+        meta = pcs_meta(context->pcs, path);
+    }
+    DestroyLocalFileInfo(local);
+    if (meta && meta->isdir) {
+        fprintf(stderr, "Error: The remote file exist, and it is directory. %s\n", path);
+        pcs_fileinfo_destroy(meta);
+        pcs_free(path);
+        if (!u8_is_utf8_sys()) {
+            pcs_free(scrapFile);
+        }
+        return -1;
+    } else if (meta && !is_force) {
+        fprintf(stderr, "Error: The remote file exist. You can specify '-f' to force override. %s\n", path);
+        pcs_fileinfo_destroy(meta);
+        pcs_free(path);
+        if (!u8_is_utf8_sys()) {
+            pcs_free(scrapFile);
+        }
+        return -1;
+    } else if (meta && is_force) {
+        char* diskName = pcs_utils_filename(meta->path);
+        pcs_free(diskName);
+    }
+    if (meta) {
+        pcs_fileinfo_destroy(meta);
+        meta = NULL;
+    }
+    /*ºÏ≤ÈÕ¯≈ÃŒƒº˛ - Ω· ¯*/
 
-	if (!pcs_md5_file_slice(context->pcs, scrapFile, 0, PCS_RAPIDUPLOAD_THRESHOLD, slice_md5)) {
-		fprintf(stderr, "Error: Cannot get slice md5.\n");
-		pcs_free(path);
-		if (!u8_is_utf8_sys()) pcs_free(scrapFile);
-		return -1;
-	}
+    if (!pcs_md5_file_slice(context->pcs, scrapFile, 0, PCS_RAPIDUPLOAD_THRESHOLD, slice_md5)) {
+        fprintf(stderr, "Error: Cannot get slice md5.\n");
+        pcs_free(path);
+        if (!u8_is_utf8_sys()) {
+            pcs_free(scrapFile);
+        }
+        return -1;
+    }
 
-	/*ÂºÄÂßã‰øÆÂ§ç*/
-	meta = pcs_rapid_upload_r(context->pcs, path,
-		is_force ? PcsTrue : PcsFalse,
-		content_length, content_md5, slice_md5);
-	if (meta == NULL) {
-		fprintf(stderr, "Error: %s\n", errmsg);
-		if (errmsg) pcs_free(errmsg);
-		pcs_free(path);
-		if (!u8_is_utf8_sys()) pcs_free(scrapFile);
-		return -1;
-	}
-	printf("Fix Success, remote path: %s.\n", path);
-	if (errmsg) pcs_free(errmsg);
-	pcs_free(path);
-	if (meta) pcs_fileinfo_destroy(meta);
-	if (!u8_is_utf8_sys()) pcs_free(scrapFile);
-	return 0;
+    /*ø™ º–ﬁ∏¥*/
+    meta = pcs_rapid_upload_r(context->pcs, path,
+                              is_force ? PcsTrue : PcsFalse,
+                              content_length, content_md5, slice_md5);
+    if (meta == NULL) {
+        fprintf(stderr, "Error: %s\n", errmsg);
+        if (errmsg) {
+            pcs_free(errmsg);
+        }
+        pcs_free(path);
+        if (!u8_is_utf8_sys()) {
+            pcs_free(scrapFile);
+        }
+        return -1;
+    }
+    printf("Fix Success, remote path: %s.\n", path);
+    if (errmsg) {
+        pcs_free(errmsg);
+    }
+    pcs_free(path);
+    if (meta) {
+        pcs_fileinfo_destroy(meta);
+    }
+    if (!u8_is_utf8_sys()) {
+        pcs_free(scrapFile);
+    }
+    return 0;
 }
 
-/*ÊâìÂç∞Â∏ÆÂä©‰ø°ÊÅØ*/
-static int cmd_help(ShellContext *context, struct args *arg)
+/*¥Ú”°∞Ô÷˙–≈œ¢*/
+static int cmd_help(ShellContext* context, struct args* arg)
 {
-	int rc;
-	char *cmd;
-	if (test_arg(arg, 0, 1, "h", "help", NULL)) {
-		usage_help();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_help();
-		return 0;
-	}
-	if (arg->argc == 0) {
-		usage();
-		return 0;
-	}
-	cmd = arg->argv[0];
-	if (strcmp(cmd, "cat") == 0) {
-		usage_cat();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "cd") == 0) {
-		usage_cd();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "copy") == 0
-		|| strcmp(cmd, "cp") == 0) {
-		usage_copy();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "compare") == 0
-		|| strcmp(cmd, "c") == 0) {
-		usage_compare();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "context") == 0
-		|| strcmp(cmd, "config") == 0) {
-		usage_context();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "download") == 0
-		|| strcmp(cmd, "d") == 0) {
-		usage_download();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "echo") == 0) {
-		usage_echo();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "encode") == 0) {
-		usage_encode();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "fix") == 0) {
-		usage_fix();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "list") == 0
-		|| strcmp(cmd, "ls") == 0) {
-		usage_list();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "login") == 0) {
-		usage_login();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "logout") == 0) {
-		usage_logout();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "meta") == 0) {
-		usage_meta();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "mkdir") == 0) {
-		usage_mkdir();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "move") == 0
-		|| strcmp(cmd, "mv") == 0) {
-		usage_move();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "pwd") == 0) {
-		usage_pwd();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "quota") == 0) {
-		usage_quota();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "remove") == 0
-		|| strcmp(cmd, "rm") == 0) {
-		usage_remove();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "rename") == 0
-		|| strcmp(cmd, "ren") == 0) {
-		usage_rename();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "set") == 0) {
-		usage_set();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "search") == 0) {
-		usage_search();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "synch") == 0
-		|| strcmp(cmd, "s") == 0) {
-		usage_synch();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "upload") == 0
-		|| strcmp(cmd, "u") == 0) {
-		usage_upload();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "version") == 0) {
-		usage_version();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "who") == 0) {
-		usage_who();
-		rc = 0;
-	}
-	else if (strcmp(cmd, "help") == 0
-		|| strcmp(cmd, "?") == 0) {
-		usage_help();
-		rc = 0;
-	}
-	else {
-		usage();
-		rc = -1;
-	}
-	return rc;
+    int rc;
+    char* cmd;
+    if (test_arg(arg, 0, 1, "h", "help", NULL)) {
+        usage_help();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_help();
+        return 0;
+    }
+    if (arg->argc == 0) {
+        usage();
+        return 0;
+    }
+    cmd = arg->argv[0];
+    if (strcmp(cmd, "cat") == 0) {
+        usage_cat();
+        rc = 0;
+    } else if (strcmp(cmd, "cd") == 0) {
+        usage_cd();
+        rc = 0;
+    } else if (strcmp(cmd, "copy") == 0
+               || strcmp(cmd, "cp") == 0) {
+        usage_copy();
+        rc = 0;
+    } else if (strcmp(cmd, "compare") == 0
+               || strcmp(cmd, "c") == 0) {
+        usage_compare();
+        rc = 0;
+    } else if (strcmp(cmd, "context") == 0
+               || strcmp(cmd, "config") == 0) {
+        usage_context();
+        rc = 0;
+    } else if (strcmp(cmd, "download") == 0
+               || strcmp(cmd, "d") == 0) {
+        usage_download();
+        rc = 0;
+    } else if (strcmp(cmd, "echo") == 0) {
+        usage_echo();
+        rc = 0;
+    } else if (strcmp(cmd, "encode") == 0) {
+        usage_encode();
+        rc = 0;
+    } else if (strcmp(cmd, "fix") == 0) {
+        usage_fix();
+        rc = 0;
+    } else if (strcmp(cmd, "list") == 0
+               || strcmp(cmd, "ls") == 0) {
+        usage_list();
+        rc = 0;
+    } else if (strcmp(cmd, "login") == 0) {
+        usage_login();
+        rc = 0;
+    } else if (strcmp(cmd, "logout") == 0) {
+        usage_logout();
+        rc = 0;
+    } else if (strcmp(cmd, "meta") == 0) {
+        usage_meta();
+        rc = 0;
+    } else if (strcmp(cmd, "mkdir") == 0) {
+        usage_mkdir();
+        rc = 0;
+    } else if (strcmp(cmd, "move") == 0
+               || strcmp(cmd, "mv") == 0) {
+        usage_move();
+        rc = 0;
+    } else if (strcmp(cmd, "pwd") == 0) {
+        usage_pwd();
+        rc = 0;
+    } else if (strcmp(cmd, "quota") == 0) {
+        usage_quota();
+        rc = 0;
+    } else if (strcmp(cmd, "remove") == 0
+               || strcmp(cmd, "rm") == 0) {
+        usage_remove();
+        rc = 0;
+    } else if (strcmp(cmd, "rename") == 0
+               || strcmp(cmd, "ren") == 0) {
+        usage_rename();
+        rc = 0;
+    } else if (strcmp(cmd, "set") == 0) {
+        usage_set();
+        rc = 0;
+    } else if (strcmp(cmd, "search") == 0) {
+        usage_search();
+        rc = 0;
+    } else if (strcmp(cmd, "synch") == 0
+               || strcmp(cmd, "s") == 0) {
+        usage_synch();
+        rc = 0;
+    } else if (strcmp(cmd, "upload") == 0
+               || strcmp(cmd, "u") == 0) {
+        usage_upload();
+        rc = 0;
+    } else if (strcmp(cmd, "version") == 0) {
+        usage_version();
+        rc = 0;
+    } else if (strcmp(cmd, "who") == 0) {
+        usage_who();
+        rc = 0;
+    } else if (strcmp(cmd, "help") == 0
+               || strcmp(cmd, "?") == 0) {
+        usage_help();
+        rc = 0;
+    } else {
+        usage();
+        rc = -1;
+    }
+    return rc;
 }
 
-/*ÂàóÂá∫ÁõÆÂΩï*/
-static int cmd_list(ShellContext *context, struct args *arg)
+/*¡–≥ˆƒø¬º*/
+static int cmd_list(ShellContext* context, struct args* arg)
 {
-	char *path;
-	PcsFileInfoList *list = NULL;
-	int page_index = 1;
-	char tmp[64] = { 0 };
-	int fileCount = 0, dirCount = 0;
-	int64_t totalSize = 0;
+    char* path;
+    PcsFileInfoList* list = NULL;
+    int page_index = 1;
+    char tmp[64] = { 0 };
+    int fileCount = 0, dirCount = 0;
+    int64_t totalSize = 0;
     int md5 = 0, thumb = 0;
 
-	if (test_arg(arg, 0, 1, "md5", "thumb", "h", "help", NULL)) {
-		usage_list();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_list();
-		return 0;
-	}
+    if (test_arg(arg, 0, 1, "md5", "thumb", "h", "help", NULL)) {
+        usage_list();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_list();
+        return 0;
+    }
 
-	if (!is_login(context, NULL)) return -1;
+    if (!is_login(context, NULL)) {
+        return -1;
+    }
 
-	if (arg->argc == 0) {
-		path = pcs_utils_strdup(context->workdir);
-	}
-	else if (arg->argc == 1) {
-		path = combin_net_disk_path(context->workdir, arg->argv[0]);
-	}
-	else {
-		usage_list();
-		return -1;
-	}
+    if (arg->argc == 0) {
+        path = pcs_utils_strdup(context->workdir);
+    } else if (arg->argc == 1) {
+        path = combin_net_disk_path(context->workdir, arg->argv[0]);
+    } else {
+        usage_list();
+        return -1;
+    }
 
-	md5 = has_opt(arg, "md5");
-	thumb = has_opt(arg, "thumb");
+    md5 = has_opt(arg, "md5");
+    thumb = has_opt(arg, "thumb");
 
-	while (1) {
-		list = pcs_list(context->pcs, path,
-			page_index, context->list_page_size,
-			context->list_sort_name,
-			streq(context->list_sort_direction, "desc", -1) ? PcsTrue: PcsFalse);
-		if (!list) {
-			if (pcs_strerror(context->pcs)) {
-				fprintf(stderr, "Error: %s\n", pcs_strerror(context->pcs));
-				pcs_free(path);
-				return -1;
-			}
-			break;
-		}
-		printf("PAGE#%d\n", page_index);
-		print_filelist(list, &fileCount, &dirCount, &totalSize, md5, thumb);
-		if (list->count < context->list_page_size) {
-			pcs_filist_destroy(list);
-			break;
-		}
-		pcs_filist_destroy(list);
-		printf("Print next page#%d [Y|N]? ", page_index + 1);
-		std_string(tmp, 10);
-		//printf("[%s] %d\n", tmp, strlen(tmp));
-		if (strlen(tmp) != 0 && pcs_utils_strcmpi(tmp, "y") && pcs_utils_strcmpi(tmp, "yes")) {
-			break;
-		}
-		page_index++;
-	}
-	if (page_index > 1) {
-		puts("\n------------------------------------------------------------------------------");
-		pcs_utils_readable_size((double)totalSize, tmp, 63, NULL);
-		tmp[63] = '\0';
-		printf("Total Page: %d, Total Size: %s, File Count: %d, Directory Count: %d\n", page_index, tmp, fileCount, dirCount);
-	}
-	putchar('\n');
-	pcs_free(path);
-	return 0;
+    while (1) {
+        list = pcs_list(context->pcs, path,
+                        page_index, context->list_page_size,
+                        context->list_sort_name,
+                        streq(context->list_sort_direction, "desc", -1) ? PcsTrue : PcsFalse);
+        if (!list) {
+            if (pcs_strerror(context->pcs)) {
+                fprintf(stderr, "Error: %s\n", pcs_strerror(context->pcs));
+                pcs_free(path);
+                return -1;
+            }
+            break;
+        }
+        printf("PAGE#%d\n", page_index);
+        print_filelist(list, &fileCount, &dirCount, &totalSize, md5, thumb);
+        if (list->count < context->list_page_size) {
+            pcs_filist_destroy(list);
+            break;
+        }
+        pcs_filist_destroy(list);
+        printf("Print next page#%d [Y|N]? ", page_index + 1);
+        std_string(tmp, 10);
+        //printf("[%s] %d\n", tmp, strlen(tmp));
+        if (strlen(tmp) != 0 && pcs_utils_strcmpi(tmp, "y") && pcs_utils_strcmpi(tmp, "yes")) {
+            break;
+        }
+        page_index++;
+    }
+    if (page_index > 1) {
+        puts("\n------------------------------------------------------------------------------");
+        pcs_utils_readable_size((double)totalSize, tmp, 63, NULL);
+        tmp[63] = '\0';
+        printf("Total Page: %d, Total Size: %s, File Count: %d, Directory Count: %d\n", page_index, tmp, fileCount, dirCount);
+    }
+    putchar('\n');
+    pcs_free(path);
+    return 0;
 }
 
-/*ÁôªÂΩï*/
-static int cmd_login(ShellContext *context, struct args *arg)
+/*µ«¬º*/
+static int cmd_login(ShellContext* context, struct args* arg)
 {
-	PcsRes pcsres;
-	char str[50], *p = NULL;
-	if (test_arg(arg, 0, 0, "username", "password", "h", "help", NULL)) {
-		usage_login();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_login();
-		return 0;
-	}
-	if (is_login(context, "")) {
-		printf("You have been logon, you can use 'who' command to print the UID. \n"
-			"You can logout by 'logout' command and then relogin.\n");
-		return -1;
-	}
-	else if (pcs_strerror(context->pcs)) {
-		printf("Error: %s\n", pcs_strerror(context->pcs));
-		return -1;
-	}
-	if (has_optEx(arg, "username", &p) && p && strlen(p) > 0) {
-		pcs_setopt(context->pcs, PCS_OPTION_USERNAME, p);
-	}
-	else {
-		printf("User Name: ");
-		std_string(str, 50);
-		pcs_setopt(context->pcs, PCS_OPTION_USERNAME, str);
-	}
+    PcsRes pcsres;
+    char str[50], *p = NULL;
+    if (test_arg(arg, 0, 0, "username", "password", "h", "help", NULL)) {
+        usage_login();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_login();
+        return 0;
+    }
+    if (is_login(context, "")) {
+        printf("You have been logon, you can use 'who' command to print the UID. \n"
+               "You can logout by 'logout' command and then relogin.\n");
+        return -1;
+    } else if (pcs_strerror(context->pcs)) {
+        printf("Error: %s\n", pcs_strerror(context->pcs));
+        return -1;
+    }
+    if (has_optEx(arg, "username", &p) && p && strlen(p) > 0) {
+        pcs_setopt(context->pcs, PCS_OPTION_USERNAME, p);
+    } else {
+        printf("User Name: ");
+        std_string(str, 50);
+        pcs_setopt(context->pcs, PCS_OPTION_USERNAME, str);
+    }
 
-	if (has_optEx(arg, "password", &p) && p && strlen(p) > 0) {
-		pcs_setopt(context->pcs, PCS_OPTION_PASSWORD, p);
-	}
-	else {
-		printf("Password: ");
-		std_password(str, 50);
-		pcs_setopt(context->pcs, PCS_OPTION_PASSWORD, str);
-	}
-	pcsres = pcs_login(context->pcs);
-	if (pcsres != PCS_OK) {
-		printf("Login Failed: %s\n", pcs_strerror(context->pcs));
-		return -1;
-	}
-	printf("Login Success. UID: %s\n", pcs_sysUID(context->pcs));
-	return 0;
+    if (has_optEx(arg, "password", &p) && p && strlen(p) > 0) {
+        pcs_setopt(context->pcs, PCS_OPTION_PASSWORD, p);
+    } else {
+        printf("Password: ");
+        std_password(str, 50);
+        pcs_setopt(context->pcs, PCS_OPTION_PASSWORD, str);
+    }
+    pcsres = pcs_login(context->pcs);
+    if (pcsres != PCS_OK) {
+        printf("Login Failed: %s\n", pcs_strerror(context->pcs));
+        return -1;
+    }
+    printf("Login Success. UID: %s\n", pcs_sysUID(context->pcs));
+    return 0;
 }
 
-/*Ê≥®ÈîÄ*/
-static int cmd_logout(ShellContext *context, struct args *arg)
+/*◊¢œ˙*/
+static int cmd_logout(ShellContext* context, struct args* arg)
 {
-	PcsRes pcsres;
-	if (test_arg(arg, 0, 0, "h", "help", NULL)) {
-		usage_logout();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_logout();
-		return 0;
-	}
-	if (!is_login(context, "")) {
-		if (pcs_strerror(context->pcs)) {
-			printf("Error: %s\n", pcs_strerror(context->pcs));
-			return -1;
-		}
-		fprintf(stderr, "You are not login, you can use 'login' command to login.\n");
-		return -1;
-	}
-	pcsres = pcs_logout(context->pcs);
-	if (pcsres != PCS_OK) {
-		printf("Logout Fail: %s\n", pcs_strerror(context->pcs));
-		return -1;
-	}
-	printf("Logout Success.\n");
-	return 0;
+    PcsRes pcsres;
+    if (test_arg(arg, 0, 0, "h", "help", NULL)) {
+        usage_logout();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_logout();
+        return 0;
+    }
+    if (!is_login(context, "")) {
+        if (pcs_strerror(context->pcs)) {
+            printf("Error: %s\n", pcs_strerror(context->pcs));
+            return -1;
+        }
+        fprintf(stderr, "You are not login, you can use 'login' command to login.\n");
+        return -1;
+    }
+    pcsres = pcs_logout(context->pcs);
+    if (pcsres != PCS_OK) {
+        printf("Logout Fail: %s\n", pcs_strerror(context->pcs));
+        return -1;
+    }
+    printf("Logout Success.\n");
+    return 0;
 }
 
-/*ÊâìÂç∞Êñá‰ª∂ÊàñÁõÆÂΩïÁöÑÂÖÉÊï∞ÊçÆ*/
-static int cmd_meta(ShellContext *context, struct args *arg)
+/*¥Ú”°Œƒº˛ªÚƒø¬ºµƒ‘™ ˝æ›*/
+static int cmd_meta(ShellContext* context, struct args* arg)
 {
-	char *path;
-	PcsFileInfo *fi;
-	if (test_arg(arg, 0, 1, "h", "help", NULL)) {
-		usage_meta();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_meta();
-		return 0;
-	}
-	if (!is_login(context, NULL)) return -1;
-	if (arg->argc == 1)
-		path = combin_net_disk_path(context->workdir, arg->argv[0]);
-	else
-		path = context->workdir;
-	assert(path);
-	if (strcmp(path, "/") == 0) {
-		fprintf(stderr, "Error: Can't get meta for root directory.\n");
-		if (path != context->workdir) pcs_free(path);
-		return -1;
-	}
-	fi = pcs_meta(context->pcs, path);
-	if (!fi) {
-		fprintf(stderr, "Error: The target not exist, or have error: %s\n", pcs_strerror(context->pcs));
-		if (path != context->workdir) pcs_free(path);
-		return -1;
-	}
-	print_fileinfo(fi, " ");
-	pcs_fileinfo_destroy(fi);
-	if (path != context->workdir) pcs_free(path);
-	return 0;
+    char* path;
+    PcsFileInfo* fi;
+    if (test_arg(arg, 0, 1, "h", "help", NULL)) {
+        usage_meta();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_meta();
+        return 0;
+    }
+    if (!is_login(context, NULL)) {
+        return -1;
+    }
+    if (arg->argc == 1) {
+        path = combin_net_disk_path(context->workdir, arg->argv[0]);
+    } else {
+        path = context->workdir;
+    }
+    assert(path);
+    if (strcmp(path, "/") == 0) {
+        fprintf(stderr, "Error: Can't get meta for root directory.\n");
+        if (path != context->workdir) {
+            pcs_free(path);
+        }
+        return -1;
+    }
+    fi = pcs_meta(context->pcs, path);
+    if (!fi) {
+        fprintf(stderr, "Error: The target not exist, or have error: %s\n", pcs_strerror(context->pcs));
+        if (path != context->workdir) {
+            pcs_free(path);
+        }
+        return -1;
+    }
+    print_fileinfo(fi, " ");
+    pcs_fileinfo_destroy(fi);
+    if (path != context->workdir) {
+        pcs_free(path);
+    }
+    return 0;
 }
 
-/*ÂàõÂª∫ÁõÆÂΩï*/
-static int cmd_mkdir(ShellContext *context, struct args *arg)
+/*¥¥Ω®ƒø¬º*/
+static int cmd_mkdir(ShellContext* context, struct args* arg)
 {
-	PcsRes res;
-	char *path;
-	if (test_arg(arg, 1, 1, "h", "help", NULL)) {
-		usage_mkdir();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_mkdir();
-		return 0;
-	}
-	if (!is_login(context, NULL)) return -1;
-	path = combin_net_disk_path(context->workdir, arg->argv[0]);
-	assert(path);
-	if (strcmp(path, "/") == 0) {
-		fprintf(stderr, "Error: The root directory have been exist.\n");
-		pcs_free(path);
-		return -1;
-	}
-	res = pcs_mkdir(context->pcs, path);
-	if (res != PCS_OK) {
-		fprintf(stderr, "Error: %s\n", pcs_strerror(context->pcs));
-		pcs_free(path);
-		return -1;
-	}
-	printf("Success.\n");
-	pcs_free(path);
-	return 0;
+    PcsRes res;
+    char* path;
+    if (test_arg(arg, 1, 1, "h", "help", NULL)) {
+        usage_mkdir();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_mkdir();
+        return 0;
+    }
+    if (!is_login(context, NULL)) {
+        return -1;
+    }
+    path = combin_net_disk_path(context->workdir, arg->argv[0]);
+    assert(path);
+    if (strcmp(path, "/") == 0) {
+        fprintf(stderr, "Error: The root directory have been exist.\n");
+        pcs_free(path);
+        return -1;
+    }
+    res = pcs_mkdir(context->pcs, path);
+    if (res != PCS_OK) {
+        fprintf(stderr, "Error: %s\n", pcs_strerror(context->pcs));
+        pcs_free(path);
+        return -1;
+    }
+    printf("Success.\n");
+    pcs_free(path);
+    return 0;
 }
 
-/*ÁßªÂä®Êñá‰ª∂*/
-static int cmd_move(ShellContext *context, struct args *arg)
+/*“∆∂ØŒƒº˛*/
+static int cmd_move(ShellContext* context, struct args* arg)
 {
-	PcsPanApiRes *res;
-	PcsSList2 slist;
-	PcsPanApiResInfoList *info;
-	if (test_arg(arg, 2, 2, "h", "help", NULL)) {
-		usage_move();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_move();
-		return 0;
-	}
-	if (!is_login(context, NULL)) return -1;
-	slist.string1 = combin_net_disk_path(context->workdir, arg->argv[0]); /* path */
-	slist.string2 = combin_net_disk_path(context->workdir, arg->argv[1]); /* new_name */
-	slist.next = NULL;
-	if (strcmp(slist.string1, "/") == 0) {
-		fprintf(stderr, "Error: Can't move root directory.\n");
-		pcs_free(slist.string1);
-		pcs_free(slist.string2);
-		return -1;
-	}
-	if (strcmp(slist.string2, "/") == 0) {
-		fprintf(stderr, "Error: Can't move to root directory.\n");
-		pcs_free(slist.string1);
-		pcs_free(slist.string2);
-		return -1;
-	}
+    PcsPanApiRes* res;
+    PcsSList2 slist;
+    PcsPanApiResInfoList* info;
+    if (test_arg(arg, 2, 2, "h", "help", NULL)) {
+        usage_move();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_move();
+        return 0;
+    }
+    if (!is_login(context, NULL)) {
+        return -1;
+    }
+    slist.string1 = combin_net_disk_path(context->workdir, arg->argv[0]); /* path */
+    slist.string2 = combin_net_disk_path(context->workdir, arg->argv[1]); /* new_name */
+    slist.next = NULL;
+    if (strcmp(slist.string1, "/") == 0) {
+        fprintf(stderr, "Error: Can't move root directory.\n");
+        pcs_free(slist.string1);
+        pcs_free(slist.string2);
+        return -1;
+    }
+    if (strcmp(slist.string2, "/") == 0) {
+        fprintf(stderr, "Error: Can't move to root directory.\n");
+        pcs_free(slist.string1);
+        pcs_free(slist.string2);
+        return -1;
+    }
 
-	res = pcs_move(context->pcs, &slist);
-	if (!res) {
-		fprintf(stderr, "Error: %s src=%s, dst=%s.\n", pcs_strerror(context->pcs), slist.string1, slist.string2);
-		pcs_free(slist.string1);
-		pcs_free(slist.string2);
-		return -1;
-	}
-	info = res->info_list;
-	if (info->info.error) {
-		fprintf(stderr, "Error: unknow src=%s, dst=%s. \n", slist.string1, slist.string2);
-		pcs_pan_api_res_destroy(res);
-		pcs_free(slist.string1);
-		pcs_free(slist.string2);
-		return -1;
-	}
-	printf("Move %s to %s Success.\n", slist.string1, slist.string2);
-	pcs_pan_api_res_destroy(res);
-	pcs_free(slist.string1);
-	pcs_free(slist.string2);
-	return 0;
+    res = pcs_move(context->pcs, &slist);
+    if (!res) {
+        fprintf(stderr, "Error: %s src=%s, dst=%s.\n", pcs_strerror(context->pcs), slist.string1, slist.string2);
+        pcs_free(slist.string1);
+        pcs_free(slist.string2);
+        return -1;
+    }
+    info = res->info_list;
+    if (info->info.error) {
+        fprintf(stderr, "Error: unknow src=%s, dst=%s. \n", slist.string1, slist.string2);
+        pcs_pan_api_res_destroy(res);
+        pcs_free(slist.string1);
+        pcs_free(slist.string2);
+        return -1;
+    }
+    printf("Move %s to %s Success.\n", slist.string1, slist.string2);
+    pcs_pan_api_res_destroy(res);
+    pcs_free(slist.string1);
+    pcs_free(slist.string2);
+    return 0;
 }
 
-/*ÊâìÂç∞ÂΩìÂâçÂ∑•‰ΩúÁõÆÂΩï*/
-static int cmd_pwd(ShellContext *context, struct args *arg)
+/*¥Ú”°µ±«∞π§◊˜ƒø¬º*/
+static int cmd_pwd(ShellContext* context, struct args* arg)
 {
-	if (test_arg(arg, 0, 0, "h", "help", NULL)) {
-		usage_pwd();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_pwd();
-		return 0;
-	}
-	printf("%s\n", context->workdir);
-	return 0;
+    if (test_arg(arg, 0, 0, "h", "help", NULL)) {
+        usage_pwd();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_pwd();
+        return 0;
+    }
+    printf("%s\n", context->workdir);
+    return 0;
 }
 
-/*ÊâìÂç∞ÈÖçÈ¢ù*/
-static int cmd_quota(ShellContext *context, struct args *arg)
+/*¥Ú”°≈‰∂Ó*/
+static int cmd_quota(ShellContext* context, struct args* arg)
 {
-	const char *opts[] = { "e", NULL };
-	PcsRes pcsres;
-	int64_t quota, used;
-	int is_exact = 0;
-	char str[32] = { 0 };
-	if (test_arg(arg, 0, 0, "e", "h", "help", NULL)) {
-		usage_quota();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_quota();
-		return 0;
-	}
-	is_exact = has_opt(arg, "e");
+    const char* opts[] = { "e", NULL };
+    PcsRes pcsres;
+    int64_t quota, used;
+    int is_exact = 0;
+    char str[32] = { 0 };
+    if (test_arg(arg, 0, 0, "e", "h", "help", NULL)) {
+        usage_quota();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_quota();
+        return 0;
+    }
+    is_exact = has_opt(arg, "e");
 
-	if (!is_login(context, NULL)) return -1;
-	pcsres = pcs_quota(context->pcs, &quota, &used);
-	if (pcsres != PCS_OK) {
-		fprintf(stderr, "Error: %s\n", pcs_strerror(context->pcs));
-		return -1;
-	}
-	if (is_exact) {
-		printf("%"PRIu64" Bytes ", used);
-		putchar('/');
-		printf("%" PRIu64 " Bytes  ", quota);
-	}
-	else {
-		pcs_utils_readable_size((double)used, str, 30, NULL);
-		printf("%s", str);
-		putchar('/');
-		pcs_utils_readable_size((double)quota, str, 30, NULL);
-		printf("%s", str);
-	}
-	printf("\n");
-	return 0;
+    if (!is_login(context, NULL)) {
+        return -1;
+    }
+    pcsres = pcs_quota(context->pcs, &quota, &used);
+    if (pcsres != PCS_OK) {
+        fprintf(stderr, "Error: %s\n", pcs_strerror(context->pcs));
+        return -1;
+    }
+    if (is_exact) {
+        printf("%"PRIu64" Bytes ", used);
+        putchar('/');
+        printf("%" PRIu64 " Bytes  ", quota);
+    } else {
+        pcs_utils_readable_size((double)used, str, 30, NULL);
+        printf("%s", str);
+        putchar('/');
+        pcs_utils_readable_size((double)quota, str, 30, NULL);
+        printf("%s", str);
+    }
+    printf("\n");
+    return 0;
 }
 
-/*Âà†Èô§Êñá‰ª∂*/
-static int cmd_remove(ShellContext *context, struct args *arg)
+/*…æ≥˝Œƒº˛*/
+static int cmd_remove(ShellContext* context, struct args* arg)
 {
-	PcsPanApiRes *res;
-	PcsSList slist;
-	PcsPanApiResInfoList *info;
-	if (test_arg(arg, 1, 1, "h", "help", NULL)) {
-		usage_remove();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_remove();
-		return 0;
-	}
-	if (!is_login(context, NULL)) return -1;
-	slist.string = combin_net_disk_path(context->workdir, arg->argv[0]); /* path */
-	slist.next = NULL;
-	if (strcmp(slist.string, "/") == 0) {
-		fprintf(stderr, "Error: Can't remove root directory.\n");
-		pcs_free(slist.string);
-		return -1;
-	}
+    PcsPanApiRes* res;
+    PcsSList slist;
+    PcsPanApiResInfoList* info;
+    if (test_arg(arg, 1, 1, "h", "help", NULL)) {
+        usage_remove();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_remove();
+        return 0;
+    }
+    if (!is_login(context, NULL)) {
+        return -1;
+    }
+    slist.string = combin_net_disk_path(context->workdir, arg->argv[0]); /* path */
+    slist.next = NULL;
+    if (strcmp(slist.string, "/") == 0) {
+        fprintf(stderr, "Error: Can't remove root directory.\n");
+        pcs_free(slist.string);
+        return -1;
+    }
 
-	res = pcs_delete(context->pcs, &slist);
-	if (!res || res->error != 0) {
-		fprintf(stderr, "Error: %s path=%s.\n", pcs_strerror(context->pcs), slist.string);
-		if (res)
-			pcs_pan_api_res_destroy(res);
-		pcs_free(slist.string);
-		return -1;
-	}
-	info = res->info_list;
-	if (info && info->info.error) {
-		fprintf(stderr, "Error: unknow path=%s. \n", slist.string);
-		pcs_pan_api_res_destroy(res);
-		pcs_free(slist.string);
-		return -1;
-	}
-	printf("Remove %s Success.\n", slist.string);
-	pcs_pan_api_res_destroy(res);
-	pcs_free(slist.string);
-	return 0;
+    res = pcs_delete(context->pcs, &slist);
+    if (!res || res->error != 0) {
+        fprintf(stderr, "Error: %s path=%s.\n", pcs_strerror(context->pcs), slist.string);
+        if (res) {
+            pcs_pan_api_res_destroy(res);
+        }
+        pcs_free(slist.string);
+        return -1;
+    }
+    info = res->info_list;
+    if (info && info->info.error) {
+        fprintf(stderr, "Error: unknow path=%s. \n", slist.string);
+        pcs_pan_api_res_destroy(res);
+        pcs_free(slist.string);
+        return -1;
+    }
+    printf("Remove %s Success.\n", slist.string);
+    pcs_pan_api_res_destroy(res);
+    pcs_free(slist.string);
+    return 0;
 }
 
-/*ÈáçÂëΩÂêçÊñá‰ª∂*/
-static int cmd_rename(ShellContext *context, struct args *arg)
+/*÷ÿ√¸√˚Œƒº˛*/
+static int cmd_rename(ShellContext* context, struct args* arg)
 {
-	PcsPanApiRes *res;
-	PcsSList2 slist;
-	PcsPanApiResInfoList *info;
-	char *p;
-	if (test_arg(arg, 2, 2, "h", "help", NULL)) {
-		usage_rename();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_rename();
-		return 0;
-	}
-	p = arg->argv[1];
-	while (*p) {
-		if (*p == '/' || *p == '\\' || *p == ':' || *p == '*' || *p == '?' || *p == '"' || *p == '<' || *p == '>' || *p == '|') {
-			fprintf(stderr, "Error: The file name can't include \"/\\:*?\"<>|\"\n");
-			return -1;
-		}
-		p++;
-	}
-	if (!is_login(context, NULL)) return -1;
-	slist.string1 = combin_net_disk_path(context->workdir, arg->argv[0]); /* path */
-	slist.string2 = arg->argv[1]; /* new_name */
-	slist.next = NULL;
-	if (strcmp(slist.string1, "/") == 0) {
-		fprintf(stderr, "Error: Can't rename root directory.\n");
-		pcs_free(slist.string1);
-		return -1;
-	}
-	if (strcmp(slist.string2, "/") == 0) {
-		fprintf(stderr, "Error: Can't rename to root directory.\n");
-		pcs_free(slist.string1);
-		return -1;
-	}
+    PcsPanApiRes* res;
+    PcsSList2 slist;
+    PcsPanApiResInfoList* info;
+    char* p;
+    if (test_arg(arg, 2, 2, "h", "help", NULL)) {
+        usage_rename();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_rename();
+        return 0;
+    }
+    p = arg->argv[1];
+    while (*p) {
+        if (*p == '/' || *p == '\\' || *p == ':' || *p == '*' || *p == '?' || *p == '"' || *p == '<' || *p == '>' || *p == '|') {
+            fprintf(stderr, "Error: The file name can't include \"/\\:*?\"<>|\"\n");
+            return -1;
+        }
+        p++;
+    }
+    if (!is_login(context, NULL)) {
+        return -1;
+    }
+    slist.string1 = combin_net_disk_path(context->workdir, arg->argv[0]); /* path */
+    slist.string2 = arg->argv[1]; /* new_name */
+    slist.next = NULL;
+    if (strcmp(slist.string1, "/") == 0) {
+        fprintf(stderr, "Error: Can't rename root directory.\n");
+        pcs_free(slist.string1);
+        return -1;
+    }
+    if (strcmp(slist.string2, "/") == 0) {
+        fprintf(stderr, "Error: Can't rename to root directory.\n");
+        pcs_free(slist.string1);
+        return -1;
+    }
 
-	res = pcs_rename(context->pcs, &slist);
-	if (!res) {
-		fprintf(stderr, "Error: %s src=%s, dst=%s.\n", pcs_strerror(context->pcs), slist.string1, slist.string2);
-		pcs_free(slist.string1);
-		return -1;
-	}
-	info = res->info_list;
-	if (info->info.error) {
-		fprintf(stderr, "Error: unknow src=%s, dst=%s. \n", slist.string1, slist.string2);
-		pcs_pan_api_res_destroy(res);
-		pcs_free(slist.string1);
-		return -1;
-	}
-	printf("Rename %s to %s Success.\n", slist.string1, slist.string2);
-	pcs_pan_api_res_destroy(res);
-	pcs_free(slist.string1);
-	return 0;
+    res = pcs_rename(context->pcs, &slist);
+    if (!res) {
+        fprintf(stderr, "Error: %s src=%s, dst=%s.\n", pcs_strerror(context->pcs), slist.string1, slist.string2);
+        pcs_free(slist.string1);
+        return -1;
+    }
+    info = res->info_list;
+    if (info->info.error) {
+        fprintf(stderr, "Error: unknow src=%s, dst=%s. \n", slist.string1, slist.string2);
+        pcs_pan_api_res_destroy(res);
+        pcs_free(slist.string1);
+        return -1;
+    }
+    printf("Rename %s to %s Success.\n", slist.string1, slist.string2);
+    pcs_pan_api_res_destroy(res);
+    pcs_free(slist.string1);
+    return 0;
 }
 
-/*Êõ¥Êîπ‰∏ä‰∏ãÊñáËÆæÁΩÆ*/
-static int cmd_set(ShellContext *context, struct args *arg)
+/*∏¸∏ƒ…œœ¬Œƒ…Ë÷√*/
+static int cmd_set(ShellContext* context, struct args* arg)
 {
-	char *val = NULL;
-	int count = 0;
-	if (test_arg(arg, 0, 0, 
-		"cookie_file", "captcha_file", 
-		"list_page_size", "list_sort_name", "list_sort_direction",
-		"secure_method", "secure_key", "secure_enable", "timeout_retry", "max_thread", "max_speed_per_thread",
-		"user-agent", "cache_size",
-		"h", "help", NULL) && arg->optc == 0) {
-		usage_set();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_set();
-		return 0;
-	}
+    char* val = NULL;
+    int count = 0;
+    if (test_arg(arg, 0, 0,
+                 "cookie_file", "captcha_file",
+                 "list_page_size", "list_sort_name", "list_sort_direction",
+                 "secure_method", "secure_key", "secure_enable", "timeout_retry", "max_thread", "max_speed_per_thread",
+                 "user-agent", "cache_size",
+                 "h", "help", NULL) && arg->optc == 0) {
+        usage_set();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_set();
+        return 0;
+    }
 
-	if (has_optEx(arg, "cookie_file", &val)) {
-		count++;
-		if (set_cookiefile(context, val)) {
-			usage_set();
-			return -1;
-		}
-	}
+    if (has_optEx(arg, "cookie_file", &val)) {
+        count++;
+        if (set_cookiefile(context, val)) {
+            usage_set();
+            return -1;
+        }
+    }
 
-	if (has_optEx(arg, "captcha_file", &val)) {
-		count++;
-		if (set_captchafile(context, val)) {
-			usage_set();
-			return -1;
-		}
-	}
+    if (has_optEx(arg, "captcha_file", &val)) {
+        count++;
+        if (set_captchafile(context, val)) {
+            usage_set();
+            return -1;
+        }
+    }
 
-	if (has_optEx(arg, "list_page_size", &val)) {
-		count++;
-		if (set_list_page_size(context, val)) {
-			usage_set();
-			return -1;
-		}
-	}
+    if (has_optEx(arg, "list_page_size", &val)) {
+        count++;
+        if (set_list_page_size(context, val)) {
+            usage_set();
+            return -1;
+        }
+    }
 
-	if (has_optEx(arg, "list_sort_name", &val)) {
-		count++;
-		if (set_list_sort_name(context, val)) {
-			usage_set();
-			return -1;
-		}
-	}
+    if (has_optEx(arg, "list_sort_name", &val)) {
+        count++;
+        if (set_list_sort_name(context, val)) {
+            usage_set();
+            return -1;
+        }
+    }
 
-	if (has_optEx(arg, "list_sort_direction", &val)) {
-		count++;
-		if (set_list_sort_direction(context, val)) {
-			usage_set();
-			return -1;
-		}
-	}
+    if (has_optEx(arg, "list_sort_direction", &val)) {
+        count++;
+        if (set_list_sort_direction(context, val)) {
+            usage_set();
+            return -1;
+        }
+    }
 
-	if (has_optEx(arg, "secure_method", &val)) {
-		count++;
-		if (set_secure_method(context, val)) {
-			usage_set();
-			return -1;
-		}
-	}
+    if (has_optEx(arg, "secure_method", &val)) {
+        count++;
+        if (set_secure_method(context, val)) {
+            usage_set();
+            return -1;
+        }
+    }
 
-	if (has_optEx(arg, "secure_key", &val)) {
-		count++;
-		if (set_secure_key(context, val)) {
-			usage_set();
-			return -1;
-		}
-	}
+    if (has_optEx(arg, "secure_key", &val)) {
+        count++;
+        if (set_secure_key(context, val)) {
+            usage_set();
+            return -1;
+        }
+    }
 
-	if (has_optEx(arg, "secure_enable", &val)) {
-		count++;
-		if (set_secure_enable(context, val)) {
-			usage_set();
-			return -1;
-		}
-	}
+    if (has_optEx(arg, "secure_enable", &val)) {
+        count++;
+        if (set_secure_enable(context, val)) {
+            usage_set();
+            return -1;
+        }
+    }
 
-	if (has_optEx(arg, "timeout_retry", &val)) {
-		count++;
-		if (set_timeout_retry(context, val)) {
-			usage_set();
-			return -1;
-		}
-	}
+    if (has_optEx(arg, "timeout_retry", &val)) {
+        count++;
+        if (set_timeout_retry(context, val)) {
+            usage_set();
+            return -1;
+        }
+    }
 
-	if (has_optEx(arg, "max_thread", &val)) {
-		count++;
-		if (set_max_thread(context, val)) {
-			usage_set();
-			return -1;
-		}
-	}
+    if (has_optEx(arg, "max_thread", &val)) {
+        count++;
+        if (set_max_thread(context, val)) {
+            usage_set();
+            return -1;
+        }
+    }
 
-	if (has_optEx(arg, "max_speed_per_thread", &val)) {
-		count++;
-		if (set_max_speed_per_thread(context, val)) {
-			usage_set();
-			return -1;
-		}
-	}
+    if (has_optEx(arg, "max_speed_per_thread", &val)) {
+        count++;
+        if (set_max_speed_per_thread(context, val)) {
+            usage_set();
+            return -1;
+        }
+    }
 
-	if (has_optEx(arg, "max_upload_speed_per_thread", &val)) {
-		count++;
-		if (set_max_upload_speed_per_thread(context, val)) {
-			usage_set();
-			return -1;
-		}
-	}
+    if (has_optEx(arg, "max_upload_speed_per_thread", &val)) {
+        count++;
+        if (set_max_upload_speed_per_thread(context, val)) {
+            usage_set();
+            return -1;
+        }
+    }
 
-	if (has_optEx(arg, "user_agent", &val)) {
-		count++;
-		if (set_user_agent(context, val)) {
-			usage_set();
-			return -1;
-		}
-	}
+    if (has_optEx(arg, "user_agent", &val)) {
+        count++;
+        if (set_user_agent(context, val)) {
+            usage_set();
+            return -1;
+        }
+    }
 
-	if (has_optEx(arg, "cache_size", &val)) {
-		count++;
-		if (set_cache_size(context, val)) {
-			usage_set();
-			return -1;
-		}
-	}
+    if (has_optEx(arg, "cache_size", &val)) {
+        count++;
+        if (set_cache_size(context, val)) {
+            usage_set();
+            return -1;
+        }
+    }
 
-	if (!count) {
-		usage_set();
-		return -1;
-	}
+    if (!count) {
+        usage_set();
+        return -1;
+    }
 
-	printf("Success. You can view context by '%s context'\n", app_name);
-	return 0;
+    printf("Success. You can view context by '%s context'\n", app_name);
+    return 0;
 }
 
-/*ÊêúÁ¥¢Êñá‰ª∂*/
-static int cmd_search(ShellContext *context, struct args *arg)
+/*À—À˜Œƒº˛*/
+static int cmd_search(ShellContext* context, struct args* arg)
 {
-	const char *opts[] = { "r", NULL };
-	int is_recursive = 0;
-	char *path = NULL;
-	const char *relPath = NULL, *keyword = NULL;
+    const char* opts[] = { "r", NULL };
+    int is_recursive = 0;
+    char* path = NULL;
+    const char* relPath = NULL, *keyword = NULL;
     int md5 = 0, thumb = 0;
 
-	PcsFileInfoList *list = NULL;
-	int fscount = 0;
+    PcsFileInfoList* list = NULL;
+    int fscount = 0;
 
-	if (test_arg(arg, 1, 2, "md5", "thumb", "r", "h", "help", NULL)) {
-		usage_search();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_search();
-		return 0;
-	}
+    if (test_arg(arg, 1, 2, "md5", "thumb", "r", "h", "help", NULL)) {
+        usage_search();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_search();
+        return 0;
+    }
 
-	is_recursive = has_opt(arg, "r");
-	md5 = has_opt(arg, "md5");
-	thumb = has_opt(arg, "thumb");
+    is_recursive = has_opt(arg, "r");
+    md5 = has_opt(arg, "md5");
+    thumb = has_opt(arg, "thumb");
 
-	if (arg->argc == 1) {
-		keyword = arg->argv[0];
-	}
-	else if (arg->argc == 2) {
-		relPath = arg->argv[0];
-		keyword = arg->argv[1];
-	}
-	else {
-		usage_search();
-		return 0;
-	}
+    if (arg->argc == 1) {
+        keyword = arg->argv[0];
+    } else if (arg->argc == 2) {
+        relPath = arg->argv[0];
+        keyword = arg->argv[1];
+    } else {
+        usage_search();
+        return 0;
+    }
 
-	if (!is_login(context, NULL)) return -1;
+    if (!is_login(context, NULL)) {
+        return -1;
+    }
 
-	if (!relPath) {
-		path = pcs_utils_strdup(context->workdir);
-	}
-	else {
-		path = combin_net_disk_path(context->workdir, relPath);
-	}
+    if (!relPath) {
+        path = pcs_utils_strdup(context->workdir);
+    } else {
+        path = combin_net_disk_path(context->workdir, relPath);
+    }
 
-	list = pcs_search(context->pcs, path, keyword, is_recursive ? PcsTrue : PcsFalse);
-	if (!list) {
-		if (pcs_strerror(context->pcs)) {
-			fprintf(stderr, "Error: %s\n", pcs_strerror(context->pcs));
-			pcs_free(path);
-			return -1;
-		}
-		print_filelist_head(4, md5, thumb);
-		pcs_free(path);
-		return 1;
-	}
-	fscount = list->count;
-	print_filelist(list, NULL, NULL, NULL, md5, thumb);
-	pcs_filist_destroy(list);
-	pcs_free(path);
-	return fscount > 0 ? 0 : 1;
+    list = pcs_search(context->pcs, path, keyword, is_recursive ? PcsTrue : PcsFalse);
+    if (!list) {
+        if (pcs_strerror(context->pcs)) {
+            fprintf(stderr, "Error: %s\n", pcs_strerror(context->pcs));
+            pcs_free(path);
+            return -1;
+        }
+        print_filelist_head(4, md5, thumb);
+        pcs_free(path);
+        return 1;
+    }
+    fscount = list->count;
+    print_filelist(list, NULL, NULL, NULL, md5, thumb);
+    pcs_filist_destroy(list);
+    pcs_free(path);
+    return fscount > 0 ? 0 : 1;
 }
 
 #pragma region synch
 
-static int synchDownload(MyMeta *meta, struct RBEnumerateState *s, void *state)
+static int synchDownload(MyMeta* meta, struct RBEnumerateState* s, void* state)
 {
-	if (s->dry_run) { /*ÊºîÁ§∫Êìç‰ΩúÔºåÊ®°ÊãüÊàêÂäü*/
-		meta->op_st = OP_ST_SUCC;
-		return 0;
-	}
+    if (s->dry_run) { /*—› æ≤Ÿ◊˜£¨ƒ£ƒ‚≥…π¶*/
+        meta->op_st = OP_ST_SUCC;
+        return 0;
+    }
 
-	if (meta->remote_isdir) { /*Ë∑≥ËøáÁõÆÂΩï*/
-		char *local_path;
-		local_path = combin_path(s->local_basedir, -1, meta->path);
-		/*ÂàõÂª∫ÁõÆÂΩï*/
-		if (CreateDirectoryRecursive(local_path) != MKDIR_OK) {
-			if (meta->msg) pcs_free(meta->msg);
-			meta->msg = pcs_utils_sprintf("Error: Can't create the directory: %s", local_path);
-			meta->op_st = OP_ST_FAIL;
-			pcs_free(local_path);
-			return -1;
-		}
-		pcs_free(local_path);
-		meta->op_st = OP_ST_SUCC;
-		return 0;
-	}
+    if (meta->remote_isdir) { /*Ã¯π˝ƒø¬º*/
+        char* local_path;
+        local_path = combin_path(s->local_basedir, -1, meta->path);
+        /*¥¥Ω®ƒø¬º*/
+        if (CreateDirectoryRecursive(local_path) != MKDIR_OK) {
+            if (meta->msg) {
+                pcs_free(meta->msg);
+            }
+            meta->msg = pcs_utils_sprintf("Error: Can't create the directory: %s", local_path);
+            meta->op_st = OP_ST_FAIL;
+            pcs_free(local_path);
+            return -1;
+        }
+        pcs_free(local_path);
+        meta->op_st = OP_ST_SUCC;
+        return 0;
+    }
 
-	return do_download(s->context, 
-		meta->path, meta->remote_path, meta->remote_mtime, 
-		s->local_basedir, s->remote_basedir, meta->md5,
-		&meta->msg, &meta->op_st);
+    return do_download(s->context,
+                       meta->path, meta->remote_path, meta->remote_mtime,
+                       s->local_basedir, s->remote_basedir, meta->md5,
+                       &meta->msg, &meta->op_st);
 }
 
-static int synchUpload(MyMeta *meta, struct RBEnumerateState *s, void *state)
+static int synchUpload(MyMeta* meta, struct RBEnumerateState* s, void* state)
 {
-	if (s->dry_run) { /*ÊºîÁ§∫Êìç‰ΩúÔºåÊ®°ÊãüÊàêÂäü*/
-		meta->op_st = OP_ST_SUCC;
-		return 0;
-	}
+    if (s->dry_run) { /*—› æ≤Ÿ◊˜£¨ƒ£ƒ‚≥…π¶*/
+        meta->op_st = OP_ST_SUCC;
+        return 0;
+    }
 
-	if (meta->local_isdir) { /*Ë∑≥ËøáÁõÆÂΩï*/
-		if (meta->local_filecount == 0 && !(meta->flag & FLAG_ON_REMOTE)) { /*ÂÖ∂‰∏ãÊ≤°ÊúâÊñá‰ª∂ÔºåÂõ†Ê≠§ÈúÄÊâãÂä®ÂàõÂª∫ÁõÆÂΩï*/
-			/*ÂàõÂª∫ÁõÆÂΩï*/
-			char *remote_path, *dir;
-			PcsRes res;
+    if (meta->local_isdir) { /*Ã¯π˝ƒø¬º*/
+        if (meta->local_filecount == 0 && !(meta->flag & FLAG_ON_REMOTE)) { /*∆‰œ¬√ª”–Œƒº˛£¨“Ú¥À–Ë ÷∂Ø¥¥Ω®ƒø¬º*/
+            /*¥¥Ω®ƒø¬º*/
+            char* remote_path, *dir;
+            PcsRes res;
 
-			dir = combin_net_disk_path(s->context->workdir, s->remote_basedir);
-			remote_path = combin_net_disk_path(dir, meta->path);
-			pcs_free(dir);
-			res = pcs_mkdir(s->context->pcs, remote_path);
-			if (res != PCS_OK) {
-				if (meta->msg) pcs_free(meta->msg);
-				meta->msg = pcs_utils_sprintf("Error: Can't create the directory %s: %s", remote_path, pcs_strerror(s->context->pcs));
-				pcs_free(remote_path);
-				meta->op_st = OP_ST_FAIL;
-				return -1;
-			}
-			pcs_free(remote_path);
-		}
-		meta->op_st = OP_ST_SUCC;
-		return 0;
-	}
+            dir = combin_net_disk_path(s->context->workdir, s->remote_basedir);
+            remote_path = combin_net_disk_path(dir, meta->path);
+            pcs_free(dir);
+            res = pcs_mkdir(s->context->pcs, remote_path);
+            if (res != PCS_OK) {
+                if (meta->msg) {
+                    pcs_free(meta->msg);
+                }
+                meta->msg = pcs_utils_sprintf("Error: Can't create the directory %s: %s", remote_path, pcs_strerror(s->context->pcs));
+                pcs_free(remote_path);
+                meta->op_st = OP_ST_FAIL;
+                return -1;
+            }
+            pcs_free(remote_path);
+        }
+        meta->op_st = OP_ST_SUCC;
+        return 0;
+    }
 
-	return do_upload(s->context,
-		meta->path, (meta->flag & FLAG_ON_REMOTE) ? meta->remote_path : meta->path, PcsTrue,
-		s->local_basedir, s->remote_basedir,
-		&meta->msg, &meta->op_st);
+    return do_upload(s->context,
+                     meta->path, (meta->flag & FLAG_ON_REMOTE) ? meta->remote_path : meta->path, PcsTrue,
+                     s->local_basedir, s->remote_basedir,
+                     &meta->msg, &meta->op_st);
 }
 
-static int synchOnPrepare(MyMeta *meta, struct RBEnumerateState *s, void *state)
+static int synchOnPrepare(MyMeta* meta, struct RBEnumerateState* s, void* state)
 {
-	if (meta->msg) {
-		pcs_free(meta->msg);
-		meta->msg = NULL;
-	}
-	switch (meta->op) {
-	case OP_LEFT: {
-		synchDownload(meta, s, state);
-		break;
-	}
-	case OP_RIGHT: {
-		synchUpload(meta, s, state);
-		break;
-	}
-	case OP_EQ:
-		meta->op_st = OP_ST_SKIP;
-		break;
-	case OP_CONFUSE:
-		meta->op_st = OP_ST_CONFUSE;
-		break;
-	default:
-		meta->op_st = OP_ST_NONE;
-		break;
-	}
-	return 0;
+    if (meta->msg) {
+        pcs_free(meta->msg);
+        meta->msg = NULL;
+    }
+    switch (meta->op) {
+    case OP_LEFT: {
+        synchDownload(meta, s, state);
+        break;
+    }
+    case OP_RIGHT: {
+        synchUpload(meta, s, state);
+        break;
+    }
+    case OP_EQ:
+        meta->op_st = OP_ST_SKIP;
+        break;
+    case OP_CONFUSE:
+        meta->op_st = OP_ST_CONFUSE;
+        break;
+    default:
+        meta->op_st = OP_ST_NONE;
+        break;
+    }
+    return 0;
 }
 
-static void synchOnRBEnumStatePrepared(ShellContext *context, compare_arg *arg, rb_red_blk_tree *rb, struct RBEnumerateState *state, void *st)
+static void synchOnRBEnumStatePrepared(ShellContext* context, compare_arg* arg, rb_red_blk_tree* rb, struct RBEnumerateState* state, void* st)
 {
-	/*state->print_op &= OP_NONE;
-	if (!arg->print_eq && !arg->print_left && !arg->print_right && !arg->print_confuse)
-		state->print_op = OP_RIGHT | OP_CONFUSE;
-	if (arg->print_eq) state->print_op |= OP_EQ;
-	if (arg->print_left) state->print_op |= OP_LEFT;
-	if (arg->print_right) state->print_op |= OP_RIGHT;
-	if (arg->print_confuse) state->print_op |= OP_CONFUSE;*/
-	state->page_size = 0;
-	state->page_index = 0;
-	state->first = 6;
-	state->process = &synchOnPrepare;
-	state->processState = NULL;
-	state->no_print_flag = 0;
-	state->print_fail = 1;
+    /*state->print_op &= OP_NONE;
+    if (!arg->print_eq && !arg->print_left && !arg->print_right && !arg->print_confuse)
+        state->print_op = OP_RIGHT | OP_CONFUSE;
+    if (arg->print_eq) state->print_op |= OP_EQ;
+    if (arg->print_left) state->print_op |= OP_LEFT;
+    if (arg->print_right) state->print_op |= OP_RIGHT;
+    if (arg->print_confuse) state->print_op |= OP_CONFUSE;*/
+    state->page_size = 0;
+    state->page_index = 0;
+    state->first = 6;
+    state->process = &synchOnPrepare;
+    state->processState = NULL;
+    state->no_print_flag = 0;
+    state->print_fail = 1;
 
-	printf("\nDownload: %s, Upload: %s, Confuse: %s, Equal: %s\n",
-		arg->print_left ? "on" : "off",
-		arg->print_right ? "on" : "off",
-		arg->print_confuse ? "on" : "off",
-		arg->print_eq ? "on" : "off");
+    printf("\nDownload: %s, Upload: %s, Confuse: %s, Equal: %s\n",
+           arg->print_left ? "on" : "off",
+           arg->print_right ? "on" : "off",
+           arg->print_confuse ? "on" : "off",
+           arg->print_eq ? "on" : "off");
 }
 
-static int synchFile(ShellContext *context, compare_arg *arg, MyMeta *meta, void *state)
+static int synchFile(ShellContext* context, compare_arg* arg, MyMeta* meta, void* state)
 {
-	int first, second, other;
-	if (meta->msg) {
-		pcs_free(meta->msg);
-		meta->msg = NULL;
-	}
-	switch (meta->op) {
-	case OP_LEFT: {
-		if (arg->dry_run)
-			meta->op_st = OP_ST_SUCC;
-		else
-			do_download(context,
-				meta->path, meta->remote_path, meta->remote_mtime,
-				arg->local_file, arg->remote_file, meta->md5,
-				&meta->msg, &meta->op_st);
-		break;
-	}
-	case OP_RIGHT: {
-		if (arg->dry_run)
-			meta->op_st = OP_ST_SUCC;
-		else
-			do_upload(context,
-				meta->path, (meta->flag & FLAG_ON_REMOTE) ? meta->remote_path : meta->path, PcsTrue,
-				arg->local_file, arg->remote_file,
-				&meta->msg, &meta->op_st);
-		break;
-	}
-	case OP_EQ:
-		meta->op_st = OP_ST_SKIP;
-		break;
-	case OP_CONFUSE:
-		meta->op_st = OP_ST_CONFUSE;
-		break;
-	default:
-		meta->op_st = OP_ST_NONE;
-		break;
-	}
-	first = 6; second = strlen(meta->path); other = 13;
-	if (second < 10) second = 10;
-	print_meta_list_head(first, second, other);
-	print_meta_list_row(first, second, other, meta);
-	print_meta_list_notes(first, second, other);
-	return 0;
+    int first, second, other;
+    if (meta->msg) {
+        pcs_free(meta->msg);
+        meta->msg = NULL;
+    }
+    switch (meta->op) {
+    case OP_LEFT: {
+        if (arg->dry_run) {
+            meta->op_st = OP_ST_SUCC;
+        } else
+            do_download(context,
+                        meta->path, meta->remote_path, meta->remote_mtime,
+                        arg->local_file, arg->remote_file, meta->md5,
+                        &meta->msg, &meta->op_st);
+        break;
+    }
+    case OP_RIGHT: {
+        if (arg->dry_run) {
+            meta->op_st = OP_ST_SUCC;
+        } else
+            do_upload(context,
+                      meta->path, (meta->flag & FLAG_ON_REMOTE) ? meta->remote_path : meta->path, PcsTrue,
+                      arg->local_file, arg->remote_file,
+                      &meta->msg, &meta->op_st);
+        break;
+    }
+    case OP_EQ:
+        meta->op_st = OP_ST_SKIP;
+        break;
+    case OP_CONFUSE:
+        meta->op_st = OP_ST_CONFUSE;
+        break;
+    default:
+        meta->op_st = OP_ST_NONE;
+        break;
+    }
+    first = 6;
+    second = strlen(meta->path);
+    other = 13;
+    if (second < 10) {
+        second = 10;
+    }
+    print_meta_list_head(first, second, other);
+    print_meta_list_row(first, second, other, meta);
+    print_meta_list_notes(first, second, other);
+    return 0;
 }
 
-/*ÂêåÊ≠•Êú¨Âú∞ÂíåÁΩëÁõòÁõÆÂΩï*/
-static int cmd_synch(ShellContext *context, struct args *arg)
+/*Õ¨≤Ω±æµÿ∫ÕÕ¯≈Ãƒø¬º*/
+static int cmd_synch(ShellContext* context, struct args* arg)
 {
-	compare_arg cmpArg = { 0 };
+    compare_arg cmpArg = { 0 };
 
-	if (test_arg(arg, 2, 2, "c", "d", "e", "n", "r", "u", "h", "help", NULL)) {
-		usage_synch();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_synch();
-		return 0;
-	}
-	if (parse_compare_args(arg, &cmpArg)) {
-		usage_compare();
-		return -1;
-	}
-	cmpArg.check_local_dir_exist = 0;
-	cmpArg.onRBEnumerateStatePrepared = &synchOnRBEnumStatePrepared;
+    if (test_arg(arg, 2, 2, "c", "d", "e", "n", "r", "u", "h", "help", NULL)) {
+        usage_synch();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_synch();
+        return 0;
+    }
+    if (parse_compare_args(arg, &cmpArg)) {
+        usage_compare();
+        return -1;
+    }
+    cmpArg.check_local_dir_exist = 0;
+    cmpArg.onRBEnumerateStatePrepared = &synchOnRBEnumStatePrepared;
 
-	int rc = compare(context, &cmpArg, &synchFile, NULL, &on_compared_dir, NULL);
-	if (!u8_is_utf8_sys()) {
-		pcs_free(cmpArg.local_file);
-	}
-	return rc;
-}
-
-#pragma endregion
-
-/*‰∏ä‰º†*/
-static int cmd_upload(ShellContext *context, struct args *arg)
-{
-	const char *opts[] = { "f", NULL };
-	int is_force = 0;
-	char *path = NULL, *errmsg = NULL;
-	char *relPath = NULL, *locPath = NULL;
-
-	LocalFileInfo *local;
-	PcsFileInfo *meta;
-
-	if (test_arg(arg, 2, 2, "f", "h", "help", NULL)) {
-		usage_upload();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_upload();
-		return 0;
-	}
-
-	is_force = has_opt(arg, "f");
-	locPath = u8_is_utf8_sys() ? arg->argv[0] : utf82mbs(arg->argv[0]);
-	relPath = arg->argv[1];
-
-	/*Ê£ÄÊü•Êú¨Âú∞Êñá‰ª∂ - ÂºÄÂßã*/
-	local = GetLocalFileInfo(locPath);
-	if (!local) {
-		fprintf(stderr, "Error: The local file not exist.\n");
-		if (!u8_is_utf8_sys()) pcs_free(locPath);
-		return -1;
-	}
-	else if (local->isdir) {
-		fprintf(stderr, "Error: The local file is directory: %s. \nYou can use 'synch -cu' command to upload the directory.\n", arg->argv[0]);
-		DestroyLocalFileInfo(local);
-		if (!u8_is_utf8_sys()) pcs_free(locPath);
-		return -1;
-	}
-	/*Ê£ÄÊü•Êú¨Âú∞Êñá‰ª∂ - ÁªìÊùü*/
-
-	//Ê£ÄÊü•ÊòØÂê¶Â∑≤ÁªèÁôªÂΩï
-	if (!is_login(context, NULL)) {
-		DestroyLocalFileInfo(local);
-		if (!u8_is_utf8_sys()) pcs_free(locPath);
-		return -1;
-	}
-
-	path = combin_net_disk_path(context->workdir, relPath);
-	if (!path) {
-		assert(path);
-		DestroyLocalFileInfo(local);
-		if (!u8_is_utf8_sys()) pcs_free(locPath);
-		return -1;
-	}
-
-	if (strcmp(path, "/") == 0) {
-		char *tmp = combin_net_disk_path(path, local->filename);
-		pcs_free(path);
-		path = tmp;
-	}
-
-	/*Ê£ÄÊü•ÁΩëÁõòÊñá‰ª∂ - ÂºÄÂßã*/
-	meta = pcs_meta(context->pcs, path);
-	if (meta && meta->isdir) {
-		char *tmp = combin_net_disk_path(path, local->filename);
-		pcs_free(path);
-		path = tmp;
-		pcs_fileinfo_destroy(meta);
-		meta = pcs_meta(context->pcs, path);
-	}
-	DestroyLocalFileInfo(local);
-	if (meta && meta->isdir) {
-		fprintf(stderr, "Error: The remote file exist, and it is directory. %s\n", path);
-		pcs_fileinfo_destroy(meta);
-		pcs_free(path);
-		if (!u8_is_utf8_sys()) pcs_free(locPath);
-		return -1;
-	}
-	else if (meta && !is_force){
-		fprintf(stderr, "Error: The remote file exist. You can specify '-f' to force override. %s\n", path);
-		pcs_fileinfo_destroy(meta);
-		pcs_free(path);
-		if (!u8_is_utf8_sys()) pcs_free(locPath);
-		return -1;
-	}
-	else if (meta && is_force) {
-		char *diskName = pcs_utils_filename(meta->path);
-		if (diskName[0] == '.') { /*‰ª•ÁÇπÂºÄÂ§¥ÁöÑÊñá‰ª∂Âú®‰∏ä‰º†ÂêéÁÇπÂè∑‰ºöË¢´Ëá™Âä®ÂéªÊéâÔºå
-								  Âõ†Ê≠§ÈúÄË¶ÅÂÜçÊ¨°ÊâßË°åpcs_rename()ÂáΩÊï∞ÈáçÂëΩÂêçÂÖ∂‰∏∫Ê≠£Á°ÆÁöÑÂêçÂ≠ó„ÄÇ
-								  Ê≠§Â§ÑÈ¢ÑÂÖàÂà†Èô§ËØ•Êñá‰ª∂ÁöÑÁõÆÁöÑÊòØ‰∏∫‰∫ÜÈò≤Ê≠¢Âú®do_upload()ÂáΩÊï∞‰∏≠ÈáçÂëΩÂêçÂ§±Ë¥•„ÄÇ*/
-			PcsPanApiRes *res2;
-			PcsSList sl2 = {
-				meta->path, NULL
-			};
-			res2 = pcs_delete(context->pcs, &sl2);
-			if (!res2 || res2->error != 0) {
-				fprintf(stderr, "Error: Can't delete the %s, so can't override the file.\n", sl2.string);
-				if (res2) { pcs_pan_api_res_destroy(res2); res2 = NULL; }
-			}
-			if (res2) { pcs_pan_api_res_destroy(res2); res2 = NULL; }
-		}
-		pcs_free(diskName);
-	}
-	/*Ê£ÄÊü•ÁΩëÁõòÊñá‰ª∂ - ÁªìÊùü*/
-
-	/*ÂºÄÂßã‰∏ä‰º†*/
-	if (do_upload(context,
-		locPath, path, is_force ? PcsTrue : PcsFalse,
-		"", context->workdir,
-		&errmsg, NULL)) {
-		fprintf(stderr, "Error: %s\n", errmsg);
-		if (errmsg) pcs_free(errmsg);
-		pcs_free(path);
-		if (meta) pcs_fileinfo_destroy(meta);
-		if (!u8_is_utf8_sys()) pcs_free(locPath);
-		return -1;
-	}
-	printf("Upload %s to %s Success.\n", arg->argv[0], path);
-	if (errmsg) pcs_free(errmsg);
-	pcs_free(path);
-	if (meta) pcs_fileinfo_destroy(meta);
-	if (!u8_is_utf8_sys()) pcs_free(locPath);
-	return 0;
-}
-
-/*ÊâìÂç∞ÁâàÊú¨*/
-static int cmd_version(ShellContext *context, struct args *arg)
-{
-	if (test_arg(arg, 0, 0, "h", "help", NULL)) {
-		usage_version();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_version();
-		return 0;
-	}
-	version();
-	return 0;
-}
-
-/*ÊâìÂç∞ÂΩìÂâçÁôªÂΩïÁî®Êà∑*/
-static int cmd_who(ShellContext *context, struct args *arg)
-{
-	if (test_arg(arg, 0, 0, "h", "help", NULL)) {
-		usage_who();
-		return -1;
-	}
-	if (has_opts(arg, "h", "help", NULL)) {
-		usage_who();
-		return 0;
-	}
-	if (!is_login(context, NULL)) return -1;
-	printf("%s\n", pcs_sysUID(context->pcs));
-	return 0;
+    int rc = compare(context, &cmpArg, &synchFile, NULL, &on_compared_dir, NULL);
+    if (!u8_is_utf8_sys()) {
+        pcs_free(cmpArg.local_file);
+    }
+    return rc;
 }
 
 #pragma endregion
 
-/*Ë∑ØÁî±Âà∞ÂÖ∑‰ΩìÁöÑÂëΩ‰ª§ÂáΩÊï∞*/
-static int exec_cmd(ShellContext *context, struct args *arg)
+/*…œ¥´*/
+static int cmd_upload(ShellContext* context, struct args* arg)
 {
-	int rc;
-	char *cmd;
+    const char* opts[] = { "f", NULL };
+    int is_force = 0;
+    char* path = NULL, *errmsg = NULL;
+    char* relPath = NULL, *locPath = NULL;
 
-	if (!arg->cmd) {
-		if (has_opt(arg, "v")
-			|| has_opt(arg, "version")
-			|| has_opt(arg, "version")) {
-			rc = cmd_version(context, arg);
-		}
-		else {
-			usage();
-			rc = -1;
-		}
-		return rc;
-	}
+    LocalFileInfo* local;
+    PcsFileInfo* meta;
 
-	cmd = arg->cmd;
+    if (test_arg(arg, 2, 2, "f", "h", "help", NULL)) {
+        usage_upload();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_upload();
+        return 0;
+    }
 
-	if (strcmp(cmd, "cat") == 0) {
-		rc = cmd_cat(context, arg);
-	}
-	else if (strcmp(cmd, "cd") == 0) {
-		rc = cmd_cd(context, arg);
-	}
-	else if (strcmp(cmd, "copy") == 0
-		|| strcmp(cmd, "cp") == 0) {
-		rc = cmd_copy(context, arg);
-	}
-	else if (strcmp(cmd, "compare") == 0
-		|| strcmp(cmd, "c") == 0) {
-		rc = cmd_compare(context, arg);
-	}
-	else if (strcmp(cmd, "context") == 0
-		|| strcmp(cmd, "config") == 0) {
-		rc = cmd_context(context, arg);
-	}
-	else if (strcmp(cmd, "download") == 0
-		|| strcmp(cmd, "d") == 0) {
-		rc = cmd_download(context, arg);
-	}
-	else if (strcmp(cmd, "echo") == 0) {
-		rc = cmd_echo(context, arg);
-	}
-	else if (strcmp(cmd, "encode") == 0) {
-		rc = cmd_encode(context, arg);
-	}
-	else if (strcmp(cmd, "fix") == 0) {
-		rc = cmd_fix(context, arg);
-	}
-	else if (strcmp(cmd, "list") == 0
-		|| strcmp(cmd, "ls") == 0) {
-		rc = cmd_list(context, arg);
-	}
-	else if (strcmp(cmd, "login") == 0) {
-		rc = cmd_login(context, arg);
-	}
-	else if (strcmp(cmd, "logout") == 0) {
-		rc = cmd_logout(context, arg);
-	}
-	else if (strcmp(cmd, "meta") == 0) {
-		rc = cmd_meta(context, arg);
-	}
-	else if (strcmp(cmd, "mkdir") == 0) {
-		rc = cmd_mkdir(context, arg);
-	}
-	else if (strcmp(cmd, "move") == 0
-		|| strcmp(cmd, "mv") == 0) {
-		rc = cmd_move(context, arg);
-	}
-	else if (strcmp(cmd, "pwd") == 0) {
-		rc = cmd_pwd(context, arg);
-	}
-	else if (strcmp(cmd, "quota") == 0) {
-		rc = cmd_quota(context, arg);
-	}
-	else if (strcmp(cmd, "remove") == 0
-		|| strcmp(cmd, "rm") == 0) {
-		rc = cmd_remove(context, arg);
-	}
-	else if (strcmp(cmd, "rename") == 0
-		|| strcmp(cmd, "ren") == 0) {
-		rc = cmd_rename(context, arg);
-	}
-	else if (strcmp(cmd, "set") == 0) {
-		rc = cmd_set(context, arg);
-	}
-	else if (strcmp(cmd, "search") == 0) {
-		rc = cmd_search(context, arg);
-	}
-	else if (strcmp(cmd, "synch") == 0
-		|| strcmp(cmd, "s") == 0) {
-		rc = cmd_synch(context, arg);
-	}
-	else if (strcmp(cmd, "upload") == 0
-		|| strcmp(cmd, "u") == 0) {
-		rc = cmd_upload(context, arg);
-	}
-	else if (strcmp(cmd, "version") == 0) {
-		rc = cmd_version(context, arg);
-	}
-	else if (strcmp(cmd, "who") == 0) {
-		rc = cmd_who(context, arg);
-	}
-	else if (strcmp(cmd, "help") == 0
-		|| strcmp(cmd, "?") == 0) {
-		rc = cmd_help(context, arg);
-	}
-	else {
-		usage();
-		rc = -1;
-	}
-	return rc;
+    is_force = has_opt(arg, "f");
+    locPath = u8_is_utf8_sys() ? arg->argv[0] : utf82mbs(arg->argv[0]);
+    relPath = arg->argv[1];
+
+    /*ºÏ≤È±æµÿŒƒº˛ - ø™ º*/
+    local = GetLocalFileInfo(locPath);
+    if (!local) {
+        fprintf(stderr, "Error: The local file not exist.\n");
+        if (!u8_is_utf8_sys()) {
+            pcs_free(locPath);
+        }
+        return -1;
+    } else if (local->isdir) {
+        fprintf(stderr, "Error: The local file is directory: %s. \nYou can use 'synch -cu' command to upload the directory.\n", arg->argv[0]);
+        DestroyLocalFileInfo(local);
+        if (!u8_is_utf8_sys()) {
+            pcs_free(locPath);
+        }
+        return -1;
+    }
+    /*ºÏ≤È±æµÿŒƒº˛ - Ω· ¯*/
+
+    //ºÏ≤È «∑Ò“—æ≠µ«¬º
+    if (!is_login(context, NULL)) {
+        DestroyLocalFileInfo(local);
+        if (!u8_is_utf8_sys()) {
+            pcs_free(locPath);
+        }
+        return -1;
+    }
+
+    path = combin_net_disk_path(context->workdir, relPath);
+    if (!path) {
+        assert(path);
+        DestroyLocalFileInfo(local);
+        if (!u8_is_utf8_sys()) {
+            pcs_free(locPath);
+        }
+        return -1;
+    }
+
+    if (strcmp(path, "/") == 0) {
+        char* tmp = combin_net_disk_path(path, local->filename);
+        pcs_free(path);
+        path = tmp;
+    }
+
+    /*ºÏ≤ÈÕ¯≈ÃŒƒº˛ - ø™ º*/
+    meta = pcs_meta(context->pcs, path);
+    if (meta && meta->isdir) {
+        char* tmp = combin_net_disk_path(path, local->filename);
+        pcs_free(path);
+        path = tmp;
+        pcs_fileinfo_destroy(meta);
+        meta = pcs_meta(context->pcs, path);
+    }
+    DestroyLocalFileInfo(local);
+    if (meta && meta->isdir) {
+        fprintf(stderr, "Error: The remote file exist, and it is directory. %s\n", path);
+        pcs_fileinfo_destroy(meta);
+        pcs_free(path);
+        if (!u8_is_utf8_sys()) {
+            pcs_free(locPath);
+        }
+        return -1;
+    } else if (meta && !is_force) {
+        fprintf(stderr, "Error: The remote file exist. You can specify '-f' to force override. %s\n", path);
+        pcs_fileinfo_destroy(meta);
+        pcs_free(path);
+        if (!u8_is_utf8_sys()) {
+            pcs_free(locPath);
+        }
+        return -1;
+    } else if (meta && is_force) {
+        char* diskName = pcs_utils_filename(meta->path);
+        if (diskName[0] == '.') {
+            /*“‘µ„ø™Õ∑µƒŒƒº˛‘⁄…œ¥´∫Ûµ„∫≈ª·±ª◊‘∂Ø»•µÙ£¨
+                                      “Ú¥À–Ë“™‘Ÿ¥Œ÷¥––pcs_rename()∫Ø ˝÷ÿ√¸√˚∆‰Œ™’˝»∑µƒ√˚◊÷°£
+                                      ¥À¥¶‘§œ»…æ≥˝∏√Œƒº˛µƒƒøµƒ «Œ™¡À∑¿÷π‘⁄do_upload()∫Ø ˝÷–÷ÿ√¸√˚ ß∞‹°£*/
+            PcsPanApiRes* res2;
+            PcsSList sl2 = {
+                meta->path, NULL
+            };
+            res2 = pcs_delete(context->pcs, &sl2);
+            if (!res2 || res2->error != 0) {
+                fprintf(stderr, "Error: Can't delete the %s, so can't override the file.\n", sl2.string);
+                if (res2) {
+                    pcs_pan_api_res_destroy(res2);
+                    res2 = NULL;
+                }
+            }
+            if (res2) {
+                pcs_pan_api_res_destroy(res2);
+                res2 = NULL;
+            }
+        }
+        pcs_free(diskName);
+    }
+    /*ºÏ≤ÈÕ¯≈ÃŒƒº˛ - Ω· ¯*/
+
+    /*ø™ º…œ¥´*/
+    if (do_upload(context,
+                  locPath, path, is_force ? PcsTrue : PcsFalse,
+                  "", context->workdir,
+                  &errmsg, NULL)) {
+        fprintf(stderr, "Error: %s\n", errmsg);
+        if (errmsg) {
+            pcs_free(errmsg);
+        }
+        pcs_free(path);
+        if (meta) {
+            pcs_fileinfo_destroy(meta);
+        }
+        if (!u8_is_utf8_sys()) {
+            pcs_free(locPath);
+        }
+        return -1;
+    }
+    printf("Upload %s to %s Success.\n", arg->argv[0], path);
+    if (errmsg) {
+        pcs_free(errmsg);
+    }
+    pcs_free(path);
+    if (meta) {
+        pcs_fileinfo_destroy(meta);
+    }
+    if (!u8_is_utf8_sys()) {
+        pcs_free(locPath);
+    }
+    return 0;
 }
 
-int main(int argc, char *argv[])
+/*¥Ú”°∞Ê±æ*/
+static int cmd_version(ShellContext* context, struct args* arg)
 {
-	struct args arg = { 0 };
-	ShellContext context = { 0 };
-	int rc = 0;
-	char *errmsg = NULL, *val = NULL;
-	setlocale(LC_ALL, "");
-	app_name = filename(argv[0]);
-	if (parse_arg(&arg, argc, argv, u8_is_utf8_sys() ? NULL : mbs2utf8)) {
-		usage();
-		free_args(&arg);
-		return -1;
-	}
-	hook_cjson();
-	init_context(&context, &arg);
-	if (has_optEx(&arg, "context", &val)) {
-		if (restore_context(&context, val)) {
-			rc = -1;
-			goto exit_main;
-		}
-		remove_opt(&arg, "context", NULL);
-	}
-	else {
-		restore_context(&context, NULL);
-	}
-	if (errmsg) {
-		printf("%s\n", errmsg);
-		pcs_free(errmsg);
-	}
-	context.pcs = create_pcs(&context);
-	if (!context.pcs) {
-		rc = -1;
-		printf("Can't create pcs context.\n");
-		goto exit_main;
-	}
-	rc = exec_cmd(&context, &arg);
-	destroy_pcs(context.pcs);
-	save_context(&context);
+    if (test_arg(arg, 0, 0, "h", "help", NULL)) {
+        usage_version();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_version();
+        return 0;
+    }
+    version();
+    return 0;
+}
+
+/*¥Ú”°µ±«∞µ«¬º”√ªß*/
+static int cmd_who(ShellContext* context, struct args* arg)
+{
+    if (test_arg(arg, 0, 0, "h", "help", NULL)) {
+        usage_who();
+        return -1;
+    }
+    if (has_opts(arg, "h", "help", NULL)) {
+        usage_who();
+        return 0;
+    }
+    if (!is_login(context, NULL)) {
+        return -1;
+    }
+    printf("%s\n", pcs_sysUID(context->pcs));
+    return 0;
+}
+
+#pragma endregion
+
+/*¬∑”…µΩæﬂÃÂµƒ√¸¡Ó∫Ø ˝*/
+static int exec_cmd(ShellContext* context, struct args* arg)
+{
+    int rc;
+    char* cmd;
+
+    if (!arg->cmd) {
+        if (has_opt(arg, "v")
+            || has_opt(arg, "version")
+            || has_opt(arg, "version")) {
+            rc = cmd_version(context, arg);
+        } else {
+            usage();
+            rc = -1;
+        }
+        return rc;
+    }
+
+    cmd = arg->cmd;
+
+    if (strcmp(cmd, "cat") == 0) {
+        rc = cmd_cat(context, arg);
+    } else if (strcmp(cmd, "cd") == 0) {
+        rc = cmd_cd(context, arg);
+    } else if (strcmp(cmd, "copy") == 0
+               || strcmp(cmd, "cp") == 0) {
+        rc = cmd_copy(context, arg);
+    } else if (strcmp(cmd, "compare") == 0
+               || strcmp(cmd, "c") == 0) {
+        rc = cmd_compare(context, arg);
+    } else if (strcmp(cmd, "context") == 0
+               || strcmp(cmd, "config") == 0) {
+        rc = cmd_context(context, arg);
+    } else if (strcmp(cmd, "download") == 0
+               || strcmp(cmd, "d") == 0) {
+        rc = cmd_download(context, arg);
+    } else if (strcmp(cmd, "echo") == 0) {
+        rc = cmd_echo(context, arg);
+    } else if (strcmp(cmd, "encode") == 0) {
+        rc = cmd_encode(context, arg);
+    } else if (strcmp(cmd, "fix") == 0) {
+        rc = cmd_fix(context, arg);
+    } else if (strcmp(cmd, "list") == 0
+               || strcmp(cmd, "ls") == 0) {
+        rc = cmd_list(context, arg);
+    } else if (strcmp(cmd, "login") == 0) {
+        rc = cmd_login(context, arg);
+    } else if (strcmp(cmd, "logout") == 0) {
+        rc = cmd_logout(context, arg);
+    } else if (strcmp(cmd, "meta") == 0) {
+        rc = cmd_meta(context, arg);
+    } else if (strcmp(cmd, "mkdir") == 0) {
+        rc = cmd_mkdir(context, arg);
+    } else if (strcmp(cmd, "move") == 0
+               || strcmp(cmd, "mv") == 0) {
+        rc = cmd_move(context, arg);
+    } else if (strcmp(cmd, "pwd") == 0) {
+        rc = cmd_pwd(context, arg);
+    } else if (strcmp(cmd, "quota") == 0) {
+        rc = cmd_quota(context, arg);
+    } else if (strcmp(cmd, "remove") == 0
+               || strcmp(cmd, "rm") == 0) {
+        rc = cmd_remove(context, arg);
+    } else if (strcmp(cmd, "rename") == 0
+               || strcmp(cmd, "ren") == 0) {
+        rc = cmd_rename(context, arg);
+    } else if (strcmp(cmd, "set") == 0) {
+        rc = cmd_set(context, arg);
+    } else if (strcmp(cmd, "search") == 0) {
+        rc = cmd_search(context, arg);
+    } else if (strcmp(cmd, "synch") == 0
+               || strcmp(cmd, "s") == 0) {
+        rc = cmd_synch(context, arg);
+    } else if (strcmp(cmd, "upload") == 0
+               || strcmp(cmd, "u") == 0) {
+        rc = cmd_upload(context, arg);
+    } else if (strcmp(cmd, "version") == 0) {
+        rc = cmd_version(context, arg);
+    } else if (strcmp(cmd, "who") == 0) {
+        rc = cmd_who(context, arg);
+    } else if (strcmp(cmd, "help") == 0
+               || strcmp(cmd, "?") == 0) {
+        rc = cmd_help(context, arg);
+    } else {
+        usage();
+        rc = -1;
+    }
+    return rc;
+}
+
+int main(int argc, char* argv[])
+{
+    struct args arg = { 0 };
+    ShellContext context = { 0 };
+    int rc = 0;
+    char* errmsg = NULL, *val = NULL;
+    setlocale(LC_ALL, "");
+    app_name = filename(argv[0]);
+    if (parse_arg(&arg, argc, argv, u8_is_utf8_sys() ? NULL : mbs2utf8)) {
+        usage();
+        free_args(&arg);
+        return -1;
+    }
+    hook_cjson();
+    init_context(&context, &arg);
+    if (has_optEx(&arg, "context", &val)) {
+        if (restore_context(&context, val)) {
+            rc = -1;
+            goto exit_main;
+        }
+        remove_opt(&arg, "context", NULL);
+    } else {
+        restore_context(&context, NULL);
+    }
+    if (errmsg) {
+        printf("%s\n", errmsg);
+        pcs_free(errmsg);
+    }
+    context.pcs = create_pcs(&context);
+    if (!context.pcs) {
+        rc = -1;
+        printf("Can't create pcs context.\n");
+        goto exit_main;
+    }
+    rc = exec_cmd(&context, &arg);
+    destroy_pcs(context.pcs);
+    save_context(&context);
 exit_main:
-	free_context(&context);
-	free_args(&arg);
-	pcs_print_leak();
-	return rc;
+    free_context(&context);
+    free_args(&arg);
+    pcs_print_leak();
+    return rc;
 }

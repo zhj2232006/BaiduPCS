@@ -1,630 +1,630 @@
 
-const char *get_login_errmsg(int error)
+const char* get_login_errmsg(int error)
 {
-	const char *errmsg = 0;
-	switch (error) {
-	case -1:// "ç³»ç»Ÿé”™è¯¯,è¯·æ‚¨ç¨åå†è¯• ";
-		errmsg = "System error, try again later";
-		break;
-	case 0:
-		errmsg = "Success";
-		break;
-	case 1: // "æ‚¨è¾“å…¥çš„å¸å·æ ¼å¼ä¸æ­£ç¡®";
-		errmsg = "Incorrect username";
-		break;
-	case 2: // "æ‚¨è¾“å…¥çš„å¸å·ä¸å­˜åœ¨";
-		errmsg = "Username not exist";
-		break;
-	case 3: // "éªŒè¯ç ä¸å­˜åœ¨æˆ–å·²è¿‡æœŸ,è¯·é‡æ–°è¾“å…¥";
-		errmsg = "Captcha invalid, try again";
-		break;
-	case 4: // "æ‚¨è¾“å…¥çš„å¸å·æˆ–å¯†ç æœ‰è¯¯";
-		errmsg = "Wrong password";
-		break;
-	case 5: // "æ‚¨æ‰€å¤„çš„ç½‘ç»œå­˜åœ¨å®‰å…¨é£é™©ï¼Œè¯·åˆ‡æ¢ç½‘ç»œæˆ–ä½¿ç”¨çŸ­ä¿¡ç™»å½•";
-		errmsg = "There is a security risk in your network, please use SMS to log in.";
-		break;
-	case 120019: //è¯·åœ¨å¼¹å‡ºçš„çª—å£æ“ä½œ,æˆ–é‡æ–°ç™»å½•
-	case 400031: //è¯·åœ¨å¼¹å‡ºçš„çª—å£æ“ä½œ,æˆ–é‡æ–°ç™»å½•
-		errmsg = "See popped out window.";
-		break;
-	case 120021: //ç™»å½•å¤±è´¥,è¯·åœ¨å¼¹å‡ºçš„çª—å£æ“ä½œ,æˆ–é‡æ–°ç™»å½•
+    const char* errmsg = 0;
+    switch (error) {
+    case -1:// "ÏµÍ³´íÎó,ÇëÄúÉÔºóÔÙÊÔ ";
+        errmsg = "System error, try again later";
+        break;
+    case 0:
+        errmsg = "Success";
+        break;
+    case 1: // "ÄúÊäÈëµÄÕÊºÅ¸ñÊ½²»ÕıÈ·";
+        errmsg = "Incorrect username";
+        break;
+    case 2: // "ÄúÊäÈëµÄÕÊºÅ²»´æÔÚ";
+        errmsg = "Username not exist";
+        break;
+    case 3: // "ÑéÖ¤Âë²»´æÔÚ»òÒÑ¹ıÆÚ,ÇëÖØĞÂÊäÈë";
+        errmsg = "Captcha invalid, try again";
+        break;
+    case 4: // "ÄúÊäÈëµÄÕÊºÅ»òÃÜÂëÓĞÎó";
+        errmsg = "Wrong password";
+        break;
+    case 5: // "ÄúËù´¦µÄÍøÂç´æÔÚ°²È«·çÏÕ£¬ÇëÇĞ»»ÍøÂç»òÊ¹ÓÃ¶ÌĞÅµÇÂ¼";
+        errmsg = "There is a security risk in your network, please use SMS to log in.";
+        break;
+    case 120019: //ÇëÔÚµ¯³öµÄ´°¿Ú²Ù×÷,»òÖØĞÂµÇÂ¼
+    case 400031: //ÇëÔÚµ¯³öµÄ´°¿Ú²Ù×÷,»òÖØĞÂµÇÂ¼
+        errmsg = "See popped out window.";
+        break;
+    case 120021: //µÇÂ¼Ê§°Ü,ÇëÔÚµ¯³öµÄ´°¿Ú²Ù×÷,»òÖØĞÂµÇÂ¼
         errmsg = "Wrong SMS password, please try again";
         break;
-	case 120016:
-		errmsg = "Account is at risk, please bind your phone on http://pan.baidu.com .";
-		break;
-	case 6: // "æ‚¨è¾“å…¥çš„éªŒè¯ç æœ‰è¯¯";
-		errmsg = "Wrong captcha.";
-		break;
-	case 7: // "å¯†ç é”™è¯¯ï¼Œå¯ä»¥è¯•è¯•çŸ­ä¿¡ç™»å½•";
-		errmsg = "Wrong password, try sms password.";
-		break;
-	case 16: // "æ‚¨çš„å¸å·å› å®‰å…¨é—®é¢˜å·²è¢«é™åˆ¶ç™»å½•";
-		errmsg = "Your account has been locked.";
-		break;
-	case 17: //æ‚¨çš„å¸å·å·²é”å®š,è¯·è§£é”åç™»å½•
-		errmsg = "Your account has been locked. Login after unlock your account.";
-		break;
-	case 18:
-	case 400032:
-	case 400034:
-	case 400037:
-	case 400401:
-		errmsg = "";// no message, see https://github.com/GangZhuo/BaiduPCS/issues/29
-		break;
-	case 257: // "è¯·è¾“å…¥éªŒè¯ç ";
-		errmsg = "Wrong captcha.";
-		break;
-	case 100005: //ç³»ç»Ÿé”™è¯¯,è¯·æ‚¨ç¨åå†è¯•
-		errmsg = "System error. Please try again later.";
-		break;
-	case 100023: //å¼€å¯Cookieä¹‹åæ‰èƒ½ç™»å½•
-		errmsg = "Cookie must be open for login.";
-		break;
-	case 100027: // "ç™¾åº¦æ­£åœ¨è¿›è¡Œç³»ç»Ÿå‡çº§ï¼Œæš‚æ—¶ä¸èƒ½æä¾›æœåŠ¡ï¼Œæ•¬è¯·è°…è§£";
-		errmsg = "System upgrading... Unable to provide services. Please try again later.";
-		break;
-	case 110024: //æ­¤å¸å·æš‚æœªæ¿€æ´»,é‡å‘éªŒè¯é‚®ä»¶
-		errmsg = "This account is not activated. Resending the activation email.";
-		break;
-	case 200010: //éªŒè¯ç ä¸å­˜åœ¨æˆ–å·²è¿‡æœŸ
-		errmsg = "Captcha not exist or expired.";
-		break;
-	case 401007: // "æ‚¨çš„æ‰‹æœºå·å…³è”äº†å…¶ä»–å¸å·ï¼Œè¯·é€‰æ‹©ç™»å½•";
-		errmsg = "Your phone number was associated with more than one account, please login with the user name.";
-		break;
-	case 500010: //ç™»å½•è¿‡äºé¢‘ç¹,è¯·24å°æ—¶åå†è¯•
-		errmsg = "Login too frequently, please try again after 24 hours.";
-		break;
-	default:
-		errmsg = "Unknown error.";
-		break;
-	}
-	return errmsg;
+    case 120016:
+        errmsg = "Account is at risk, please bind your phone on http://pan.baidu.com .";
+        break;
+    case 6: // "ÄúÊäÈëµÄÑéÖ¤ÂëÓĞÎó";
+        errmsg = "Wrong captcha.";
+        break;
+    case 7: // "ÃÜÂë´íÎó£¬¿ÉÒÔÊÔÊÔ¶ÌĞÅµÇÂ¼";
+        errmsg = "Wrong password, try sms password.";
+        break;
+    case 16: // "ÄúµÄÕÊºÅÒò°²È«ÎÊÌâÒÑ±»ÏŞÖÆµÇÂ¼";
+        errmsg = "Your account has been locked.";
+        break;
+    case 17: //ÄúµÄÕÊºÅÒÑËø¶¨,Çë½âËøºóµÇÂ¼
+        errmsg = "Your account has been locked. Login after unlock your account.";
+        break;
+    case 18:
+    case 400032:
+    case 400034:
+    case 400037:
+    case 400401:
+        errmsg = "";// no message, see https://github.com/GangZhuo/BaiduPCS/issues/29
+        break;
+    case 257: // "ÇëÊäÈëÑéÖ¤Âë";
+        errmsg = "Wrong captcha.";
+        break;
+    case 100005: //ÏµÍ³´íÎó,ÇëÄúÉÔºóÔÙÊÔ
+        errmsg = "System error. Please try again later.";
+        break;
+    case 100023: //¿ªÆôCookieÖ®ºó²ÅÄÜµÇÂ¼
+        errmsg = "Cookie must be open for login.";
+        break;
+    case 100027: // "°Ù¶ÈÕıÔÚ½øĞĞÏµÍ³Éı¼¶£¬ÔİÊ±²»ÄÜÌá¹©·şÎñ£¬¾´ÇëÁÂ½â";
+        errmsg = "System upgrading... Unable to provide services. Please try again later.";
+        break;
+    case 110024: //´ËÕÊºÅÔİÎ´¼¤»î,ÖØ·¢ÑéÖ¤ÓÊ¼ş
+        errmsg = "This account is not activated. Resending the activation email.";
+        break;
+    case 200010: //ÑéÖ¤Âë²»´æÔÚ»òÒÑ¹ıÆÚ
+        errmsg = "Captcha not exist or expired.";
+        break;
+    case 401007: // "ÄúµÄÊÖ»úºÅ¹ØÁªÁËÆäËûÕÊºÅ£¬ÇëÑ¡ÔñµÇÂ¼";
+        errmsg = "Your phone number was associated with more than one account, please login with the user name.";
+        break;
+    case 500010: //µÇÂ¼¹ıÓÚÆµ·±,Çë24Ğ¡Ê±ºóÔÙÊÔ
+        errmsg = "Login too frequently, please try again after 24 hours.";
+        break;
+    default:
+        errmsg = "Unknown error.";
+        break;
+    }
+    return errmsg;
 }
 
-/* ä»ç½‘ç›˜JSè·å–ï¼Œåº”è¯¥æ˜¯ç½‘ç›˜APIçš„é”™è¯¯æ¶ˆæ¯ã€‚ç„¶åé€šè¿‡ Google ç¿»è¯‘ï¼Œç¿»è¯‘ä¸ºè‹±æ–‡ã€‚ */
-const char *get_errmsg_by_errno(int error)
+/* ´ÓÍøÅÌJS»ñÈ¡£¬Ó¦¸ÃÊÇÍøÅÌAPIµÄ´íÎóÏûÏ¢¡£È»ºóÍ¨¹ı Google ·­Òë£¬·­ÒëÎªÓ¢ÎÄ¡£ */
+const char* get_errmsg_by_errno(int error)
 {
-	const char *errmsg = 0;
-	switch (error) {
-	case 0:
-		errmsg = "Success.";// "æˆåŠŸ";
-		break;
-	case 1:
-		errmsg = "Server Error.";// "æœåŠ¡å™¨é”™è¯¯ ";
-		break;
-	case 2:
-		errmsg = "The folder can not being move.";// "è¯¥æ–‡ä»¶å¤¹ä¸å¯ä»¥ç§»åŠ¨";
-		break;
-	case 3:
-		errmsg = "Can not operation files more than 100 at one time.";// "ä¸€æ¬¡æ“ä½œæ–‡ä»¶ä¸å¯è¶…è¿‡100ä¸ª";
-		break;
-	case 4:
-		errmsg = "New file name error.";// "æ–°æ–‡ä»¶åé”™è¯¯";
-		break;
-	case 5:
-		errmsg = "Target directory illegal.";// "ç›®æ ‡ç›®å½•éæ³•";
-		break;
-	case 6:
-		errmsg = "Alternate";// "å¤‡ç”¨";
-		break;
-	case 7:
-		errmsg = "NS illegal or Access Denied.";// "NSéæ³•æˆ–æ— æƒè®¿é—®";
-		break;
-	case 8:
-		errmsg = "ID illegally or Access Denied";// "IDéæ³•æˆ–æ— æƒè®¿é—®";
-		break;
-	case 9:
-		errmsg = "Applicate key failure";// "ç”³è¯·keyå¤±è´¥";
-		break;
-	case 10:
-		errmsg = "Failed to create a file of superfile";// "åˆ›å»ºæ–‡ä»¶çš„superfileå¤±è´¥";
-		break;
-	case 11:
-		errmsg = "user_id (or user_name) illegal or non-exist";// "user_id(æˆ–user_name)éæ³•æˆ–ä¸å­˜åœ¨";
-		break;
-	case 12:
-		errmsg = "Batch processing is not successful at all.";// "æ‰¹é‡å¤„ç†æœªå…¨éƒ¨æˆåŠŸ";
-		break;
-	case 13:
-		errmsg = "This directory can not be shared";// "æ­¤ç›®å½•æ— æ³•å…±äº«";
-		break;
-	case 103:
-		errmsg = "File passcode error";// "æå–ç é”™è¯¯";
-		break;
-	case 104:
-		errmsg = "Invalid cookie authentication";// "éªŒè¯cookieæ— æ•ˆ";
-		break;
-	case 14:
-	case 201:
-	case 202:
-	case 203:
-	case 204:
-	case 205:
-		errmsg = "System error";// "ç³»ç»Ÿé”™è¯¯";
-		break;
-	case 211:
-		errmsg = "No Permissions or banned";// "æ— æƒæ“ä½œæˆ–è¢«å°ç¦";
-		break;
-	case 301:
-		errmsg = "Other request error";// "å…¶ä»–è¯·æ±‚å‡ºé”™";
-		break;
-	case 404:
-		errmsg = "Second pass md5 mismatch error code rapidupload";// "ç§’ä¼ md5ä¸åŒ¹é… rapidupload é”™è¯¯ç ";
-		break;
-	case 406:
-		errmsg = "Sec transfer error code Failed to create file rapidupload";// "ç§’ä¼ åˆ›å»ºæ–‡ä»¶å¤±è´¥ rapidupload é”™è¯¯ç ";
-		break;
-	case 407:
-		errmsg = "fileModify interface returns an error, requestid rapidupload does not return an error code";// "fileModifyæ¥å£è¿”å›é”™è¯¯ï¼Œæœªè¿”å›requestid rapidupload é”™è¯¯ç ";
-		break;
-	case 501:
-		errmsg = "LIST format acquired illegally";// "è·å–çš„LISTæ ¼å¼éæ³•";
-		break;
-	case 600:
-		errmsg = "json parse error";// "jsonè§£æå‡ºé”™";
-		break;
-	case 601:
-		errmsg = "exception thrown";// "exceptionæŠ›å‡ºå¼‚å¸¸";
-		break;
-	case 617:
-		errmsg = "getFilelist other error";// "getFilelistå…¶ä»–é”™è¯¯";
-		break;
-	case 618:
-		errmsg = "Request curl returns failure";// "è¯·æ±‚curlè¿”å›å¤±è´¥";
-		break;
-	case 619:
-		errmsg = "pcs returns an error code";// "pcsè¿”å›é”™è¯¯ç ";
-		break;
-	case 31021:
-		errmsg = "Network connection fails. Check the network or try again later.";// "ç½‘ç»œè¿æ¥å¤±è´¥ï¼Œè¯·æ£€æŸ¥ç½‘ç»œæˆ–ç¨å€™å†è¯•";
-		break;
-	case 31075:
-		errmsg = "One in support of Operation 999, minus point try";// "ä¸€æ¬¡æ”¯æŒæ“ä½œ999ä¸ªï¼Œå‡ç‚¹è¯•è¯•å§";
-		break;
-	case 31080:
-		errmsg = "Server error. Try again later.";// "æˆ‘ä»¬çš„æœåŠ¡å™¨å‡ºé”™äº†ï¼Œç¨å€™è¯•è¯•å§";
-		break;
-	case 31116:
-		errmsg = "You have been reach the quota. Buy more!";// "ä½ çš„ç©ºé—´ä¸è¶³äº†å“Ÿï¼Œèµ¶ç´§è´­ä¹°ç©ºé—´å§";
-		break;
-	case -1:
-		errmsg = "Password authentication failed";// "ç”¨æˆ·åå’Œå¯†ç éªŒè¯å¤±è´¥";
-		break;
-	case -2:
-		errmsg = "Alternate";// "å¤‡ç”¨";
-		break;
-	case -3:
-		errmsg = "The user does not activate (call init interface)";// "ç”¨æˆ·æœªæ¿€æ´»ï¼ˆè°ƒç”¨initæ¥å£ï¼‰";
-		break;
-	case -4:
-		errmsg = "Can't find host_key and user_key (BDUSS) from COOKIE";// "COOKIEä¸­æœªæ‰¾åˆ°host_key&user_keyï¼ˆæˆ–BDUSSï¼‰";
-		break;
-	case -5:
-		errmsg = "host_key and user_key (BDUSS) are invalid";// "host_keyå’Œuser_keyæ— æ•ˆ";
-		break;
-	case -6:
-		errmsg = "BDUSS invalid";// "bdussæ— æ•ˆ";
-		break;
-	case -7:
-		errmsg = "File / directory name wrong, or do not have access to";// "æ–‡ä»¶æˆ–ç›®å½•åé”™è¯¯æˆ–æ— æƒè®¿é—®";
-		break;
-	case -8:
-		errmsg = "This file is already exists in this directory";// "è¯¥ç›®å½•ä¸‹å·²å­˜åœ¨æ­¤æ–‡ä»¶";
-		break;
-	case -9:
-		errmsg = "Owner of the file is deleted, operation failed";// "æ–‡ä»¶è¢«æ‰€æœ‰è€…åˆ é™¤ï¼Œæ“ä½œå¤±è´¥";
-		break;
-	case -10:
-		errmsg = "Network Disk quota reached.";// "ç½‘ç›˜ç©ºé—´å·²æ»¡";
-		break;
-	case -11:
-		errmsg = "Parent directory does not exist";// "çˆ¶ç›®å½•ä¸å­˜åœ¨";
-		break;
-	case -12:
-		errmsg = "Device not registered";// "è®¾å¤‡å°šæœªæ³¨å†Œ";
-		break;
-	case -13:
-		errmsg = "Device is already bounded to your account";// "è®¾å¤‡å·²ç»è¢«ç»‘å®š";
-		break;
-	case -14:
-		errmsg = "Account has been initialized";// "å¸å·å·²ç»åˆå§‹åŒ–";
-		break;
-	case -21:
-		errmsg = "Preset files can not be related operations";// "é¢„ç½®æ–‡ä»¶æ— æ³•è¿›è¡Œç›¸å…³æ“ä½œ";
-		break;
-	case -22:
-		errmsg = "The file can not be shared rename, move, and so";// "è¢«åˆ†äº«çš„æ–‡ä»¶æ— æ³•é‡å‘½åï¼Œç§»åŠ¨ç­‰æ“ä½œ";
-		break;
-	case -23:
-		errmsg = "Database operation fails. Contact baidu administrator";// "æ•°æ®åº“æ“ä½œå¤±è´¥ï¼Œè¯·è”ç³»netdiskç®¡ç†å‘˜";
-		break;
-	case -24:
-		errmsg = "No cancellations public file containing a list of files you want to cancel.";// "è¦å–æ¶ˆçš„æ–‡ä»¶åˆ—è¡¨ä¸­å«æœ‰ä¸å…è®¸å–æ¶ˆpublicçš„æ–‡ä»¶ã€‚";
-		break;
-	case -25:
-		errmsg = "Non-beta user";// "éå…¬æµ‹ç”¨æˆ·";
-		break;
-	case -26:
-		errmsg = "Invalid invitation code";// "é‚€è¯·ç å¤±æ•ˆ";
-		break;
-	default:
-		errmsg = "Unknown error";
-		break;
-	}
-	return errmsg;
+    const char* errmsg = 0;
+    switch (error) {
+    case 0:
+        errmsg = "Success.";// "³É¹¦";
+        break;
+    case 1:
+        errmsg = "Server Error.";// "·şÎñÆ÷´íÎó ";
+        break;
+    case 2:
+        errmsg = "The folder can not being move.";// "¸ÃÎÄ¼ş¼Ğ²»¿ÉÒÔÒÆ¶¯";
+        break;
+    case 3:
+        errmsg = "Can not operation files more than 100 at one time.";// "Ò»´Î²Ù×÷ÎÄ¼ş²»¿É³¬¹ı100¸ö";
+        break;
+    case 4:
+        errmsg = "New file name error.";// "ĞÂÎÄ¼şÃû´íÎó";
+        break;
+    case 5:
+        errmsg = "Target directory illegal.";// "Ä¿±êÄ¿Â¼·Ç·¨";
+        break;
+    case 6:
+        errmsg = "Alternate";// "±¸ÓÃ";
+        break;
+    case 7:
+        errmsg = "NS illegal or Access Denied.";// "NS·Ç·¨»òÎŞÈ¨·ÃÎÊ";
+        break;
+    case 8:
+        errmsg = "ID illegally or Access Denied";// "ID·Ç·¨»òÎŞÈ¨·ÃÎÊ";
+        break;
+    case 9:
+        errmsg = "Applicate key failure";// "ÉêÇëkeyÊ§°Ü";
+        break;
+    case 10:
+        errmsg = "Failed to create a file of superfile";// "´´½¨ÎÄ¼şµÄsuperfileÊ§°Ü";
+        break;
+    case 11:
+        errmsg = "user_id (or user_name) illegal or non-exist";// "user_id(»òuser_name)·Ç·¨»ò²»´æÔÚ";
+        break;
+    case 12:
+        errmsg = "Batch processing is not successful at all.";// "ÅúÁ¿´¦ÀíÎ´È«²¿³É¹¦";
+        break;
+    case 13:
+        errmsg = "This directory can not be shared";// "´ËÄ¿Â¼ÎŞ·¨¹²Ïí";
+        break;
+    case 103:
+        errmsg = "File passcode error";// "ÌáÈ¡Âë´íÎó";
+        break;
+    case 104:
+        errmsg = "Invalid cookie authentication";// "ÑéÖ¤cookieÎŞĞ§";
+        break;
+    case 14:
+    case 201:
+    case 202:
+    case 203:
+    case 204:
+    case 205:
+        errmsg = "System error";// "ÏµÍ³´íÎó";
+        break;
+    case 211:
+        errmsg = "No Permissions or banned";// "ÎŞÈ¨²Ù×÷»ò±»·â½û";
+        break;
+    case 301:
+        errmsg = "Other request error";// "ÆäËûÇëÇó³ö´í";
+        break;
+    case 404:
+        errmsg = "Second pass md5 mismatch error code rapidupload";// "Ãë´«md5²»Æ¥Åä rapidupload ´íÎóÂë";
+        break;
+    case 406:
+        errmsg = "Sec transfer error code Failed to create file rapidupload";// "Ãë´«´´½¨ÎÄ¼şÊ§°Ü rapidupload ´íÎóÂë";
+        break;
+    case 407:
+        errmsg = "fileModify interface returns an error, requestid rapidupload does not return an error code";// "fileModify½Ó¿Ú·µ»Ø´íÎó£¬Î´·µ»Ørequestid rapidupload ´íÎóÂë";
+        break;
+    case 501:
+        errmsg = "LIST format acquired illegally";// "»ñÈ¡µÄLIST¸ñÊ½·Ç·¨";
+        break;
+    case 600:
+        errmsg = "json parse error";// "json½âÎö³ö´í";
+        break;
+    case 601:
+        errmsg = "exception thrown";// "exceptionÅ×³öÒì³£";
+        break;
+    case 617:
+        errmsg = "getFilelist other error";// "getFilelistÆäËû´íÎó";
+        break;
+    case 618:
+        errmsg = "Request curl returns failure";// "ÇëÇócurl·µ»ØÊ§°Ü";
+        break;
+    case 619:
+        errmsg = "pcs returns an error code";// "pcs·µ»Ø´íÎóÂë";
+        break;
+    case 31021:
+        errmsg = "Network connection fails. Check the network or try again later.";// "ÍøÂçÁ¬½ÓÊ§°Ü£¬Çë¼ì²éÍøÂç»òÉÔºòÔÙÊÔ";
+        break;
+    case 31075:
+        errmsg = "One in support of Operation 999, minus point try";// "Ò»´ÎÖ§³Ö²Ù×÷999¸ö£¬¼õµãÊÔÊÔ°É";
+        break;
+    case 31080:
+        errmsg = "Server error. Try again later.";// "ÎÒÃÇµÄ·şÎñÆ÷³ö´íÁË£¬ÉÔºòÊÔÊÔ°É";
+        break;
+    case 31116:
+        errmsg = "You have been reach the quota. Buy more!";// "ÄãµÄ¿Õ¼ä²»×ãÁËÓ´£¬¸Ï½ô¹ºÂò¿Õ¼ä°É";
+        break;
+    case -1:
+        errmsg = "Password authentication failed";// "ÓÃ»§ÃûºÍÃÜÂëÑéÖ¤Ê§°Ü";
+        break;
+    case -2:
+        errmsg = "Alternate";// "±¸ÓÃ";
+        break;
+    case -3:
+        errmsg = "The user does not activate (call init interface)";// "ÓÃ»§Î´¼¤»î£¨µ÷ÓÃinit½Ó¿Ú£©";
+        break;
+    case -4:
+        errmsg = "Can't find host_key and user_key (BDUSS) from COOKIE";// "COOKIEÖĞÎ´ÕÒµ½host_key&user_key£¨»òBDUSS£©";
+        break;
+    case -5:
+        errmsg = "host_key and user_key (BDUSS) are invalid";// "host_keyºÍuser_keyÎŞĞ§";
+        break;
+    case -6:
+        errmsg = "BDUSS invalid";// "bdussÎŞĞ§";
+        break;
+    case -7:
+        errmsg = "File / directory name wrong, or do not have access to";// "ÎÄ¼ş»òÄ¿Â¼Ãû´íÎó»òÎŞÈ¨·ÃÎÊ";
+        break;
+    case -8:
+        errmsg = "This file is already exists in this directory";// "¸ÃÄ¿Â¼ÏÂÒÑ´æÔÚ´ËÎÄ¼ş";
+        break;
+    case -9:
+        errmsg = "Owner of the file is deleted, operation failed";// "ÎÄ¼ş±»ËùÓĞÕßÉ¾³ı£¬²Ù×÷Ê§°Ü";
+        break;
+    case -10:
+        errmsg = "Network Disk quota reached.";// "ÍøÅÌ¿Õ¼äÒÑÂú";
+        break;
+    case -11:
+        errmsg = "Parent directory does not exist";// "¸¸Ä¿Â¼²»´æÔÚ";
+        break;
+    case -12:
+        errmsg = "Device not registered";// "Éè±¸ÉĞÎ´×¢²á";
+        break;
+    case -13:
+        errmsg = "Device is already bounded to your account";// "Éè±¸ÒÑ¾­±»°ó¶¨";
+        break;
+    case -14:
+        errmsg = "Account has been initialized";// "ÕÊºÅÒÑ¾­³õÊ¼»¯";
+        break;
+    case -21:
+        errmsg = "Preset files can not be related operations";// "Ô¤ÖÃÎÄ¼şÎŞ·¨½øĞĞÏà¹Ø²Ù×÷";
+        break;
+    case -22:
+        errmsg = "The file can not be shared rename, move, and so";// "±»·ÖÏíµÄÎÄ¼şÎŞ·¨ÖØÃüÃû£¬ÒÆ¶¯µÈ²Ù×÷";
+        break;
+    case -23:
+        errmsg = "Database operation fails. Contact baidu administrator";// "Êı¾İ¿â²Ù×÷Ê§°Ü£¬ÇëÁªÏµnetdisk¹ÜÀíÔ±";
+        break;
+    case -24:
+        errmsg = "No cancellations public file containing a list of files you want to cancel.";// "ÒªÈ¡ÏûµÄÎÄ¼şÁĞ±íÖĞº¬ÓĞ²»ÔÊĞíÈ¡ÏûpublicµÄÎÄ¼ş¡£";
+        break;
+    case -25:
+        errmsg = "Non-beta user";// "·Ç¹«²âÓÃ»§";
+        break;
+    case -26:
+        errmsg = "Invalid invitation code";// "ÑûÇëÂëÊ§Ğ§";
+        break;
+    default:
+        errmsg = "Unknown error";
+        break;
+    }
+    return errmsg;
 }
 
-/*ä»ç½‘ç›˜JSè·å–ï¼Œåº”è¯¥æ˜¯å…±äº«æ–‡ä»¶çš„é”™è¯¯æ¶ˆæ¯ã€‚ç„¶åé€šè¿‡ Google ç¿»è¯‘ï¼Œç¿»è¯‘ä¸ºè‹±æ–‡ã€‚*/
-const char *get_share_errmsg_by_errno(int error)
+/*´ÓÍøÅÌJS»ñÈ¡£¬Ó¦¸ÃÊÇ¹²ÏíÎÄ¼şµÄ´íÎóÏûÏ¢¡£È»ºóÍ¨¹ı Google ·­Òë£¬·­ÒëÎªÓ¢ÎÄ¡£*/
+const char* get_share_errmsg_by_errno(int error)
 {
-	const char *errmsg = 0;
-	switch (error) {
-	case 0:
-		errmsg = "Success";//"æˆåŠŸ";
-		break;
-	case 2:
-		errmsg = "Parameter error";// "å‚æ•°é”™è¯¯";
-		break;
-	case 3:
-		errmsg = "Not logged in or have an invalid account";// "æœªç™»å½•æˆ–å¸å·æ— æ•ˆ";
-		break;
-	case 4:
-		errmsg = "Storage error, please try again later";// "å­˜å‚¨å¥½åƒå‡ºé—®é¢˜äº†ï¼Œè¯·ç¨å€™å†è¯•";
-		break;
-	case 108:
-		errmsg = "Filename have sensitive word. Rename it.";// "æ–‡ä»¶åæœ‰æ•æ„Ÿè¯ï¼Œä¼˜åŒ–ä¸€ä¸‹å§";
-		break;
-	case 110:
-		errmsg = "Share the number exceeds the limit, you can go to \"my share\" in the view shared file links";// "åˆ†äº«æ¬¡æ•°è¶…å‡ºé™åˆ¶ï¼Œå¯ä»¥åˆ°â€œæˆ‘çš„åˆ†äº«â€ä¸­æŸ¥çœ‹å·²åˆ†äº«çš„æ–‡ä»¶é“¾æ¥";
-		break;
-	case 114:
-		errmsg = "The current mandate does not exist. Saving fails";// "å½“å‰ä»»åŠ¡ä¸å­˜åœ¨ï¼Œä¿å­˜å¤±è´¥";
-		break;
-	case 115:
-		errmsg = "The document prohibits to Share";// "è¯¥æ–‡ä»¶ç¦æ­¢åˆ†äº«";
-		break;
-	case -1:
-		errmsg = "Because you have been shared a file in violation of relevant laws and regulations, sharing has been disabled. (History share out files are not affected.)";// "ç”±äºæ‚¨åˆ†äº«äº†è¿åç›¸å…³æ³•å¾‹æ³•è§„çš„æ–‡ä»¶ï¼Œåˆ†äº«åŠŸèƒ½å·²è¢«ç¦ç”¨ï¼Œä¹‹å‰åˆ†äº«å‡ºå»çš„æ–‡ä»¶ä¸å—å½±å“ã€‚";
-		break;
-	case -2:
-		errmsg = "User does not exist, please try again later.";// "ç”¨æˆ·ä¸å­˜åœ¨,è¯·åˆ·æ–°é¡µé¢åé‡è¯•";
-		break;
-	case -3:
-		errmsg = "File does not exist, please try again later.";// "æ–‡ä»¶ä¸å­˜åœ¨,è¯·åˆ·æ–°é¡µé¢åé‡è¯•";
-		break;
-	case -4:
-		errmsg = "Login information is incorrect, please try to login again";// "ç™»å½•ä¿¡æ¯æœ‰è¯¯ï¼Œè¯·é‡æ–°ç™»å½•è¯•è¯•";
-		break;
-	case -5:
-		errmsg = "host_key and user_key invalid";// "host_keyå’Œuser_keyæ— æ•ˆ";
-		break;
-	case -6:
-		errmsg = "Please sign in again";// "è¯·é‡æ–°ç™»å½•";
-		break;
-	case -7:
-		errmsg = "The share has been deleted or canceled";// "è¯¥åˆ†äº«å·²åˆ é™¤æˆ–å·²å–æ¶ˆ";
-		break;
-	case -8:
-		errmsg = "The share has been deleted or canceled";//"è¯¥åˆ†äº«å·²ç»è¿‡æœŸ";
-		break;
-	case -9:
-		errmsg = "Access password error";// "è®¿é—®å¯†ç é”™è¯¯";
-		break;
-	case -10:
-		errmsg = "Share the chain has reached the maximum upper limit 100 000, can not share again";// "åˆ†äº«å¤–é“¾å·²ç»è¾¾åˆ°æœ€å¤§ä¸Šé™100000æ¡ï¼Œä¸èƒ½å†æ¬¡åˆ†äº«";
-		break;
-	case -11:
-		errmsg = "Invalid authentication cookie";// "éªŒè¯cookieæ— æ•ˆ";
-		break;
-	case -14:
-		errmsg = "Sorry, SMS share 20 daily limit, you have to share finished today, please come back tomorrow to share it!";// "å¯¹ä¸èµ·ï¼ŒçŸ­ä¿¡åˆ†äº«æ¯å¤©é™åˆ¶20æ¡ï¼Œä½ ä»Šå¤©å·²ç»åˆ†äº«å®Œï¼Œè¯·æ˜å¤©å†æ¥åˆ†äº«å§ï¼";
-		break;
-	case -15:
-		errmsg = "Sorry, the message share limit 20 per day, you have to share finished today, please come back tomorrow to share it!";// "å¯¹ä¸èµ·ï¼Œé‚®ä»¶åˆ†äº«æ¯å¤©é™åˆ¶20å°ï¼Œä½ ä»Šå¤©å·²ç»åˆ†äº«å®Œï¼Œè¯·æ˜å¤©å†æ¥åˆ†äº«å§ï¼";
-		break;
-	case -16:
-		errmsg = "Sorry, the document has restricted share!";// "å¯¹ä¸èµ·ï¼Œè¯¥æ–‡ä»¶å·²ç»é™åˆ¶åˆ†äº«ï¼";
-		break;
-	case -17:
-		errmsg = "File sharing over the limit";// "æ–‡ä»¶åˆ†äº«è¶…è¿‡é™åˆ¶";
-		break;
-	case -30:
-		errmsg = "File already exists";// "æ–‡ä»¶å·²å­˜åœ¨";
-		break;
-	case -31:
-		errmsg = "File Save Failed";// "æ–‡ä»¶ä¿å­˜å¤±è´¥";
-		break;
-	case -33:
-		errmsg = "Once supported operating 10,000, minus point try";// "ä¸€æ¬¡æ”¯æŒæ“ä½œ10000ä¸ªï¼Œå‡ç‚¹è¯•è¯•å§";
-		break;
-	case -32:
-		errmsg = "Your space inadequate yo, and quickly buy space bar";// "ä½ çš„ç©ºé—´ä¸è¶³äº†å“Ÿï¼Œèµ¶ç´§è´­ä¹°ç©ºé—´å§";
-		break;
-	case -70:
-		errmsg = "You share the file contains a virus or virus-like, to you and to others data security, another file-sharing it";// "ä½ åˆ†äº«çš„æ–‡ä»¶ä¸­åŒ…å«ç—…æ¯’æˆ–ç–‘ä¼¼ç—…æ¯’ï¼Œä¸ºäº†ä½ å’Œä»–äººçš„æ•°æ®å®‰å…¨ï¼Œæ¢ä¸ªæ–‡ä»¶åˆ†äº«å§";
-		break;
-	default:
-		errmsg = "Unknow error";
-		break;
-	}
-	return errmsg;
+    const char* errmsg = 0;
+    switch (error) {
+    case 0:
+        errmsg = "Success";//"³É¹¦";
+        break;
+    case 2:
+        errmsg = "Parameter error";// "²ÎÊı´íÎó";
+        break;
+    case 3:
+        errmsg = "Not logged in or have an invalid account";// "Î´µÇÂ¼»òÕÊºÅÎŞĞ§";
+        break;
+    case 4:
+        errmsg = "Storage error, please try again later";// "´æ´¢ºÃÏñ³öÎÊÌâÁË£¬ÇëÉÔºòÔÙÊÔ";
+        break;
+    case 108:
+        errmsg = "Filename have sensitive word. Rename it.";// "ÎÄ¼şÃûÓĞÃô¸Ğ´Ê£¬ÓÅ»¯Ò»ÏÂ°É";
+        break;
+    case 110:
+        errmsg = "Share the number exceeds the limit, you can go to \"my share\" in the view shared file links";// "·ÖÏí´ÎÊı³¬³öÏŞÖÆ£¬¿ÉÒÔµ½¡°ÎÒµÄ·ÖÏí¡±ÖĞ²é¿´ÒÑ·ÖÏíµÄÎÄ¼şÁ´½Ó";
+        break;
+    case 114:
+        errmsg = "The current mandate does not exist. Saving fails";// "µ±Ç°ÈÎÎñ²»´æÔÚ£¬±£´æÊ§°Ü";
+        break;
+    case 115:
+        errmsg = "The document prohibits to Share";// "¸ÃÎÄ¼ş½ûÖ¹·ÖÏí";
+        break;
+    case -1:
+        errmsg = "Because you have been shared a file in violation of relevant laws and regulations, sharing has been disabled. (History share out files are not affected.)";// "ÓÉÓÚÄú·ÖÏíÁËÎ¥·´Ïà¹Ø·¨ÂÉ·¨¹æµÄÎÄ¼ş£¬·ÖÏí¹¦ÄÜÒÑ±»½ûÓÃ£¬Ö®Ç°·ÖÏí³öÈ¥µÄÎÄ¼ş²»ÊÜÓ°Ïì¡£";
+        break;
+    case -2:
+        errmsg = "User does not exist, please try again later.";// "ÓÃ»§²»´æÔÚ,ÇëË¢ĞÂÒ³ÃæºóÖØÊÔ";
+        break;
+    case -3:
+        errmsg = "File does not exist, please try again later.";// "ÎÄ¼ş²»´æÔÚ,ÇëË¢ĞÂÒ³ÃæºóÖØÊÔ";
+        break;
+    case -4:
+        errmsg = "Login information is incorrect, please try to login again";// "µÇÂ¼ĞÅÏ¢ÓĞÎó£¬ÇëÖØĞÂµÇÂ¼ÊÔÊÔ";
+        break;
+    case -5:
+        errmsg = "host_key and user_key invalid";// "host_keyºÍuser_keyÎŞĞ§";
+        break;
+    case -6:
+        errmsg = "Please sign in again";// "ÇëÖØĞÂµÇÂ¼";
+        break;
+    case -7:
+        errmsg = "The share has been deleted or canceled";// "¸Ã·ÖÏíÒÑÉ¾³ı»òÒÑÈ¡Ïû";
+        break;
+    case -8:
+        errmsg = "The share has been deleted or canceled";//"¸Ã·ÖÏíÒÑ¾­¹ıÆÚ";
+        break;
+    case -9:
+        errmsg = "Access password error";// "·ÃÎÊÃÜÂë´íÎó";
+        break;
+    case -10:
+        errmsg = "Share the chain has reached the maximum upper limit 100 000, can not share again";// "·ÖÏíÍâÁ´ÒÑ¾­´ïµ½×î´óÉÏÏŞ100000Ìõ£¬²»ÄÜÔÙ´Î·ÖÏí";
+        break;
+    case -11:
+        errmsg = "Invalid authentication cookie";// "ÑéÖ¤cookieÎŞĞ§";
+        break;
+    case -14:
+        errmsg = "Sorry, SMS share 20 daily limit, you have to share finished today, please come back tomorrow to share it!";// "¶Ô²»Æğ£¬¶ÌĞÅ·ÖÏíÃ¿ÌìÏŞÖÆ20Ìõ£¬Äã½ñÌìÒÑ¾­·ÖÏíÍê£¬ÇëÃ÷ÌìÔÙÀ´·ÖÏí°É£¡";
+        break;
+    case -15:
+        errmsg = "Sorry, the message share limit 20 per day, you have to share finished today, please come back tomorrow to share it!";// "¶Ô²»Æğ£¬ÓÊ¼ş·ÖÏíÃ¿ÌìÏŞÖÆ20·â£¬Äã½ñÌìÒÑ¾­·ÖÏíÍê£¬ÇëÃ÷ÌìÔÙÀ´·ÖÏí°É£¡";
+        break;
+    case -16:
+        errmsg = "Sorry, the document has restricted share!";// "¶Ô²»Æğ£¬¸ÃÎÄ¼şÒÑ¾­ÏŞÖÆ·ÖÏí£¡";
+        break;
+    case -17:
+        errmsg = "File sharing over the limit";// "ÎÄ¼ş·ÖÏí³¬¹ıÏŞÖÆ";
+        break;
+    case -30:
+        errmsg = "File already exists";// "ÎÄ¼şÒÑ´æÔÚ";
+        break;
+    case -31:
+        errmsg = "File Save Failed";// "ÎÄ¼ş±£´æÊ§°Ü";
+        break;
+    case -33:
+        errmsg = "Once supported operating 10,000, minus point try";// "Ò»´ÎÖ§³Ö²Ù×÷10000¸ö£¬¼õµãÊÔÊÔ°É";
+        break;
+    case -32:
+        errmsg = "Your space inadequate yo, and quickly buy space bar";// "ÄãµÄ¿Õ¼ä²»×ãÁËÓ´£¬¸Ï½ô¹ºÂò¿Õ¼ä°É";
+        break;
+    case -70:
+        errmsg = "You share the file contains a virus or virus-like, to you and to others data security, another file-sharing it";// "Äã·ÖÏíµÄÎÄ¼şÖĞ°üº¬²¡¶¾»òÒÉËÆ²¡¶¾£¬ÎªÁËÄãºÍËûÈËµÄÊı¾İ°²È«£¬»»¸öÎÄ¼ş·ÖÏí°É";
+        break;
+    default:
+        errmsg = "Unknow error";
+        break;
+    }
+    return errmsg;
 }
 
-/*ä»ç½‘ç›˜JSè·å–ï¼Œåº”è¯¥æ˜¯ç¦»çº¿ä¸‹è½½çš„é”™è¯¯æ¶ˆæ¯ã€‚ç„¶åé€šè¿‡ Google ç¿»è¯‘ï¼Œç¿»è¯‘ä¸ºè‹±æ–‡ã€‚*/
-const char *get_download_errmsg_by_errno(int error)
+/*´ÓÍøÅÌJS»ñÈ¡£¬Ó¦¸ÃÊÇÀëÏßÏÂÔØµÄ´íÎóÏûÏ¢¡£È»ºóÍ¨¹ı Google ·­Òë£¬·­ÒëÎªÓ¢ÎÄ¡£*/
+const char* get_download_errmsg_by_errno(int error)
 {
-	const char *errmsg = 0;
-	switch (error) {
-	case 36000:
-		errmsg = "Network busy, please try again later";// "ç½‘ç»œç¹å¿™ï¼Œè¯·ç¨å€™å†è¯•";
-		break;
-	case 36001:
-		errmsg = "Parameter error";// "å‚æ•°é”™è¯¯";
-		break;
-	case 36002:
-		errmsg = "appid error";// "appidé”™è¯¯";
-		break;
-	case 36003:
-		errmsg = "Please try refresh";// "è¯·åˆ·æ–°å†è¯•";
-		break;
-	case 36004:
-		errmsg = "Please sign in again";// "è¯·é‡æ–°ç™»å½•";
-		break;
-	case 36005:
-		errmsg = "User is not logged";// "ç”¨æˆ·æœªç™»å½•";
-		break;
-	case 36006:
-		errmsg = "The user does not activate";// "ç”¨æˆ·æœªæ¿€æ´»";
-		break;
-	case 36007:
-		errmsg = "User is not authorized";// "ç”¨æˆ·æœªæˆæƒ";
-		break;
-	case 36008:
-		errmsg = "User does not exist";// "ç”¨æˆ·ä¸å­˜åœ¨";
-		break;
-	case 36009:
-		errmsg = "User space shortage";// "ç”¨æˆ·ç©ºé—´ä¸è¶³";
-		break;
-	case 36010:
-		errmsg = "File does not exist";// "æ–‡ä»¶ä¸å­˜åœ¨";
-		break;
-	case 36012:
-		errmsg = "The operation timed out, please try again";// "æ“ä½œè¶…æ—¶ï¼Œè¯·é‡è¯•";
-		break;
-	case 36013:
-		errmsg = "At the same task much download can not be downloaded";// "åŒæ—¶ä¸‹è½½çš„ä»»åŠ¡è¿‡å¤šï¼Œä¸èƒ½ä¸‹è½½";
-		break;
-	case 36014:
-		errmsg = "Storage path has been used";// "å­˜å‚¨è·¯å¾„å·²ä½¿ç”¨";
-		break;
-	case 36016:
-		errmsg = "Task has been deleted";// "ä»»åŠ¡å·²åˆ é™¤";
-		break;
-	case 36017:
-		errmsg = "Task completed";// "ä»»åŠ¡å·²å®Œæˆ";
-		break;
-	case 36018:
-		errmsg = "Resolution fails, the seed file is corrupted";// "è§£æå¤±è´¥ï¼Œç§å­æ–‡ä»¶æŸå";
-		break;
-	case 36019:
-		errmsg = "The task is being processed";// "ä»»åŠ¡æ­£åœ¨å¤„ç†ä¸­";
-		break;
-	case 36020:
-		errmsg = "Task address does not exist";// "ä»»åŠ¡åœ°å€ä¸å­˜åœ¨";
-		break;
-	case 36021:
-		errmsg = "Max ordinary users download a task Oh! Immediately turn off download packages Download More!";// "æ™®é€šç”¨æˆ·æœ€å¤šåŒæ—¶ä¸‹è½½1ä¸ªä»»åŠ¡å“¦ï¼é©¬ä¸Šå¼€é€šç¦»çº¿ä¸‹è½½å¥—é¤ï¼Œç«‹å³ä¸‹è½½æ›´å¤šï¼";
-		break;
-	case 36022:
-		errmsg = "At the same task much download can not be downloaded";// "åŒæ—¶ä¸‹è½½çš„ä»»åŠ¡è¿‡å¤šï¼Œä¸èƒ½ä¸‹è½½";
-		break;
-	case 36023:
-		errmsg = "Ordinary users can only download offline 5 monthly task Oh! Immediately turn off download packages Download More!";// "æ™®é€šç”¨æˆ·æ¯æœˆåªèƒ½ç¦»çº¿ä¸‹è½½5ä¸ªä»»åŠ¡å“¦ï¼é©¬ä¸Šå¼€é€šç¦»çº¿ä¸‹è½½å¥—é¤ï¼Œç«‹å³ä¸‹è½½æ›´å¤šï¼";
-		break;
-	case 36024:
-		errmsg = "This month downloads exceeded limit";// "æœ¬æœˆä¸‹è½½æ•°å·²è¶…é™åˆ¶";
-		break;
-	case 36025:
-		errmsg = "Share link has expired";// "åˆ†äº«é“¾æ¥å·²å¤±æ•ˆ";
-		break;
-	case 36026:
-		errmsg = "Link malformed";// "é“¾æ¥æ ¼å¼æœ‰è¯¯";
-		break;
-	case 36027:
-		errmsg = "Link malformed";// "é“¾æ¥æ ¼å¼æœ‰è¯¯";
-		break;
-	case 36028:
-		errmsg = "Temporarily unable to find the relevant seed information";// "æš‚æ—¶æ— æ³•æ‰¾åˆ°ç›¸å…³ç§å­ä¿¡æ¯";
-		break;
-	case 36031:
-		errmsg = "Network busy, please try again later";// "ç½‘ç»œç¹å¿™ï¼Œè¯·ç¨å€™å†è¯•";
-		break;
-	case -19:
-		errmsg = "Please enter the verification code";// "è¯·è¾“å…¥éªŒè¯ç ";
-		break;
-	default:
-		errmsg = "Unknow error";
-		break;
-	}
-	return errmsg;
+    const char* errmsg = 0;
+    switch (error) {
+    case 36000:
+        errmsg = "Network busy, please try again later";// "ÍøÂç·±Ã¦£¬ÇëÉÔºòÔÙÊÔ";
+        break;
+    case 36001:
+        errmsg = "Parameter error";// "²ÎÊı´íÎó";
+        break;
+    case 36002:
+        errmsg = "appid error";// "appid´íÎó";
+        break;
+    case 36003:
+        errmsg = "Please try refresh";// "ÇëË¢ĞÂÔÙÊÔ";
+        break;
+    case 36004:
+        errmsg = "Please sign in again";// "ÇëÖØĞÂµÇÂ¼";
+        break;
+    case 36005:
+        errmsg = "User is not logged";// "ÓÃ»§Î´µÇÂ¼";
+        break;
+    case 36006:
+        errmsg = "The user does not activate";// "ÓÃ»§Î´¼¤»î";
+        break;
+    case 36007:
+        errmsg = "User is not authorized";// "ÓÃ»§Î´ÊÚÈ¨";
+        break;
+    case 36008:
+        errmsg = "User does not exist";// "ÓÃ»§²»´æÔÚ";
+        break;
+    case 36009:
+        errmsg = "User space shortage";// "ÓÃ»§¿Õ¼ä²»×ã";
+        break;
+    case 36010:
+        errmsg = "File does not exist";// "ÎÄ¼ş²»´æÔÚ";
+        break;
+    case 36012:
+        errmsg = "The operation timed out, please try again";// "²Ù×÷³¬Ê±£¬ÇëÖØÊÔ";
+        break;
+    case 36013:
+        errmsg = "At the same task much download can not be downloaded";// "Í¬Ê±ÏÂÔØµÄÈÎÎñ¹ı¶à£¬²»ÄÜÏÂÔØ";
+        break;
+    case 36014:
+        errmsg = "Storage path has been used";// "´æ´¢Â·¾¶ÒÑÊ¹ÓÃ";
+        break;
+    case 36016:
+        errmsg = "Task has been deleted";// "ÈÎÎñÒÑÉ¾³ı";
+        break;
+    case 36017:
+        errmsg = "Task completed";// "ÈÎÎñÒÑÍê³É";
+        break;
+    case 36018:
+        errmsg = "Resolution fails, the seed file is corrupted";// "½âÎöÊ§°Ü£¬ÖÖ×ÓÎÄ¼şËğ»µ";
+        break;
+    case 36019:
+        errmsg = "The task is being processed";// "ÈÎÎñÕıÔÚ´¦ÀíÖĞ";
+        break;
+    case 36020:
+        errmsg = "Task address does not exist";// "ÈÎÎñµØÖ·²»´æÔÚ";
+        break;
+    case 36021:
+        errmsg = "Max ordinary users download a task Oh! Immediately turn off download packages Download More!";// "ÆÕÍ¨ÓÃ»§×î¶àÍ¬Ê±ÏÂÔØ1¸öÈÎÎñÅ¶£¡ÂíÉÏ¿ªÍ¨ÀëÏßÏÂÔØÌ×²Í£¬Á¢¼´ÏÂÔØ¸ü¶à£¡";
+        break;
+    case 36022:
+        errmsg = "At the same task much download can not be downloaded";// "Í¬Ê±ÏÂÔØµÄÈÎÎñ¹ı¶à£¬²»ÄÜÏÂÔØ";
+        break;
+    case 36023:
+        errmsg = "Ordinary users can only download offline 5 monthly task Oh! Immediately turn off download packages Download More!";// "ÆÕÍ¨ÓÃ»§Ã¿ÔÂÖ»ÄÜÀëÏßÏÂÔØ5¸öÈÎÎñÅ¶£¡ÂíÉÏ¿ªÍ¨ÀëÏßÏÂÔØÌ×²Í£¬Á¢¼´ÏÂÔØ¸ü¶à£¡";
+        break;
+    case 36024:
+        errmsg = "This month downloads exceeded limit";// "±¾ÔÂÏÂÔØÊıÒÑ³¬ÏŞÖÆ";
+        break;
+    case 36025:
+        errmsg = "Share link has expired";// "·ÖÏíÁ´½ÓÒÑÊ§Ğ§";
+        break;
+    case 36026:
+        errmsg = "Link malformed";// "Á´½Ó¸ñÊ½ÓĞÎó";
+        break;
+    case 36027:
+        errmsg = "Link malformed";// "Á´½Ó¸ñÊ½ÓĞÎó";
+        break;
+    case 36028:
+        errmsg = "Temporarily unable to find the relevant seed information";// "ÔİÊ±ÎŞ·¨ÕÒµ½Ïà¹ØÖÖ×ÓĞÅÏ¢";
+        break;
+    case 36031:
+        errmsg = "Network busy, please try again later";// "ÍøÂç·±Ã¦£¬ÇëÉÔºòÔÙÊÔ";
+        break;
+    case -19:
+        errmsg = "Please enter the verification code";// "ÇëÊäÈëÑéÖ¤Âë";
+        break;
+    default:
+        errmsg = "Unknow error";
+        break;
+    }
+    return errmsg;
 }
 
-/*ä»ç½‘ç›˜JSè·å–ï¼Œåº”è¯¥æ˜¯è´­ä¹°å¥—é¤çš„é”™è¯¯æ¶ˆæ¯ã€‚ç„¶åé€šè¿‡ Google ç¿»è¯‘ï¼Œç¿»è¯‘ä¸ºè‹±æ–‡ã€‚*/
-const char *get_buy_errmsg_by_errno(int error)
+/*´ÓÍøÅÌJS»ñÈ¡£¬Ó¦¸ÃÊÇ¹ºÂòÌ×²ÍµÄ´íÎóÏûÏ¢¡£È»ºóÍ¨¹ı Google ·­Òë£¬·­ÒëÎªÓ¢ÎÄ¡£*/
+const char* get_buy_errmsg_by_errno(int error)
 {
-	const char *errmsg = 0;
-	switch (error) {
-	case 1000:
-		errmsg = "Uh oh, you can not upgrade from Advanced Package to lower packages, please re-purchase it.";// "å•Šå“¦ï¼Œä¸èƒ½ä»é«˜çº§å¥—é¤å‡çº§åˆ°ä½çº§å¥—é¤ï¼Œè¯·é‡æ–°è´­ä¹°å§ã€‚";
-		break;
-	case 1001:
-		errmsg = "Uh oh, you can not upgrade from Advanced Package to lower packages, please re-purchase it.";// "å•Šå“¦ï¼Œä¸èƒ½ä»é«˜çº§å¥—é¤å‡çº§åˆ°ä½çº§å¥—é¤ï¼Œè¯·é‡æ–°è´­ä¹°å§ã€‚";
-		break;
-	case 1002:
-		errmsg = "Lol, create orders failed, please try again later about it.";// "å•Šå“¦ï¼Œåˆ›å»ºè®¢å•å¤±è´¥äº†ï¼Œè¯·ç¨å€™é‡è¯•ä¸€ä¸‹å§ã€‚";
-		break;
-	case 1003:
-		errmsg = "Lol, create orders failed, please try again later about it.";// "å•Šå“¦ï¼Œåˆ›å»ºè®¢å•å¤±è´¥äº†ï¼Œè¯·ç¨å€™é‡è¯•ä¸€ä¸‹å§ã€‚";
-		break;
-	case 1004:
-		errmsg = "Lol, create orders failed, please try again later about it.";// "å•Šå“¦ï¼Œåˆ›å»ºè®¢å•å¤±è´¥äº†ï¼Œè¯·ç¨å€™é‡è¯•ä¸€ä¸‹å§ã€‚";
-		break;
-	case 1005:
-		errmsg = "Lol, create orders failed, please try again later about it.";// "å•Šå“¦ï¼Œåˆ›å»ºè®¢å•å¤±è´¥äº†ï¼Œè¯·ç¨å€™é‡è¯•ä¸€ä¸‹å§ã€‚";
-		break;
-	case 1006:
-		errmsg = "Lol, can not buy the same product on the same day, please re-purchase it.";// "å•Šå“¦ï¼Œä¸èƒ½åŒä¸€å¤©è´­ä¹°ç›¸åŒäº§å“ï¼Œè¯·é‡æ–°è´­ä¹°å§ã€‚";
-		break;
-	case 1007:
-		errmsg = "Lol, can not buy the same product on the same day, please re-purchase it.";// "å•Šå“¦ï¼Œä¸èƒ½åŒä¸€å¤©è´­ä¹°ç›¸åŒäº§å“ï¼Œè¯·é‡æ–°è´­ä¹°å§ã€‚";
-		break;
-	case 3002:
-		errmsg = "Lol, the order has been successful payment, please re-purchase it.";// "å•Šå“¦ï¼Œè¯¥è®¢å•å·²ç»æ”¯ä»˜æˆåŠŸï¼Œè¯·é‡æ–°è´­ä¹°å§ã€‚";
-		break;
-	case 3003:
-		errmsg = "Lol, the order has been paid fail, please re-purchase it.";// "å•Šå“¦ï¼Œè¯¥è®¢å•å·²ç»æ”¯ä»˜å¤±è´¥ï¼Œè¯·é‡æ–°è´­ä¹°å§ã€‚";
-		break;
-	case 36000:
-		errmsg = "Lol, server cold, urgent medical treatment in ......";// "å•Šå“¦ï¼ŒæœåŠ¡å™¨æ„Ÿå†’äº†ï¼Œç´§æ€¥åŒ»æ²»ä¸­â€¦â€¦";
-		break;
-	case 36001:
-		errmsg = "Lol, server cold, urgent medical treatment in ......";// "å•Šå“¦ï¼ŒæœåŠ¡å™¨æ„Ÿå†’äº†ï¼Œç´§æ€¥åŒ»æ²»ä¸­â€¦â€¦";
-		break;
-	case 36002:
-		errmsg = "Lol, server cold, urgent medical treatment in ......";// "å•Šå“¦ï¼ŒæœåŠ¡å™¨æ„Ÿå†’äº†ï¼Œç´§æ€¥åŒ»æ²»ä¸­â€¦â€¦";
-		break;
-	case 36003:
-		errmsg = "The visit anomaly, an authority restricted";// "è¯¥æ¬¡è®¿é—®å¼‚å¸¸ï¼Œæƒé™å—é™";
-		break;
-	case 36005:
-		errmsg = "Verification code input errors, please refresh retry";// "éªŒè¯ç è¾“å…¥é”™è¯¯ï¼Œè¯·åˆ·æ–°é‡è¯•";
-		break;
-	case 36006:
-		errmsg = "Uh oh, we did not launch this product ah";// "å•Šå“¦ï¼Œæˆ‘ä»¬è¿˜æ²¡æ¨å‡ºè¿™æ¬¾äº§å“å‘€";
-		break;
-	case 36007:
-		errmsg = "As an exception, a cup of tea next to retry?";// "ä½œå¼‚å¸¸ï¼Œå–æ¯èŒ¶é‡è¯•ä¸‹ï¼Ÿ";
-		break;
-	case 36008:
-		errmsg = "Oh, abnormal your operation, please refresh and try again.";// "å“å‘€ï¼Œä½ çš„æ“ä½œå¼‚å¸¸ï¼Œè¯·åˆ·æ–°é‡è¯•ã€‚";
-		break;
-	case 36009:
-		errmsg = "Foundation course allowed to buy";// "åŸºç¡€å¥—é¤ä¸å…è®¸è´­ä¹°";
-		break;
-	case 36010:
-		errmsg = "Lol, server cold, urgent medical treatment in ......";// "å•Šå“¦ï¼ŒæœåŠ¡å™¨æ„Ÿå†’äº†ï¼Œç´§æ€¥åŒ»æ²»ä¸­â€¦â€¦";
-		break;
-	case 36011:
-		errmsg = "Lol, server cold, urgent medical treatment in ......";// "å•Šå“¦ï¼ŒæœåŠ¡å™¨æ„Ÿå†’äº†ï¼Œç´§æ€¥åŒ»æ²»ä¸­â€¦â€¦";
-		break;
-	case 36012:
-		errmsg = "Lol, server cold, urgent medical treatment in ......";// "å•Šå“¦ï¼ŒæœåŠ¡å™¨æ„Ÿå†’äº†ï¼Œç´§æ€¥åŒ»æ²»ä¸­â€¦â€¦";
-		break;
-	case 36013:
-		errmsg = "The order can not be re-paid";// "è¯¥è®¢å•æ— æ³•é‡æ–°æ”¯ä»˜";
-		break;
-	case 36014:
-		errmsg = "Lol, the order has been successful payment, please re-purchase it.";// "å•Šå“¦ï¼Œè¯¥è®¢å•å·²ç»æ”¯ä»˜æˆåŠŸï¼Œè¯·é‡æ–°è´­ä¹°å§ã€‚";
-		break;
-	case 36015:
-		errmsg = "Lol, server cold, urgent medical treatment in ......";// "å•Šå“¦ï¼ŒæœåŠ¡å™¨æ„Ÿå†’äº†ï¼Œç´§æ€¥åŒ»æ²»ä¸­â€¦â€¦";
-		break;
-	case 36016:
-		errmsg = "Lol, server cold, urgent medical treatment in ......";// "å•Šå“¦ï¼ŒæœåŠ¡å™¨æ„Ÿå†’äº†ï¼Œç´§æ€¥åŒ»æ²»ä¸­â€¦â€¦";
-		break;
-	case 36017:
-		errmsg = "Lol, server cold, urgent medical treatment in ......";// "å•Šå“¦ï¼ŒæœåŠ¡å™¨æ„Ÿå†’äº†ï¼Œç´§æ€¥åŒ»æ²»ä¸­â€¦â€¦";
-		break;
-	case 36018:
-		errmsg = "Lol, server cold, urgent medical treatment in ......";// "å•Šå“¦ï¼ŒæœåŠ¡å™¨æ„Ÿå†’äº†ï¼Œç´§æ€¥åŒ»æ²»ä¸­â€¦â€¦";
-		break;
-	case 36019:
-		errmsg = "Lol, server cold, urgent medical treatment in ......";// "å•Šå“¦ï¼ŒæœåŠ¡å™¨æ„Ÿå†’äº†ï¼Œç´§æ€¥åŒ»æ²»ä¸­â€¦â€¦";
-		break;
-	default:
-		errmsg = "Unknow error";
-		break;
-	}
-	return errmsg;
+    const char* errmsg = 0;
+    switch (error) {
+    case 1000:
+        errmsg = "Uh oh, you can not upgrade from Advanced Package to lower packages, please re-purchase it.";// "°¡Å¶£¬²»ÄÜ´Ó¸ß¼¶Ì×²ÍÉı¼¶µ½µÍ¼¶Ì×²Í£¬ÇëÖØĞÂ¹ºÂò°É¡£";
+        break;
+    case 1001:
+        errmsg = "Uh oh, you can not upgrade from Advanced Package to lower packages, please re-purchase it.";// "°¡Å¶£¬²»ÄÜ´Ó¸ß¼¶Ì×²ÍÉı¼¶µ½µÍ¼¶Ì×²Í£¬ÇëÖØĞÂ¹ºÂò°É¡£";
+        break;
+    case 1002:
+        errmsg = "Lol, create orders failed, please try again later about it.";// "°¡Å¶£¬´´½¨¶©µ¥Ê§°ÜÁË£¬ÇëÉÔºòÖØÊÔÒ»ÏÂ°É¡£";
+        break;
+    case 1003:
+        errmsg = "Lol, create orders failed, please try again later about it.";// "°¡Å¶£¬´´½¨¶©µ¥Ê§°ÜÁË£¬ÇëÉÔºòÖØÊÔÒ»ÏÂ°É¡£";
+        break;
+    case 1004:
+        errmsg = "Lol, create orders failed, please try again later about it.";// "°¡Å¶£¬´´½¨¶©µ¥Ê§°ÜÁË£¬ÇëÉÔºòÖØÊÔÒ»ÏÂ°É¡£";
+        break;
+    case 1005:
+        errmsg = "Lol, create orders failed, please try again later about it.";// "°¡Å¶£¬´´½¨¶©µ¥Ê§°ÜÁË£¬ÇëÉÔºòÖØÊÔÒ»ÏÂ°É¡£";
+        break;
+    case 1006:
+        errmsg = "Lol, can not buy the same product on the same day, please re-purchase it.";// "°¡Å¶£¬²»ÄÜÍ¬Ò»Ìì¹ºÂòÏàÍ¬²úÆ·£¬ÇëÖØĞÂ¹ºÂò°É¡£";
+        break;
+    case 1007:
+        errmsg = "Lol, can not buy the same product on the same day, please re-purchase it.";// "°¡Å¶£¬²»ÄÜÍ¬Ò»Ìì¹ºÂòÏàÍ¬²úÆ·£¬ÇëÖØĞÂ¹ºÂò°É¡£";
+        break;
+    case 3002:
+        errmsg = "Lol, the order has been successful payment, please re-purchase it.";// "°¡Å¶£¬¸Ã¶©µ¥ÒÑ¾­Ö§¸¶³É¹¦£¬ÇëÖØĞÂ¹ºÂò°É¡£";
+        break;
+    case 3003:
+        errmsg = "Lol, the order has been paid fail, please re-purchase it.";// "°¡Å¶£¬¸Ã¶©µ¥ÒÑ¾­Ö§¸¶Ê§°Ü£¬ÇëÖØĞÂ¹ºÂò°É¡£";
+        break;
+    case 36000:
+        errmsg = "Lol, server cold, urgent medical treatment in ......";// "°¡Å¶£¬·şÎñÆ÷¸ĞÃ°ÁË£¬½ô¼±Ò½ÖÎÖĞ¡­¡­";
+        break;
+    case 36001:
+        errmsg = "Lol, server cold, urgent medical treatment in ......";// "°¡Å¶£¬·şÎñÆ÷¸ĞÃ°ÁË£¬½ô¼±Ò½ÖÎÖĞ¡­¡­";
+        break;
+    case 36002:
+        errmsg = "Lol, server cold, urgent medical treatment in ......";// "°¡Å¶£¬·şÎñÆ÷¸ĞÃ°ÁË£¬½ô¼±Ò½ÖÎÖĞ¡­¡­";
+        break;
+    case 36003:
+        errmsg = "The visit anomaly, an authority restricted";// "¸Ã´Î·ÃÎÊÒì³££¬È¨ÏŞÊÜÏŞ";
+        break;
+    case 36005:
+        errmsg = "Verification code input errors, please refresh retry";// "ÑéÖ¤ÂëÊäÈë´íÎó£¬ÇëË¢ĞÂÖØÊÔ";
+        break;
+    case 36006:
+        errmsg = "Uh oh, we did not launch this product ah";// "°¡Å¶£¬ÎÒÃÇ»¹Ã»ÍÆ³öÕâ¿î²úÆ·Ñ½";
+        break;
+    case 36007:
+        errmsg = "As an exception, a cup of tea next to retry?";// "×÷Òì³££¬ºÈ±­²èÖØÊÔÏÂ£¿";
+        break;
+    case 36008:
+        errmsg = "Oh, abnormal your operation, please refresh and try again.";// "°¥Ñ½£¬ÄãµÄ²Ù×÷Òì³££¬ÇëË¢ĞÂÖØÊÔ¡£";
+        break;
+    case 36009:
+        errmsg = "Foundation course allowed to buy";// "»ù´¡Ì×²Í²»ÔÊĞí¹ºÂò";
+        break;
+    case 36010:
+        errmsg = "Lol, server cold, urgent medical treatment in ......";// "°¡Å¶£¬·şÎñÆ÷¸ĞÃ°ÁË£¬½ô¼±Ò½ÖÎÖĞ¡­¡­";
+        break;
+    case 36011:
+        errmsg = "Lol, server cold, urgent medical treatment in ......";// "°¡Å¶£¬·şÎñÆ÷¸ĞÃ°ÁË£¬½ô¼±Ò½ÖÎÖĞ¡­¡­";
+        break;
+    case 36012:
+        errmsg = "Lol, server cold, urgent medical treatment in ......";// "°¡Å¶£¬·şÎñÆ÷¸ĞÃ°ÁË£¬½ô¼±Ò½ÖÎÖĞ¡­¡­";
+        break;
+    case 36013:
+        errmsg = "The order can not be re-paid";// "¸Ã¶©µ¥ÎŞ·¨ÖØĞÂÖ§¸¶";
+        break;
+    case 36014:
+        errmsg = "Lol, the order has been successful payment, please re-purchase it.";// "°¡Å¶£¬¸Ã¶©µ¥ÒÑ¾­Ö§¸¶³É¹¦£¬ÇëÖØĞÂ¹ºÂò°É¡£";
+        break;
+    case 36015:
+        errmsg = "Lol, server cold, urgent medical treatment in ......";// "°¡Å¶£¬·şÎñÆ÷¸ĞÃ°ÁË£¬½ô¼±Ò½ÖÎÖĞ¡­¡­";
+        break;
+    case 36016:
+        errmsg = "Lol, server cold, urgent medical treatment in ......";// "°¡Å¶£¬·şÎñÆ÷¸ĞÃ°ÁË£¬½ô¼±Ò½ÖÎÖĞ¡­¡­";
+        break;
+    case 36017:
+        errmsg = "Lol, server cold, urgent medical treatment in ......";// "°¡Å¶£¬·şÎñÆ÷¸ĞÃ°ÁË£¬½ô¼±Ò½ÖÎÖĞ¡­¡­";
+        break;
+    case 36018:
+        errmsg = "Lol, server cold, urgent medical treatment in ......";// "°¡Å¶£¬·şÎñÆ÷¸ĞÃ°ÁË£¬½ô¼±Ò½ÖÎÖĞ¡­¡­";
+        break;
+    case 36019:
+        errmsg = "Lol, server cold, urgent medical treatment in ......";// "°¡Å¶£¬·şÎñÆ÷¸ĞÃ°ÁË£¬½ô¼±Ò½ÖÎÖĞ¡­¡­";
+        break;
+    default:
+        errmsg = "Unknow error";
+        break;
+    }
+    return errmsg;
 }
 
-/*ä»ç½‘ç›˜JSè·å–ï¼Œåº”è¯¥æ˜¯è´­ä¹°å¥—é¤çš„é”™è¯¯æ¶ˆæ¯ã€‚ç„¶åé€šè¿‡ Google ç¿»è¯‘ï¼Œç¿»è¯‘ä¸ºè‹±æ–‡ã€‚*/
-const char *get_record_errmsg_by_errno(int error)
+/*´ÓÍøÅÌJS»ñÈ¡£¬Ó¦¸ÃÊÇ¹ºÂòÌ×²ÍµÄ´íÎóÏûÏ¢¡£È»ºóÍ¨¹ı Google ·­Òë£¬·­ÒëÎªÓ¢ÎÄ¡£*/
+const char* get_record_errmsg_by_errno(int error)
 {
-	const char *errmsg = 0;
-	switch (error) {
-	case 36000:
-		errmsg = "Internal error";// "å†…éƒ¨é”™è¯¯";
-		break;
-	case 36001:
-		errmsg = "Unsupported API";// "ä¸æ”¯æŒçš„API";
-		break;
-	case 36002:
-		errmsg = "Parameter error";// "å‚æ•°é”™è¯¯";
-		break;
-	case 36003:
-		errmsg = "No access";// "æ— æƒé™è®¿é—®";
-		break;
-	case 36005:
-		errmsg = "Code invalid or illegal";// "éªŒè¯ç å¤±æ•ˆæˆ–éæ³•";
-		break;
-	case 36006:
-		errmsg = "To purchase the product does not exist";// "è¦è´­ä¹°çš„äº§å“ä¸å­˜åœ¨";
-		break;
-	case 36007:
-		errmsg = "Users operate in parallel in the process of buying the product, but could not get the error code";// "ç”¨æˆ·åœ¨è´­ä¹°äº§å“çš„è¿‡ç¨‹ä¸­å¹¶è¡Œæ“ä½œï¼Œä¸€èˆ¬ä¸ä¼šå‡ºç°è¯¥é”™è¯¯ç ";
-		break;
-	case 36016:
-		errmsg = "This function is not property values and can not get access systems concern";// "è¯¥åŠŸèƒ½ä¸æ˜¯å±æ€§å€¼ï¼Œä¸èƒ½è·å–ï¼Œæ¥å…¥ç³»ç»Ÿå…³æ³¨";
-		break;
-	case 36017:
-		errmsg = "This feature is not a consumer value, not consumption, access systems concern";// "è¯¥åŠŸèƒ½ä¸æ˜¯æ¶ˆè´¹å€¼ï¼Œä¸èƒ½æ¶ˆè´¹ï¼Œæ¥å…¥ç³»ç»Ÿå…³æ³¨";
-		break;
-	case 36018:
-		errmsg = "Function items to be consumed is not found, access systems concern";// "è¦æ¶ˆè´¹çš„åŠŸèƒ½é¡¹æœªæ‰¾åˆ°ï¼Œæ¥å…¥ç³»ç»Ÿå…³æ³¨";
-		break;
-	case 36019:
-		errmsg = "Refusal to consume, the user does not have quotas, access systems concern";// "æ‹’ç»æ¶ˆè´¹ï¼Œç”¨æˆ·æ²¡æœ‰é…é¢äº†ï¼Œæ¥å…¥ç³»ç»Ÿå…³æ³¨";
-		break;
-	case 36020:
-		errmsg = "Request replay";// "è¯·æ±‚é‡æ”¾";
-		break;
-	case 36021:
-		errmsg = "Request expired, or a third party request forgery";// "è¯·æ±‚è¿‡æœŸï¼Œæˆ–è€…æ˜¯ç¬¬ä¸‰æ–¹ä¼ªé€ çš„è¯·æ±‚";
-		break;
-	case 36031:
-		errmsg = "Third party api parameter error";// "ç¬¬ä¸‰æ–¹apiå‚æ•°é”™è¯¯";
-		break;
-	case 36032:
-		errmsg = "Third party api signature error";// "ç¬¬ä¸‰æ–¹apiç­¾åé”™è¯¯";
-		break;
-	case 36033:
-		errmsg = "Third party api file error";// "ç¬¬ä¸‰æ–¹apiæ–‡ä»¶é”™è¯¯";
-		break;
-	case 36034:
-		errmsg = "Database Error";// "æ•°æ®åº“é”™è¯¯";
-		break;
-	case 36035:
-		errmsg = "Orders already exist";// "è®¢å•å·²ç»å­˜åœ¨";
-		break;
-	case 36036:
-		errmsg = "Order token failure";// "è®¢å•tokenå¤±æ•ˆ";
-		break;
-	case 36037:
-		errmsg = "Check Order does not exist";// "æŸ¥è¯¢è®¢å•ä¸å­˜åœ¨";
-		break;
-	case 36038:
-		errmsg = "Provinces parameter error";// "çœå¸‚å‚æ•°é”™è¯¯";
-		break;
-	case 36039:
-		errmsg = "Price does not exist";// "å•ä»·ä¸å­˜åœ¨";
-		break;
-	default:
-		errmsg = "Unknow error";
-		break;
-	}
-	return errmsg;
+    const char* errmsg = 0;
+    switch (error) {
+    case 36000:
+        errmsg = "Internal error";// "ÄÚ²¿´íÎó";
+        break;
+    case 36001:
+        errmsg = "Unsupported API";// "²»Ö§³ÖµÄAPI";
+        break;
+    case 36002:
+        errmsg = "Parameter error";// "²ÎÊı´íÎó";
+        break;
+    case 36003:
+        errmsg = "No access";// "ÎŞÈ¨ÏŞ·ÃÎÊ";
+        break;
+    case 36005:
+        errmsg = "Code invalid or illegal";// "ÑéÖ¤ÂëÊ§Ğ§»ò·Ç·¨";
+        break;
+    case 36006:
+        errmsg = "To purchase the product does not exist";// "Òª¹ºÂòµÄ²úÆ·²»´æÔÚ";
+        break;
+    case 36007:
+        errmsg = "Users operate in parallel in the process of buying the product, but could not get the error code";// "ÓÃ»§ÔÚ¹ºÂò²úÆ·µÄ¹ı³ÌÖĞ²¢ĞĞ²Ù×÷£¬Ò»°ã²»»á³öÏÖ¸Ã´íÎóÂë";
+        break;
+    case 36016:
+        errmsg = "This function is not property values and can not get access systems concern";// "¸Ã¹¦ÄÜ²»ÊÇÊôĞÔÖµ£¬²»ÄÜ»ñÈ¡£¬½ÓÈëÏµÍ³¹Ø×¢";
+        break;
+    case 36017:
+        errmsg = "This feature is not a consumer value, not consumption, access systems concern";// "¸Ã¹¦ÄÜ²»ÊÇÏû·ÑÖµ£¬²»ÄÜÏû·Ñ£¬½ÓÈëÏµÍ³¹Ø×¢";
+        break;
+    case 36018:
+        errmsg = "Function items to be consumed is not found, access systems concern";// "ÒªÏû·ÑµÄ¹¦ÄÜÏîÎ´ÕÒµ½£¬½ÓÈëÏµÍ³¹Ø×¢";
+        break;
+    case 36019:
+        errmsg = "Refusal to consume, the user does not have quotas, access systems concern";// "¾Ü¾øÏû·Ñ£¬ÓÃ»§Ã»ÓĞÅä¶îÁË£¬½ÓÈëÏµÍ³¹Ø×¢";
+        break;
+    case 36020:
+        errmsg = "Request replay";// "ÇëÇóÖØ·Å";
+        break;
+    case 36021:
+        errmsg = "Request expired, or a third party request forgery";// "ÇëÇó¹ıÆÚ£¬»òÕßÊÇµÚÈı·½Î±ÔìµÄÇëÇó";
+        break;
+    case 36031:
+        errmsg = "Third party api parameter error";// "µÚÈı·½api²ÎÊı´íÎó";
+        break;
+    case 36032:
+        errmsg = "Third party api signature error";// "µÚÈı·½apiÇ©Ãû´íÎó";
+        break;
+    case 36033:
+        errmsg = "Third party api file error";// "µÚÈı·½apiÎÄ¼ş´íÎó";
+        break;
+    case 36034:
+        errmsg = "Database Error";// "Êı¾İ¿â´íÎó";
+        break;
+    case 36035:
+        errmsg = "Orders already exist";// "¶©µ¥ÒÑ¾­´æÔÚ";
+        break;
+    case 36036:
+        errmsg = "Order token failure";// "¶©µ¥tokenÊ§Ğ§";
+        break;
+    case 36037:
+        errmsg = "Check Order does not exist";// "²éÑ¯¶©µ¥²»´æÔÚ";
+        break;
+    case 36038:
+        errmsg = "Provinces parameter error";// "Ê¡ÊĞ²ÎÊı´íÎó";
+        break;
+    case 36039:
+        errmsg = "Price does not exist";// "µ¥¼Û²»´æÔÚ";
+        break;
+    default:
+        errmsg = "Unknow error";
+        break;
+    }
+    return errmsg;
 }

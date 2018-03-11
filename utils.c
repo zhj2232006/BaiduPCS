@@ -6,108 +6,119 @@
 #include <time.h>
 
 #ifdef WIN32
-#  include <conio.h>
-#  include <direct.h>
-# include <WinSock2.h>
-# include <Windows.h>
-# include <Shlwapi.h>
+    #include <conio.h>
+    #include <direct.h>
+    #include <WinSock2.h>
+    #include <Windows.h>
+    #include <Shlwapi.h>
 
-# define snprintf _snprintf
-# define vsnprintf _vsnprintf
+    #define snprintf _snprintf
+    #define vsnprintf _vsnprintf
 
 #else
-#  include <inttypes.h>
-#  include <termios.h>
+    #include <inttypes.h>
+    #include <termios.h>
 #endif
 
 #include "pcs/pcs_mem.h"
 #include "utils.h"
 
 
-static inline char *i_strdup(const char *str, int len)
+static inline char* i_strdup(const char* str, int len)
 {
-	char *res = 0;
-	if (str) {
-		if (len == -1) len = strlen(str);
-		res = (char *)pcs_malloc(len + 1);
-		if (!res) return 0;
-		memcpy(res, str, len);
-		res[len] = '\0';
-	}
-	return res;
+    char* res = 0;
+    if (str) {
+        if (len == -1) {
+            len = strlen(str);
+        }
+        res = (char*)pcs_malloc(len + 1);
+        if (!res) {
+            return 0;
+        }
+        memcpy(res, str, len);
+        res[len] = '\0';
+    }
+    return res;
 }
 
-#pragma region std_string(), std_password(), is_absolute_path() ä¸‰ä¸ªå‡½æ•°
+#pragma region std_string(), std_password(), is_absolute_path() Èı¸öº¯Êı
 
 #ifdef WIN32
 
 /*
-* ä»æ ‡å‡†è¾“å…¥ä¸­è¾“å…¥å­—ç¬¦ä¸²
-* str  - è¾“å…¥çš„å­—ç¬¦ä¸²å°†å¡«å……åˆ° str ä¸­
-* size - æœ€å¤šè¾“å…¥ size ä¸ªå­—èŠ‚ã€‚
+* ´Ó±ê×¼ÊäÈëÖĞÊäÈë×Ö·û´®
+* str  - ÊäÈëµÄ×Ö·û´®½«Ìî³äµ½ str ÖĞ
+* size - ×î¶àÊäÈë size ¸ö×Ö½Ú¡£
 */
-void std_string(char *str, int size)
+void std_string(char* str, int size)
 {
-	char c;
-	int i = 0;
+    char c;
+    int i = 0;
 
-	while ((c = _getch()) != '\r' && c != '\n') {
-		if (c == '\b') {
-			if (i > 0) {
-				i--;
-				putchar(c);
-				putchar(' ');
-				putchar(c);
-			}
-		}
-		else if (isprint(c)) {
-			str[i] = c;
-			putchar(c);
-			i++;
-			if (i >= size) {
-				break;
-			}
-		}
-	}
-	str[i >= size ? (size - 1) : i] = '\0';
-	printf("\n");
+    while ((c = _getch()) != '\r' && c != '\n') {
+        if (c == '\b') {
+            if (i > 0) {
+                i--;
+                putchar(c);
+                putchar(' ');
+                putchar(c);
+            }
+        } else if (isprint(c)) {
+            str[i] = c;
+            putchar(c);
+            i++;
+            if (i >= size) {
+                break;
+            }
+        }
+    }
+    str[i >= size ? (size - 1) : i] = '\0';
+    printf("\n");
 }
 
 /*
-* ä»æ ‡å‡†è¾“å…¥ä¸­è¾“å…¥å¯†ç ï¼Œè¾“å…¥çš„å­—ç¬¦ä¸å›æ˜¾
-* password  - è¾“å…¥çš„å¯†ç å°†å¡«å……åˆ° password ä¸­
-* size      - æœ€å¤šè¾“å…¥sizeä¸ªå­—èŠ‚ã€‚
+* ´Ó±ê×¼ÊäÈëÖĞÊäÈëÃÜÂë£¬ÊäÈëµÄ×Ö·û²»»ØÏÔ
+* password  - ÊäÈëµÄÃÜÂë½«Ìî³äµ½ password ÖĞ
+* size      - ×î¶àÊäÈësize¸ö×Ö½Ú¡£
 */
-void std_password(char *password, int size)
+void std_password(char* password, int size)
 {
-	char c;
-	int i = 0;
+    char c;
+    int i = 0;
 
-	while ((c = _getch()) != '\r' && c != '\n') {
-		if (c == '\b') {
-			if (i > 0)
-				i--;
-		}
-		else if (isprint(c)) {
-			password[i] = c;
-			//putchar('*');
-			i++;
-			if (i >= size) {
-				break;
-			}
-		}
-	}
-	password[i >= size ? (size - 1) : i] = '\0';
-	printf("\n");
+    while ((c = _getch()) != '\r' && c != '\n') {
+        if (c == '\b') {
+            if (i > 0) {
+                i--;
+            }
+        } else if (isprint(c)) {
+            password[i] = c;
+            //putchar('*');
+            i++;
+            if (i >= size) {
+                break;
+            }
+        }
+    }
+    password[i >= size ? (size - 1) : i] = '\0';
+    printf("\n");
 }
 
-int is_absolute_path(const char *path)
+int is_absolute_path(const char* path)
 {
-	if (!path) return 0;
-	if (strlen(path) < 2) return 0;
-	if (path[1] != ':') return 0;
-	if (!((path[0] > 'a' && path[0] < 'z') || (path[0] > 'A' && path[0] < 'Z'))) return 0;
-	return 1;
+    if (!path) {
+        return 0;
+    }
+    if (strlen(path) < 2) {
+        return 0;
+    }
+    if (path[1] != ':') {
+        return 0;
+    }
+    if (!((path[0] > 'a' && path[0] < 'z') || (path[0] > 'A' && path[0] < 'Z'))) {
+        return 0;
+    }
+    return 1;
 }
 
 #else
@@ -116,78 +127,84 @@ int is_absolute_path(const char *path)
 #include <unistd.h>
 
 /*
-* ä»æ ‡å‡†è¾“å…¥ä¸­è¾“å…¥å­—ç¬¦ä¸²
-* str  - è¾“å…¥çš„å­—ç¬¦ä¸²å°†å¡«å……åˆ° str ä¸­
-* size - æœ€å¤šè¾“å…¥ size ä¸ªå­—èŠ‚ã€‚
+* ´Ó±ê×¼ÊäÈëÖĞÊäÈë×Ö·û´®
+* str  - ÊäÈëµÄ×Ö·û´®½«Ìî³äµ½ str ÖĞ
+* size - ×î¶àÊäÈë size ¸ö×Ö½Ú¡£
 */
-void std_string(char *str, int size)
+void std_string(char* str, int size)
 {
-	struct termios oflags, nflags;
+    struct termios oflags, nflags;
 
-	/* disabling echo */
-	tcgetattr(fileno(stdin), &oflags);
-	nflags = oflags;
-	//nflags.c_lflag &= ~ECHO;
-	//nflags.c_lflag |= ECHONL;
+    /* disabling echo */
+    tcgetattr(fileno(stdin), &oflags);
+    nflags = oflags;
+    //nflags.c_lflag &= ~ECHO;
+    //nflags.c_lflag |= ECHONL;
 
-	if (tcsetattr(fileno(stdin), TCSANOW, &nflags) != 0) {
-		perror("tcsetattr");
-		return;
-	}
+    if (tcsetattr(fileno(stdin), TCSANOW, &nflags) != 0) {
+        perror("tcsetattr");
+        return;
+    }
 
-	//printf("user name: ");
-	fgets(str, size, stdin);
-	str[size - 1] = 0;
-	str[strlen(str) - 1] = 0;
-	//printf("you typed '%s'\n", str);
+    //printf("user name: ");
+    fgets(str, size, stdin);
+    str[size - 1] = 0;
+    str[strlen(str) - 1] = 0;
+    //printf("you typed '%s'\n", str);
 
-	/* restore terminal */
-	if (tcsetattr(fileno(stdin), TCSANOW, &oflags) != 0) {
-		perror("tcsetattr");
-		return;
-	}
+    /* restore terminal */
+    if (tcsetattr(fileno(stdin), TCSANOW, &oflags) != 0) {
+        perror("tcsetattr");
+        return;
+    }
 }
 
 /*
-* ä»æ ‡å‡†è¾“å…¥ä¸­è¾“å…¥å¯†ç ï¼Œè¾“å…¥çš„å­—ç¬¦ä¸å›æ˜¾
-* password  - è¾“å…¥çš„å¯†ç å°†å¡«å……åˆ° password ä¸­
-* size      - æœ€å¤šè¾“å…¥sizeä¸ªå­—èŠ‚ã€‚
+* ´Ó±ê×¼ÊäÈëÖĞÊäÈëÃÜÂë£¬ÊäÈëµÄ×Ö·û²»»ØÏÔ
+* password  - ÊäÈëµÄÃÜÂë½«Ìî³äµ½ password ÖĞ
+* size      - ×î¶àÊäÈësize¸ö×Ö½Ú¡£
 */
-void std_password(char *password, int size)
+void std_password(char* password, int size)
 {
-	struct termios oflags, nflags;
+    struct termios oflags, nflags;
 
-	/* disabling echo */
-	tcgetattr(fileno(stdin), &oflags);
-	nflags = oflags;
-	nflags.c_lflag &= ~ECHO;
-	nflags.c_lflag |= ECHONL;
+    /* disabling echo */
+    tcgetattr(fileno(stdin), &oflags);
+    nflags = oflags;
+    nflags.c_lflag &= ~ECHO;
+    nflags.c_lflag |= ECHONL;
 
-	if (tcsetattr(fileno(stdin), TCSANOW, &nflags) != 0) {
-		perror("tcsetattr");
-		return;
-	}
+    if (tcsetattr(fileno(stdin), TCSANOW, &nflags) != 0) {
+        perror("tcsetattr");
+        return;
+    }
 
-	//printf("password: ");
-	fgets(password, size, stdin);
-	password[size - 1] = 0;
-	password[strlen(password) - 1] = 0;
-	//printf("you typed '%s'\n", password);
+    //printf("password: ");
+    fgets(password, size, stdin);
+    password[size - 1] = 0;
+    password[strlen(password) - 1] = 0;
+    //printf("you typed '%s'\n", password);
 
-	/* restore terminal */
-	if (tcsetattr(fileno(stdin), TCSANOW, &oflags) != 0) {
-		perror("tcsetattr");
-		return;
-	}
+    /* restore terminal */
+    if (tcsetattr(fileno(stdin), TCSANOW, &oflags) != 0) {
+        perror("tcsetattr");
+        return;
+    }
 
 }
 
-int is_absolute_path(const char *path)
+int is_absolute_path(const char* path)
 {
-	if (!path) return 0;
-	if (strlen(path) < 1) return 0;
-	if (path[0] != '/' && path[0] != '~') return 0;
-	return 1;
+    if (!path) {
+        return 0;
+    }
+    if (strlen(path) < 1) {
+        return 0;
+    }
+    if (path[0] != '/' && path[0] != '~') {
+        return 0;
+    }
+    return 1;
 }
 
 #endif
@@ -198,419 +215,441 @@ int is_absolute_path(const char *path)
 */
 int startsWith(char* base, char* str)
 {
-	return (strstr(base, str) - base) == 0;
+    return (strstr(base, str) - base) == 0;
 }
 
 /** detecting whether base is ends with str
 */
 int endsWith(char* base, char* str)
 {
-	int blen = strlen(base);
-	int slen = strlen(str);
-	return (blen >= slen) && (strcmp(base + blen - slen, str) == 0);
+    int blen = strlen(base);
+    int slen = strlen(str);
+    return (blen >= slen) && (strcmp(base + blen - slen, str) == 0);
 }
 
 /*
-* åˆ¤æ–­ä¸¤ä¸ªå­—ç¬¦ä¸²æ˜¯å¦ç›¸ç­‰ã€‚
-*  s1    - ä»¥'\0'ä¸ºç»“æŸæ ‡è®°çš„å­—ç¬¦ä¸²
-*  s2    - å¾…æ¯”è¾ƒçš„å­—ç¬¦ä¸²
-*  s2len - s2å­—ç¬¦ä¸²çš„å­—èŠ‚é•¿åº¦ã€‚å¦‚æœä¼ å…¥-1çš„è¯ï¼Œåˆ™ä½¿ç”¨'\0'ä½œä¸ºå…¶ç»“æŸæ ‡è®°
-* å¦‚æœç›¸ç­‰ï¼Œåˆ™è¿”å›1ï¼Œå¦åˆ™è¿”å›0ã€‚
+* ÅĞ¶ÏÁ½¸ö×Ö·û´®ÊÇ·ñÏàµÈ¡£
+*  s1    - ÒÔ'\0'Îª½áÊø±ê¼ÇµÄ×Ö·û´®
+*  s2    - ´ı±È½ÏµÄ×Ö·û´®
+*  s2len - s2×Ö·û´®µÄ×Ö½Ú³¤¶È¡£Èç¹û´«Èë-1µÄ»°£¬ÔòÊ¹ÓÃ'\0'×÷ÎªÆä½áÊø±ê¼Ç
+* Èç¹ûÏàµÈ£¬Ôò·µ»Ø1£¬·ñÔò·µ»Ø0¡£
 */
-int streq(const char *s1, const char *s2, int s2len)
+int streq(const char* s1, const char* s2, int s2len)
 {
-	const char *p1 = s1, *p2 = s2;
-	int i = 0, rc = 1;
-	if (s2len == -1) {
-		for (i = 0;; i++) {
-			if (!s1[i]) {
-				if (!s2[i]){
-					break;
-				}
-				else{
-					rc = 0;
-					break;
-				}
-			}
-			else if (!s2[i]) {
-				rc = 0;
-				break;
-			}
-			else if (s1[i] != s2[i]) {
-				rc = 0;
-				break;
-			}
-		}
-	}
-	else {
-		for (i = 0; i < s2len; i++) {
-			if (!s1[i] || s1[i] != s2[i]) {
-				rc = 0;
-				break;
-			}
-		}
-	}
-	return rc;
+    const char* p1 = s1, *p2 = s2;
+    int i = 0, rc = 1;
+    if (s2len == -1) {
+        for (i = 0;; i++) {
+            if (!s1[i]) {
+                if (!s2[i]) {
+                    break;
+                } else {
+                    rc = 0;
+                    break;
+                }
+            } else if (!s2[i]) {
+                rc = 0;
+                break;
+            } else if (s1[i] != s2[i]) {
+                rc = 0;
+                break;
+            }
+        }
+    } else {
+        for (i = 0; i < s2len; i++) {
+            if (!s1[i] || s1[i] != s2[i]) {
+                rc = 0;
+                break;
+            }
+        }
+    }
+    return rc;
 }
 
 /*
-* åˆ¤æ–­arræ•°ç»„ä¸­æ˜¯å¦å­˜åœ¨å­—ç¬¦ä¸²strï¼Œå¦‚æœå­˜åœ¨åˆ™è¿”å›å…¶æ ‡å·ï¼ˆæ ‡å·ä¸º [ç´¢å¼•] + 1ï¼‰ï¼Œå¦åˆ™è¿”å›0ã€‚
-* æ¯”è¾ƒæ—¶åŒºåˆ†å¤§å°å†™ã€‚
-* arr  - å­˜å‚¨å¾ˆå¤šå­—ç¬¦ä¸²çš„æ•°ç»„ï¼Œæ•°ç»„æœ€åä¸€ä¸ªå…ƒç´ å¿…é¡»ä¸ºNULLã€‚
-* str  - åˆ¤æ–­æ˜¯å¦å­˜åœ¨çš„å­—ç¬¦ä¸²
-* len  - å­—ç¬¦ä¸²é•¿åº¦ã€‚ å¦‚æœä¼ å…¥-1ï¼Œåˆ™'\0'ä½œä¸ºå…¶ç»“æŸæ ‡è®°ã€‚
+* ÅĞ¶ÏarrÊı×éÖĞÊÇ·ñ´æÔÚ×Ö·û´®str£¬Èç¹û´æÔÚÔò·µ»ØÆä±êºÅ£¨±êºÅÎª [Ë÷Òı] + 1£©£¬·ñÔò·µ»Ø0¡£
+* ±È½ÏÊ±Çø·Ö´óĞ¡Ğ´¡£
+* arr  - ´æ´¢ºÜ¶à×Ö·û´®µÄÊı×é£¬Êı×é×îºóÒ»¸öÔªËØ±ØĞëÎªNULL¡£
+* str  - ÅĞ¶ÏÊÇ·ñ´æÔÚµÄ×Ö·û´®
+* len  - ×Ö·û´®³¤¶È¡£ Èç¹û´«Èë-1£¬Ôò'\0'×÷ÎªÆä½áÊø±ê¼Ç¡£
 */
-int str_in_array(const char **arr, const char *str, int len)
+int str_in_array(const char** arr, const char* str, int len)
 {
-	int i = 0, rc = 0;
-	const char *p;
-	while ((p = arr[i++])) {
-		if (streq(p, str, len)) {
-			rc = i;
-			break;
-		}
-	}
-	return rc;
+    int i = 0, rc = 0;
+    const char* p;
+    while ((p = arr[i++])) {
+        if (streq(p, str, len)) {
+            rc = i;
+            break;
+        }
+    }
+    return rc;
 }
 
 /*
-* åˆå¹¶è·¯å¾„ï¼Œå¦‚æœfilenameä¼ å…¥çš„æ˜¯ç»å¯¹è·¯å¾„ï¼Œåˆ™ç›´æ¥è¿”å›filenameçš„æ‹·è´ã€‚
-*   base     - åŸºç›®å½•
-*   basesz   - baseçš„å­—èŠ‚é•¿åº¦ï¼Œä¼ å…¥-1çš„è¯ï¼Œå°†ä½¿ç”¨strlen()å‡½æ•°è¯»å–ã€‚
-*   filename - æ–‡ä»¶åå­—
-* ä½¿ç”¨å®Œåï¼Œéœ€è°ƒç”¨pcs_freeæ¥é‡Šæ”¾è¿”å›å€¼
+* ºÏ²¢Â·¾¶£¬Èç¹ûfilename´«ÈëµÄÊÇ¾ø¶ÔÂ·¾¶£¬ÔòÖ±½Ó·µ»ØfilenameµÄ¿½±´¡£
+*   base     - »ùÄ¿Â¼
+*   basesz   - baseµÄ×Ö½Ú³¤¶È£¬´«Èë-1µÄ»°£¬½«Ê¹ÓÃstrlen()º¯Êı¶ÁÈ¡¡£
+*   filename - ÎÄ¼şÃû×Ö
+* Ê¹ÓÃÍêºó£¬Ğèµ÷ÓÃpcs_freeÀ´ÊÍ·Å·µ»ØÖµ
 */
-char *combin_path(const char *base, int basesz, const char *filename)
+char* combin_path(const char* base, int basesz, const char* filename)
 {
-	char *result = NULL;
+    char* result = NULL;
 #ifdef WIN32
-	char buf[MAX_PATH] = "";
-	char *p = i_strdup(base, basesz),
-		*f = i_strdup(filename, -1);
-	p = fix_win_path(p);
-	f = fix_win_path(f);
-	if (PathCombine(buf, p, f)) {
-		result = i_strdup(buf, -1);
-	}
-	pcs_free(p);
-	pcs_free(f);
+    char buf[MAX_PATH] = "";
+    char* p = i_strdup(base, basesz),
+          *f = i_strdup(filename, -1);
+    p = fix_win_path(p);
+    f = fix_win_path(f);
+    if (PathCombine(buf, p, f)) {
+        result = i_strdup(buf, -1);
+    }
+    pcs_free(p);
+    pcs_free(f);
 #else
-	if (basesz == -1) {
-		result = combin_net_disk_path(base, filename);
-	}
-	else {
-		char *p = i_strdup(base, basesz);
-		result = combin_net_disk_path(p, filename);
-		pcs_free(p);
-	}
+    if (basesz == -1) {
+        result = combin_net_disk_path(base, filename);
+    } else {
+        char* p = i_strdup(base, basesz);
+        result = combin_net_disk_path(p, filename);
+        pcs_free(p);
+    }
 #endif
-	return result;
+    return result;
 }
 
 /*
-æŠŠpathæ ¹æ®æ–œæ æ‹†åˆ†æˆä¸€ä¸ªä¸ªçš„ç›®å½•åï¼Œç„¶åæŠŠè¿™äº›ç›®å½•æŒ‰é¡ºåºç»„åˆåˆ°bufä¸­ã€‚
-è¯¥å‡½æ•°èƒ½æ­£ç¡®å¤„ç†"."å’Œ".."ã€‚
+°Ñpath¸ù¾İĞ±¸Ü²ğ·Ö³ÉÒ»¸ö¸öµÄÄ¿Â¼Ãû£¬È»ºó°ÑÕâĞ©Ä¿Â¼°´Ë³Ğò×éºÏµ½bufÖĞ¡£
+¸Ãº¯ÊıÄÜÕıÈ·´¦Àí"."ºÍ".."¡£
 */
-static inline void fill_unix_true_path_to_buf(char *buf, const char *path)
+static inline void fill_unix_true_path_to_buf(char* buf, const char* path)
 {
-	const char *start, *end;
-	char *p;
-	p = buf;
-	while (*p) p++;
-	if (path && path[0]) {
-		start = end = path;
-		if (*end == '/' || *end == '\\') { /*pathæ˜¯ç»å¯¹è·¯å¾„,åˆ™æ¸…æ‰bufåŸæ¥çš„å€¼*/
-			/*æ¸…æ‰bufåŸæ¥å€¼ï¼Œå¹¶è®¾ç½®æ–°å€¼ä¸ºæ–œæ */
-			p = buf;
-			*p = '/';
-			p++;
-			*p = '\0';
-			end++;
-			start = end;
-		}
-		else if (p > buf && p[-1] != '/' && p[-1] != '\\') { /*æ£€æŸ¥bufçš„æœ€åä¸€ä¸ªå­—ç¬¦æ˜¯å¦æ˜¯ç›®å½•åˆ†éš”ç¬¦*/
-			/*æœ«å°¾æ·»åŠ æ–œæ */
-			*p = '/';
-			p++;
-			*p = '\0';
-		}
-		while (1) {
-			if (*end == '/' || *end == '\\' || !(*end)) {
-				if (end == start) { /*è¿ç»­çš„ç›®å½•åˆ†éš”ç¬¦*/
-					if (!(*end)) break;
-					end++;
-					start = end;
-					continue;
-				}
-				else if (streq(".", start, end - start)) {
-					if (!(*end)) break;
-					end++;
-					start = end;
-					continue;
-				}
-				else if (streq("..", start, end - start)) {
-					if ((buf[0] == '/' || buf[0] == '\\') && buf[1] == '\0') { /*å¦‚æœbuf == "/"ï¼Œ
-																				å³bufæ˜¯æ ¹ç›®å½•ï¼Œåˆ™å…¶æ²¡æœ‰çˆ¶ç›®å½•ã€‚ç›´æ¥è·³è¿‡ã€‚
-																				*/
-						if (!(*end)) break;
-						end++;
-						start = end;
-						continue;
-					}
-					p--; *p = '\0'; /*æ¸…æ‰æœ€åä¸€ä¸ªæ–œæ */
-					while (p >= buf) {
-						if (*p == '/' || *p == '\\') {
-							break;
-						}
-						p--;
-					}
-					if (p < buf) { /*æœªæ‰¾åˆ°æ–œæ ï¼Œåˆ™æ¸…ç©ºbuf*/
-						p = buf;
-						*p = '\0';
-					}
-					else {
-						p++; /*æ‰¾åˆ°æ–œæ ï¼Œåˆ™æ¸…é™¤æ–œæ åè¾¹çš„å€¼*/
-						*p = '\0';
-					}
-					if (!(*end)) break;
-					end++;
-					start = end;
-					continue;
-				}
-				else {
-					memcpy(p, start, end - start);
-					p += end - start;
-					*p = '/';
-					p++;
-					*p = '\0';
-					if (!(*end)) break;
-					end++;
-					start = end;
-					continue;
-				}
-			}
-			end++;
-		}
-	}
-	/*å¦‚æœbuf != "/"çš„è¯ï¼Œå³å¦‚æœbufä¸æ˜¯æ ¹ç›®å½•çš„è¯ï¼Œæ¸…é™¤æœ€åä¸€ä¸ªæ–œæ */
-	if (p > buf && (p[-1] == '/' || p[-1] == '\\')) { /*æ£€æŸ¥åˆ°bufçš„æœ€åä¸€ä¸ªå­—ç¬¦æ˜¯ç›®å½•åˆ†éš”ç¬¦*/
-		if (p > buf + 1) {
-			p[-1] = '\0';
-		}
-	}
+    const char* start, *end;
+    char* p;
+    p = buf;
+    while (*p) {
+        p++;
+    }
+    if (path && path[0]) {
+        start = end = path;
+        if (*end == '/' || *end == '\\') { /*pathÊÇ¾ø¶ÔÂ·¾¶,ÔòÇåµôbufÔ­À´µÄÖµ*/
+            /*ÇåµôbufÔ­À´Öµ£¬²¢ÉèÖÃĞÂÖµÎªĞ±¸Ü*/
+            p = buf;
+            *p = '/';
+            p++;
+            *p = '\0';
+            end++;
+            start = end;
+        } else if (p > buf && p[-1] != '/' && p[-1] != '\\') { /*¼ì²ébufµÄ×îºóÒ»¸ö×Ö·ûÊÇ·ñÊÇÄ¿Â¼·Ö¸ô·û*/
+            /*Ä©Î²Ìí¼ÓĞ±¸Ü*/
+            *p = '/';
+            p++;
+            *p = '\0';
+        }
+        while (1) {
+            if (*end == '/' || *end == '\\' || !(*end)) {
+                if (end == start) { /*Á¬ĞøµÄÄ¿Â¼·Ö¸ô·û*/
+                    if (!(*end)) {
+                        break;
+                    }
+                    end++;
+                    start = end;
+                    continue;
+                } else if (streq(".", start, end - start)) {
+                    if (!(*end)) {
+                        break;
+                    }
+                    end++;
+                    start = end;
+                    continue;
+                } else if (streq("..", start, end - start)) {
+                    if ((buf[0] == '/' || buf[0] == '\\') && buf[1] == '\0') {
+                        /*Èç¹ûbuf == "/"£¬
+                                                                                    ¼´bufÊÇ¸ùÄ¿Â¼£¬ÔòÆäÃ»ÓĞ¸¸Ä¿Â¼¡£Ö±½ÓÌø¹ı¡£
+                                                                                    */
+                        if (!(*end)) {
+                            break;
+                        }
+                        end++;
+                        start = end;
+                        continue;
+                    }
+                    p--;
+                    *p = '\0'; /*Çåµô×îºóÒ»¸öĞ±¸Ü*/
+                    while (p >= buf) {
+                        if (*p == '/' || *p == '\\') {
+                            break;
+                        }
+                        p--;
+                    }
+                    if (p < buf) { /*Î´ÕÒµ½Ğ±¸Ü£¬ÔòÇå¿Õbuf*/
+                        p = buf;
+                        *p = '\0';
+                    } else {
+                        p++; /*ÕÒµ½Ğ±¸Ü£¬ÔòÇå³ıĞ±¸Üºó±ßµÄÖµ*/
+                        *p = '\0';
+                    }
+                    if (!(*end)) {
+                        break;
+                    }
+                    end++;
+                    start = end;
+                    continue;
+                } else {
+                    memcpy(p, start, end - start);
+                    p += end - start;
+                    *p = '/';
+                    p++;
+                    *p = '\0';
+                    if (!(*end)) {
+                        break;
+                    }
+                    end++;
+                    start = end;
+                    continue;
+                }
+            }
+            end++;
+        }
+    }
+    /*Èç¹ûbuf != "/"µÄ»°£¬¼´Èç¹ûbuf²»ÊÇ¸ùÄ¿Â¼µÄ»°£¬Çå³ı×îºóÒ»¸öĞ±¸Ü*/
+    if (p > buf && (p[-1] == '/' || p[-1] == '\\')) { /*¼ì²éµ½bufµÄ×îºóÒ»¸ö×Ö·ûÊÇÄ¿Â¼·Ö¸ô·û*/
+        if (p > buf + 1) {
+            p[-1] = '\0';
+        }
+    }
 }
 
 /*
-* åˆå¹¶unixæ ¼å¼çš„è·¯å¾„ï¼Œå¦‚æœfilenameä¼ å…¥çš„æ˜¯ç»å¯¹è·¯å¾„ï¼Œåˆ™ç›´æ¥è¿”å›filenameçš„æ‹·è´ã€‚
-* ä½¿ç”¨å®Œåï¼Œéœ€è°ƒç”¨pcs_freeæ¥é‡Šæ”¾è¿”å›å€¼
+* ºÏ²¢unix¸ñÊ½µÄÂ·¾¶£¬Èç¹ûfilename´«ÈëµÄÊÇ¾ø¶ÔÂ·¾¶£¬ÔòÖ±½Ó·µ»ØfilenameµÄ¿½±´¡£
+* Ê¹ÓÃÍêºó£¬Ğèµ÷ÓÃpcs_freeÀ´ÊÍ·Å·µ»ØÖµ
 */
-char *combin_net_disk_path(const char *base, const char *filename)
+char* combin_net_disk_path(const char* base, const char* filename)
 {
-	char *result;
-	int basesz = 0, filenamesz = 0, sz;
+    char* result;
+    int basesz = 0, filenamesz = 0, sz;
 
-	if (base) basesz = strlen(base);
-	if (filename) filenamesz = strlen(filename);
-	sz = basesz + filenamesz + 2;
-	result = (char *)pcs_malloc(sz + 1);
-	result[0] = '\0';
-	fill_unix_true_path_to_buf(result, base);
-	fill_unix_true_path_to_buf(result, filename);
-	return result;
+    if (base) {
+        basesz = strlen(base);
+    }
+    if (filename) {
+        filenamesz = strlen(filename);
+    }
+    sz = basesz + filenamesz + 2;
+    result = (char*)pcs_malloc(sz + 1);
+    result[0] = '\0';
+    fill_unix_true_path_to_buf(result, base);
+    fill_unix_true_path_to_buf(result, filename);
+    return result;
 }
 
 /*
-* ä¿®æ­£è·¯å¾„ã€‚
-* å³æŠŠè·¯å¾„ä¸­åæ–œæ æ›¿æ¢ä¸ºæ­£æ–œæ ã€‚
-* ä¿®æ­£å®Œæˆåï¼ŒåŸæ ·è¿”å›path
+* ĞŞÕıÂ·¾¶¡£
+* ¼´°ÑÂ·¾¶ÖĞ·´Ğ±¸ÜÌæ»»ÎªÕıĞ±¸Ü¡£
+* ĞŞÕıÍê³Éºó£¬Ô­Ñù·µ»Øpath
 */
-char *fix_unix_path(char *path)
+char* fix_unix_path(char* path)
 {
-	char *p = path;
-	while (*p) {
-		if (*p == '\\') *p = '/';
-		p++;
-	}
-	return path;
+    char* p = path;
+    while (*p) {
+        if (*p == '\\') {
+            *p = '/';
+        }
+        p++;
+    }
+    return path;
 }
 
 /*
-* ä¿®æ­£è·¯å¾„ã€‚
-* å³æŠŠè·¯å¾„ä¸­æ–œæ æ›¿æ¢ä¸ºåæ–œæ ã€‚
-* ä¿®æ­£å®Œæˆåï¼ŒåŸæ ·è¿”å›path
+* ĞŞÕıÂ·¾¶¡£
+* ¼´°ÑÂ·¾¶ÖĞĞ±¸ÜÌæ»»Îª·´Ğ±¸Ü¡£
+* ĞŞÕıÍê³Éºó£¬Ô­Ñù·µ»Øpath
 */
-char *fix_win_path(char *path)
+char* fix_win_path(char* path)
 {
-	char *p = path;
-	while (*p) {
-		if (*p == '/') *p = '\\';
-		p++;
-	}
-	return path;
+    char* p = path;
+    while (*p) {
+        if (*p == '/') {
+            *p = '\\';
+        }
+        p++;
+    }
+    return path;
 }
 
 /*
-* è¯»å–å…¨éƒ¨æ–‡ä»¶å†…å®¹
-* file    - å¾…è¯»å–çš„æ–‡ä»¶
-* pBuffer - æ–‡ä»¶çš„å†…å®¹æ‰€åœ¨çš„å†…å­˜æŒ‡é’ˆå°†å­˜å…¥pBufferæŒ‡å®šçš„å†…å­˜ä¸­
-* è¿”å›è¯»å–åˆ°çš„å­—èŠ‚å¤§å°ã€‚ä½¿ç”¨å®Œæˆåï¼Œéœ€è°ƒç”¨pcs_free(*pBuffer)
+* ¶ÁÈ¡È«²¿ÎÄ¼şÄÚÈİ
+* file    - ´ı¶ÁÈ¡µÄÎÄ¼ş
+* pBuffer - ÎÄ¼şµÄÄÚÈİËùÔÚµÄÄÚ´æÖ¸Õë½«´æÈëpBufferÖ¸¶¨µÄÄÚ´æÖĞ
+* ·µ»Ø¶ÁÈ¡µ½µÄ×Ö½Ú´óĞ¡¡£Ê¹ÓÃÍê³Éºó£¬Ğèµ÷ÓÃpcs_free(*pBuffer)
 */
-int read_file(const char *file, char **pBuffer)
+int read_file(const char* file, char** pBuffer)
 {
-	FILE *fp;
-	long size_of_file, sz;
-	char *content;
+    FILE* fp;
+    long size_of_file, sz;
+    char* content;
 
-	fp = fopen(file, "rb");
-	if (!fp) {
-		//printf("Open file fail: %s\n", file);
-		return -1;
-	}
-	fseek(fp, 0L, SEEK_END);
-	size_of_file = ftell(fp);
-	if (size_of_file < 3) {
-		printf("Wrong file size: Size=%ld, %s\n", size_of_file, file);
-		fclose(fp);
-		return -1;
-	}
-	fseek(fp, 0L, SEEK_SET);
-	content = (char *)pcs_malloc(size_of_file + 1);
-	sz = fread(content, 1, size_of_file, fp);
-	fclose(fp);
-	if (sz != size_of_file) {
-		printf("Read file error: %s\n", file);
-		pcs_free(content);
-		return -1;
-	}
-	content[size_of_file] = '\0';
-	if ((((int)content[0]) & 0xEF) == 0xEF) {
-		if ((((int)content[1]) & 0xBB) == 0xBB) {
-			if ((((int)content[2]) & 0xBF) == 0xBF) {
-				content[0] = content[1] = content[2] = ' ';
-			}
-			else {
-				printf("Wrong UTF-8 BOM: BOM=0x%2X%2X%2X %s\n", content[0] & 0xFF, content[1] & 0xFF, content[2] & 0xFF, file);
-				return -1;
-			}
-		}
-		else {
-			printf("Wrong UTF-8 BOM: BOM=0x%2X%2X%2X %s\n", content[0] & 0xFF, content[1] & 0xFF, content[2] & 0xFF, file);
-			return -1;
-		}
-	}
-	*pBuffer = content;
-	return size_of_file;
+    fp = fopen(file, "rb");
+    if (!fp) {
+        //printf("Open file fail: %s\n", file);
+        return -1;
+    }
+    fseek(fp, 0L, SEEK_END);
+    size_of_file = ftell(fp);
+    if (size_of_file < 3) {
+        printf("Wrong file size: Size=%ld, %s\n", size_of_file, file);
+        fclose(fp);
+        return -1;
+    }
+    fseek(fp, 0L, SEEK_SET);
+    content = (char*)pcs_malloc(size_of_file + 1);
+    sz = fread(content, 1, size_of_file, fp);
+    fclose(fp);
+    if (sz != size_of_file) {
+        printf("Read file error: %s\n", file);
+        pcs_free(content);
+        return -1;
+    }
+    content[size_of_file] = '\0';
+    if ((((int)content[0]) & 0xEF) == 0xEF) {
+        if ((((int)content[1]) & 0xBB) == 0xBB) {
+            if ((((int)content[2]) & 0xBF) == 0xBF) {
+                content[0] = content[1] = content[2] = ' ';
+            } else {
+                printf("Wrong UTF-8 BOM: BOM=0x%2X%2X%2X %s\n", content[0] & 0xFF, content[1] & 0xFF, content[2] & 0xFF, file);
+                return -1;
+            }
+        } else {
+            printf("Wrong UTF-8 BOM: BOM=0x%2X%2X%2X %s\n", content[0] & 0xFF, content[1] & 0xFF, content[2] & 0xFF, file);
+            return -1;
+        }
+    }
+    *pBuffer = content;
+    return size_of_file;
 }
 
-/*ä»ç¨‹åºè·¯å¾„ä¸­æ‰¾åˆ°æ–‡ä»¶åå¼€å§‹çš„ä½ç½®ï¼Œè¿”å›å¼€å§‹ä½ç½®çš„æŒ‡é’ˆ*/
-const char *filename(const char *path)
+/*´Ó³ÌĞòÂ·¾¶ÖĞÕÒµ½ÎÄ¼şÃû¿ªÊ¼µÄÎ»ÖÃ£¬·µ»Ø¿ªÊ¼Î»ÖÃµÄÖ¸Õë*/
+const char* filename(const char* path)
 {
-	const char *p;
-	p = path;
-	p += strlen(p);
-	while (p > path && *p != '/' && *p != '\\') p--;
-	if (*p == '/' || *p == '\\') p++;
-	return p;
+    const char* p;
+    p = path;
+    p += strlen(p);
+    while (p > path && *p != '/' && *p != '\\') {
+        p--;
+    }
+    if (*p == '/' || *p == '\\') {
+        p++;
+    }
+    return p;
 }
 
 /*
-* è·å–è·¯å¾„çš„çˆ¶è·¯å¾„ï¼Œå¦‚æœæ²¡æœ‰çˆ¶è·¯å¾„åˆ™è¿”å›NULLã€‚
-*   path  - å½“å‰è·¯å¾„
-*   len   - pathçš„å­—èŠ‚é•¿åº¦ï¼Œå¦‚æœä¼ å…¥-1ï¼Œåˆ™å†…éƒ¨ä½¿ç”¨strlen()è·å–å…¶é•¿åº¦
-* è¿”å›å€¼éœ€è¦è°ƒç”¨pcs_free()
+* »ñÈ¡Â·¾¶µÄ¸¸Â·¾¶£¬Èç¹ûÃ»ÓĞ¸¸Â·¾¶Ôò·µ»ØNULL¡£
+*   path  - µ±Ç°Â·¾¶
+*   len   - pathµÄ×Ö½Ú³¤¶È£¬Èç¹û´«Èë-1£¬ÔòÄÚ²¿Ê¹ÓÃstrlen()»ñÈ¡Æä³¤¶È
+* ·µ»ØÖµĞèÒªµ÷ÓÃpcs_free()
 */
-char *base_dir(const char *path, int len)
+char* base_dir(const char* path, int len)
 {
-	char *dir, *p;
-	if (!path) return NULL;
-	if (len == -1) len = strlen(path);
-	if (len == 0) return NULL;
-	dir = (char *)pcs_malloc(len + 1);
-	strcpy(dir, path);
-	p = dir + len - 1;
-	while (p > dir && *p != '/' && *p != '\\') p--;
-	if (p == dir) {
-		if (*p != '/' && *p != '\\') {
-			pcs_free(dir);
-			return NULL;
-		}
-		p[1] = '\0';
-	}
-	else {
+    char* dir, *p;
+    if (!path) {
+        return NULL;
+    }
+    if (len == -1) {
+        len = strlen(path);
+    }
+    if (len == 0) {
+        return NULL;
+    }
+    dir = (char*)pcs_malloc(len + 1);
+    strcpy(dir, path);
+    p = dir + len - 1;
+    while (p > dir && *p != '/' && *p != '\\') {
+        p--;
+    }
+    if (p == dir) {
+        if (*p != '/' && *p != '\\') {
+            pcs_free(dir);
+            return NULL;
+        }
+        p[1] = '\0';
+    } else {
 #ifdef _WIN32
-		if (*(p - 1) == ':' && ((p - dir) == 2))
-			*(p + 1) = '\0';
-		else
-			*p = '\0';
+        if (*(p - 1) == ':' && ((p - dir) == 2)) {
+            *(p + 1) = '\0';
+        } else {
+            *p = '\0';
+        }
 #else
-		*p = '\0';
+        *p = '\0';
 #endif
-	}
-	return dir;
+    }
+    return dir;
 }
 
 /*
 string to time_t
-æ—¶é—´æ ¼å¼ 2009-3-24 0:00:08 æˆ– 2009-3-24
+Ê±¼ä¸ñÊ½ 2009-3-24 0:00:08 »ò 2009-3-24
 */
-int str2time(const char *str, time_t *timeData)
+int str2time(const char* str, time_t* timeData)
 {
-	char *pBeginPos = (char*)str;
-	char *pPos = strstr(pBeginPos, "-");
-	int iYear, iMonth, iDay, iHour, iMin, iSec;
-	struct tm sourcedate = { 0 };
-	if (pPos == NULL) {
-		printf("strDateStr[%s] err \n", str);
-		return -1;
-	}
-	iYear = atoi(pBeginPos);
-	iMonth = atoi(pPos + 1);
-	pPos = strstr(pPos + 1, "-");
-	if (pPos == NULL) {
-		printf("strDateStr[%s] err \n", str);
-		return -1;
-	}
-	iDay = atoi(pPos + 1);
-	iHour = 0;
-	iMin = 0;
-	iSec = 0;
-	pPos = strstr(pPos + 1, " ");
-	//ä¸ºäº†å…¼å®¹æœ‰äº›æ²¡ç²¾ç¡®åˆ°æ—¶åˆ†ç§’çš„
-	if (pPos != NULL) {
-		iHour = atoi(pPos + 1);
-		pPos = strstr(pPos + 1, ":");
-		if (pPos != NULL) {
-			iMin = atoi(pPos + 1);
-			pPos = strstr(pPos + 1, ":");
-			if (pPos != NULL) {
-				iSec = atoi(pPos + 1);
-			}
-		}
-	}
+    char* pBeginPos = (char*)str;
+    char* pPos = strstr(pBeginPos, "-");
+    int iYear, iMonth, iDay, iHour, iMin, iSec;
+    struct tm sourcedate = { 0 };
+    if (pPos == NULL) {
+        printf("strDateStr[%s] err \n", str);
+        return -1;
+    }
+    iYear = atoi(pBeginPos);
+    iMonth = atoi(pPos + 1);
+    pPos = strstr(pPos + 1, "-");
+    if (pPos == NULL) {
+        printf("strDateStr[%s] err \n", str);
+        return -1;
+    }
+    iDay = atoi(pPos + 1);
+    iHour = 0;
+    iMin = 0;
+    iSec = 0;
+    pPos = strstr(pPos + 1, " ");
+    //ÎªÁË¼æÈİÓĞĞ©Ã»¾«È·µ½Ê±·ÖÃëµÄ
+    if (pPos != NULL) {
+        iHour = atoi(pPos + 1);
+        pPos = strstr(pPos + 1, ":");
+        if (pPos != NULL) {
+            iMin = atoi(pPos + 1);
+            pPos = strstr(pPos + 1, ":");
+            if (pPos != NULL) {
+                iSec = atoi(pPos + 1);
+            }
+        }
+    }
 
-	sourcedate.tm_sec = iSec;
-	sourcedate.tm_min = iMin;
-	sourcedate.tm_hour = iHour;
-	sourcedate.tm_mday = iDay;
-	sourcedate.tm_mon = iMonth - 1;
-	sourcedate.tm_year = iYear - 1900;
-	*timeData = mktime(&sourcedate);
-	return 0;
+    sourcedate.tm_sec = iSec;
+    sourcedate.tm_min = iMin;
+    sourcedate.tm_hour = iHour;
+    sourcedate.tm_mday = iDay;
+    sourcedate.tm_mon = iMonth - 1;
+    sourcedate.tm_year = iYear - 1900;
+    *timeData = mktime(&sourcedate);
+    return 0;
 }
 
 /*
-time_t to string æ—¶é—´æ ¼å¼ 2009-3-24 0:00:08
+time_t to string Ê±¼ä¸ñÊ½ 2009-3-24 0:00:08
 */
-char *time2str(char *buf, const time_t *t)
+char* time2str(char* buf, const time_t* t)
 {
-	char chTmp[100] = { 0 };
-	struct tm *p;
-	p = localtime(t);
-	p->tm_year = p->tm_year + 1900;
-	p->tm_mon = p->tm_mon + 1;
+    char chTmp[100] = { 0 };
+    struct tm* p;
+    p = localtime(t);
+    p->tm_year = p->tm_year + 1900;
+    p->tm_mon = p->tm_mon + 1;
 
-	snprintf(chTmp, sizeof(chTmp), "%04d-%02d-%02d %02d:%02d:%02d",
-		p->tm_year, p->tm_mon, p->tm_mday, p->tm_hour, p->tm_min, p->tm_sec);
-	strcpy(buf, chTmp);
-	return 0;
+    snprintf(chTmp, sizeof(chTmp), "%04d-%02d-%02d %02d:%02d:%02d",
+             p->tm_year, p->tm_mon, p->tm_mday, p->tm_hour, p->tm_min, p->tm_sec);
+    strcpy(buf, chTmp);
+    return 0;
 }

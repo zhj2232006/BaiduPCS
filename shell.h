@@ -4,33 +4,32 @@
 #include <time.h>
 #include "pcs/pcs.h"
 
-#define SORT_DIRECTION_ASC	0 /*æ­£åº*/
-#define SORT_DIRECTION_DESC 1 /*å€’åº*/
+#define SORT_DIRECTION_ASC  0 /*ÕıĞò*/
+#define SORT_DIRECTION_DESC 1 /*µ¹Ğò*/
 
 
-/* shell çš„ä¸Šä¸‹æ–‡ */
-typedef struct ShellContext
-{
-	char		*contextfile; /*ä¸Šä¸‹æ–‡æ–‡ä»¶çš„è·¯å¾„*/
-	char		*cookiefile; /*Cookieæ–‡ä»¶è·¯å¾„*/
-	char		*captchafile; /*éªŒè¯ç å›¾ç‰‡è·¯å¾„*/
-	char		*workdir; /*å½“å‰å·¥ä½œç›®å½•*/
-	Pcs			pcs;
+/* shell µÄÉÏÏÂÎÄ */
+typedef struct ShellContext {
+    char*        contextfile; /*ÉÏÏÂÎÄÎÄ¼şµÄÂ·¾¶*/
+    char*        cookiefile; /*CookieÎÄ¼şÂ·¾¶*/
+    char*        captchafile; /*ÑéÖ¤ÂëÍ¼Æ¬Â·¾¶*/
+    char*        workdir; /*µ±Ç°¹¤×÷Ä¿Â¼*/
+    Pcs         pcs;
 
-	int			list_page_size; /*æ‰§è¡Œlistå‘½ä»¤æ—¶ï¼Œæ¯é¡µå¤§å°*/
-	char		*list_sort_name; /*æ‰§è¡Œlistå‘½ä»¤æ—¶ï¼Œæ’åºå­—æ®µï¼Œå¯é€‰å€¼ï¼šname|time|size*/
-	char		*list_sort_direction; /*æ‰§è¡Œlistå‘½ä»¤æ—¶ï¼Œæ’åºå­—æ®µï¼Œå¯é€‰å€¼ï¼šasc|desc*/
+    int         list_page_size; /*Ö´ĞĞlistÃüÁîÊ±£¬Ã¿Ò³´óĞ¡*/
+    char*        list_sort_name; /*Ö´ĞĞlistÃüÁîÊ±£¬ÅÅĞò×Ö¶Î£¬¿ÉÑ¡Öµ£ºname|time|size*/
+    char*        list_sort_direction; /*Ö´ĞĞlistÃüÁîÊ±£¬ÅÅĞò×Ö¶Î£¬¿ÉÑ¡Öµ£ºasc|desc*/
 
-	char		*secure_method; /*åŠ å¯†æ–¹æ³•ï¼Œå¯é€‰å€¼ï¼šplaintext|aes-cbc-128|aes-cbc-192|aes-cbc-256*/
-	char		*secure_key;    /*åŠ å¯†æ—¶çš„KEY*/
-	int			secure_enable;  /*æ˜¯å¦å¯ç”¨åŠ å¯†*/
+    char*        secure_method; /*¼ÓÃÜ·½·¨£¬¿ÉÑ¡Öµ£ºplaintext|aes-cbc-128|aes-cbc-192|aes-cbc-256*/
+    char*        secure_key;    /*¼ÓÃÜÊ±µÄKEY*/
+    int         secure_enable;  /*ÊÇ·ñÆôÓÃ¼ÓÃÜ*/
 
-	int			timeout_retry;  /*æ˜¯å¦å¯ç”¨è¶…æ—¶åé‡è¯•*/
-	int			max_thread; /*æŒ‡å®šæœ€å¤§çº¿ç¨‹æ•°é‡*/
-	int			max_speed_per_thread; /*æŒ‡å®šå•ä¸ªçº¿ç¨‹çš„æœ€å¤šä¸‹è½½é€Ÿåº¦*/
-	int			max_upload_speed_per_thread; /*æŒ‡å®šå•ä¸ªçº¿ç¨‹çš„æœ€å¤§ä¸Šä¼ é€Ÿåº¦*/
-	int			cache_size; /* ç£ç›˜ç¼“å­˜çš„å¤§å° */
-	char		*user_agent;    /**/
+    int         timeout_retry;  /*ÊÇ·ñÆôÓÃ³¬Ê±ºóÖØÊÔ*/
+    int         max_thread; /*Ö¸¶¨×î´óÏß³ÌÊıÁ¿*/
+    int         max_speed_per_thread; /*Ö¸¶¨µ¥¸öÏß³ÌµÄ×î¶àÏÂÔØËÙ¶È*/
+    int         max_upload_speed_per_thread; /*Ö¸¶¨µ¥¸öÏß³ÌµÄ×î´óÉÏ´«ËÙ¶È*/
+    int         cache_size; /* ´ÅÅÌ»º´æµÄ´óĞ¡ */
+    char*        user_agent;    /**/
 } ShellContext;
 
 #endif

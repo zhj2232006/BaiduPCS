@@ -8,23 +8,23 @@ extern "C" {
 typedef struct pcs_buf_t pcs_buf_t;
 
 struct pcs_buf_t {
-	char *data;
-	int len;
-	int size;
+    char* data;
+    int len;
+    int size;
 };
 
 #define PCS_BUF_INIT() { 0 }
 
-int pcs_buf_init(pcs_buf_t *buf);
+int pcs_buf_init(pcs_buf_t* buf);
 
-void pcs_buf_free(pcs_buf_t *buf);
+void pcs_buf_free(pcs_buf_t* buf);
 
-/* æ‰©å®¹ï¼Œä½¿å¾— buf æœ‰è¶³å¤Ÿçš„ç©ºé—´æ¥è£…å…¥ want_size å¤§å°çš„æ•°æ® */
-int pcs_buf_enlarge(pcs_buf_t *buf, int want_size);
+/* À©ÈÝ£¬Ê¹µÃ buf ÓÐ×ã¹»µÄ¿Õ¼äÀ´×°Èë want_size ´óÐ¡µÄÊý¾Ý */
+int pcs_buf_enlarge(pcs_buf_t* buf, int want_size);
 
-int pcs_buf_write(pcs_buf_t *buf, const char *data, int size);
+int pcs_buf_write(pcs_buf_t* buf, const char* data, int size);
 
-int pcs_buf_insert(pcs_buf_t *buf, int offset, const char *data, int size);
+int pcs_buf_insert(pcs_buf_t* buf, int offset, const char* data, int size);
 
 #define pcs_buf_clear(buf) ((buf)->len = 0)
 

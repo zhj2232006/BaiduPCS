@@ -1,77 +1,76 @@
 
-/*æ“ä½œç³»ç»Ÿç›¸å…³ï¼Œç”¨äºæ“ä½œæ–‡ä»¶æˆ–ç›®å½•*/
+/*²Ù×÷ÏµÍ³Ïà¹Ø£¬ÓÃÓÚ²Ù×÷ÎÄ¼ş»òÄ¿Â¼*/
 
 #ifndef _PCS_SHELL_DIR_H_
 #define _PCS_SHELL_DIR_H_
 
-#define DEFAULT_MKDIR_ACCESS	0750	/*åˆ›å»ºç›®å½•æ—¶é»˜è®¤æƒé™ï¼Œåªæœ‰éWindowsç³»ç»Ÿä½¿ç”¨*/
+#define DEFAULT_MKDIR_ACCESS    0750    /*´´½¨Ä¿Â¼Ê±Ä¬ÈÏÈ¨ÏŞ£¬Ö»ÓĞ·ÇWindowsÏµÍ³Ê¹ÓÃ*/
 
-#define MKDIR_OK				0		/*ç›®å½•åˆ›å»ºæˆåŠŸ*/
-#define MKDIR_FAIL				1		/*ç›®å½•åˆ›å»ºå¤±è´¥*/
-#define MKDIR_TARGET_IS_FILE	2		/*æœ¬åœ°å­˜åœ¨ï¼Œä¸”æ˜¯æ–‡ä»¶*/
+#define MKDIR_OK                0       /*Ä¿Â¼´´½¨³É¹¦*/
+#define MKDIR_FAIL              1       /*Ä¿Â¼´´½¨Ê§°Ü*/
+#define MKDIR_TARGET_IS_FILE    2       /*±¾µØ´æÔÚ£¬ÇÒÊÇÎÄ¼ş*/
 
 
 typedef struct LocalFileInfo LocalFileInfo;
 
-struct LocalFileInfo
-{
-   char				*path;
-   const char		*filename;
-   int				isdir;
-   time_t			mtime;
-   int64_t			size;
-   LocalFileInfo	*parent;
-   LocalFileInfo	*next;
-   int				filecount; /*å½“æ˜¯ç›®å½•æ—¶ï¼Œå­˜å‚¨ç›®å½•ä¸‹æ–‡ä»¶çš„æ•°é‡ã€‚é€’å½’ç»Ÿè®¡ã€‚*/
+struct LocalFileInfo {
+    char*             path;
+    const char*       filename;
+    int              isdir;
+    time_t           mtime;
+    int64_t          size;
+    LocalFileInfo*    parent;
+    LocalFileInfo*    next;
+    int              filecount; /*µ±ÊÇÄ¿Â¼Ê±£¬´æ´¢Ä¿Â¼ÏÂÎÄ¼şµÄÊıÁ¿¡£µİ¹éÍ³¼Æ¡£*/
 
-   void				*userdata;
+    void*             userdata;
 };
 
-/*é‡Šæ”¾æ‰LocalFileInfoå¯¹è±¡*/
-void DestroyLocalFileInfo(LocalFileInfo *info);
+/*ÊÍ·ÅµôLocalFileInfo¶ÔÏó*/
+void DestroyLocalFileInfo(LocalFileInfo* info);
 
-/*é‡Šæ”¾æ‰LocalFileInfoé“¾è¡¨*/
-void DestroyLocalFileInfoLink(LocalFileInfo *link);
-
-/*
-* è·å–æŒ‡å®šæ–‡ä»¶æˆ–ç›®å½•çš„ä¿¡æ¯
-*  file  - æ–‡ä»¶æˆ–ç›®å½•çš„è·¯å¾„
-* å¦‚æœæ–‡ä»¶æˆ–ç›®å½•ä¸å­˜åœ¨ï¼Œåˆ™è¿”å›NULLï¼›å¦åˆ™è¿”å›å…¶LocalFileInfoå¯¹è±¡ã€‚
-*/
-LocalFileInfo *GetLocalFileInfo(const char *file);
+/*ÊÍ·ÅµôLocalFileInfoÁ´±í*/
+void DestroyLocalFileInfoLink(LocalFileInfo* link);
 
 /*
-* è·å–dirç›®å½•ä¸‹çš„æ‰€æœ‰æ–‡ä»¶æˆ–ç›®å½•ã€‚
-*   pLink     - ç”¨äºæ¥æ”¶é“¾è¡¨çš„æŒ‡é’ˆã€‚
-*   dir       - ç›®æ ‡ç›®å½•è·¯å¾„
-*   recursion - æ˜¯å¦é€’å½’åˆ—å‡º
-*   on        - å½“è·å–åˆ°ä¸€ä¸ªå¯¹è±¡åçš„å›è°ƒå‡½æ•°
-*      å›è°ƒå‡½æ•°å‚æ•°ï¼š
-*       info   - å½“å‰è·å–åˆ°çš„æ–‡ä»¶
-*       parent - å½“å‰è·å–åˆ°çš„æ–‡ä»¶çš„çˆ¶ç›®å½•
-*       state  - çŠ¶æ€å€¼ï¼Œæœ‰ç”¨æˆ·ä¼ å…¥
-*   state     - è¦ä¼ é€’åˆ°å›è°ƒå‡½æ•°ç¬¬ä¸‰ä¸ªå‚æ•°çš„å€¼
-* æˆåŠŸåè¿”å›æ–‡ä»¶å’Œç›®å½•çš„æ•°é‡ï¼Œå¤±è´¥è¿”å›è´Ÿæ•°
+* »ñÈ¡Ö¸¶¨ÎÄ¼ş»òÄ¿Â¼µÄĞÅÏ¢
+*  file  - ÎÄ¼ş»òÄ¿Â¼µÄÂ·¾¶
+* Èç¹ûÎÄ¼ş»òÄ¿Â¼²»´æÔÚ£¬Ôò·µ»ØNULL£»·ñÔò·µ»ØÆäLocalFileInfo¶ÔÏó¡£
 */
-int GetDirectoryFiles(LocalFileInfo **pLink, const char *dir, int recursive,
-	void(*on)(LocalFileInfo *info, LocalFileInfo *parent, void *state), void *state);
-
-/*è®¾ç½®æ–‡ä»¶çš„æœ€åä¿®æ”¹æ—¶é—´ã€‚
-å¦‚æœæ‰§è¡ŒæˆåŠŸåˆ™è¿”å›0ï¼Œ
-å¦åˆ™è¿”å›é0å€¼ã€‚*/
-int SetFileLastModifyTime(const char *file, time_t mtime);
+LocalFileInfo* GetLocalFileInfo(const char* file);
 
 /*
-* é€’å½’åˆ›å»ºç›®å½•
-*    path - å¾…åˆ›å»ºçš„ç›®å½•
-* å¦‚æœæˆåŠŸåˆ™è¿”å›MKDIR_OKï¼Œå¦åˆ™è¿”å›é”™è¯¯ç ï¼Œå¯èƒ½é”™è¯¯ç æœ‰: MKDIR_FAIL, MKDIR_TARGET_IS_FILEã€‚
+* »ñÈ¡dirÄ¿Â¼ÏÂµÄËùÓĞÎÄ¼ş»òÄ¿Â¼¡£
+*   pLink     - ÓÃÓÚ½ÓÊÕÁ´±íµÄÖ¸Õë¡£
+*   dir       - Ä¿±êÄ¿Â¼Â·¾¶
+*   recursion - ÊÇ·ñµİ¹éÁĞ³ö
+*   on        - µ±»ñÈ¡µ½Ò»¸ö¶ÔÏóºóµÄ»Øµ÷º¯Êı
+*      »Øµ÷º¯Êı²ÎÊı£º
+*       info   - µ±Ç°»ñÈ¡µ½µÄÎÄ¼ş
+*       parent - µ±Ç°»ñÈ¡µ½µÄÎÄ¼şµÄ¸¸Ä¿Â¼
+*       state  - ×´Ì¬Öµ£¬ÓĞÓÃ»§´«Èë
+*   state     - Òª´«µİµ½»Øµ÷º¯ÊıµÚÈı¸ö²ÎÊıµÄÖµ
+* ³É¹¦ºó·µ»ØÎÄ¼şºÍÄ¿Â¼µÄÊıÁ¿£¬Ê§°Ü·µ»Ø¸ºÊı
 */
-int CreateDirectoryRecursive(const char *path);
+int GetDirectoryFiles(LocalFileInfo** pLink, const char* dir, int recursive,
+                      void(*on)(LocalFileInfo* info, LocalFileInfo* parent, void* state), void* state);
 
-/*é€’å½’åˆ é™¤æ–‡ä»¶æˆ–ç›®å½•
-æˆåŠŸè¿”å›0ï¼Œå¦åˆ™è¿”å›é0å€¼
+/*ÉèÖÃÎÄ¼şµÄ×îºóĞŞ¸ÄÊ±¼ä¡£
+Èç¹ûÖ´ĞĞ³É¹¦Ôò·µ»Ø0£¬
+·ñÔò·µ»Ø·Ç0Öµ¡£*/
+int SetFileLastModifyTime(const char* file, time_t mtime);
+
+/*
+* µİ¹é´´½¨Ä¿Â¼
+*    path - ´ı´´½¨µÄÄ¿Â¼
+* Èç¹û³É¹¦Ôò·µ»ØMKDIR_OK£¬·ñÔò·µ»Ø´íÎóÂë£¬¿ÉÄÜ´íÎóÂëÓĞ: MKDIR_FAIL, MKDIR_TARGET_IS_FILE¡£
 */
-int DeleteFileRecursive(const char *path);
+int CreateDirectoryRecursive(const char* path);
+
+/*µİ¹éÉ¾³ıÎÄ¼ş»òÄ¿Â¼
+³É¹¦·µ»Ø0£¬·ñÔò·µ»Ø·Ç0Öµ
+*/
+int DeleteFileRecursive(const char* path);
 
 
 

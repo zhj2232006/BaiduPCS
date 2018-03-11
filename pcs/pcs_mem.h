@@ -1,28 +1,28 @@
 #ifndef _PCS_MEM_H
 #define _PCS_MEM_H
 
-/* è‡ªå®šä¹‰malloc,freeæ–¹æ³•ã€‚ç”¨äºæ£€æŸ¥å†…å­˜æ³„æ¼ã€‚ */
+/* ×Ô¶¨Òåmalloc,free·½·¨¡£ÓÃÓÚ¼ì²éÄÚ´æĞ¹Â©¡£ */
 #ifdef WIN32
-# include <malloc.h>
+    #include <malloc.h>
 #else
-# include <alloca.h>
+    #include <alloca.h>
 #endif
 #include "pcs_defs.h"
 
-typedef void(*pcs_mem_leak_print_fun)(void *ptr, const char *filename, int line);
+typedef void(*pcs_mem_leak_print_fun)(void* ptr, const char* filename, int line);
 
-/* åŸå§‹çš„ malloc() å‡½æ•° */
-PCS_API void *pcs_mem_malloc_raw(size_t size);
-/* åŸå§‹çš„ free() å‡½æ•° */
-PCS_API void pcs_mem_free_raw(void *ptr);
+/* Ô­Ê¼µÄ malloc() º¯Êı */
+PCS_API void* pcs_mem_malloc_raw(size_t size);
+/* Ô­Ê¼µÄ free() º¯Êı */
+PCS_API void pcs_mem_free_raw(void* ptr);
 
-/* å¸¦æœ‰æ³„æ¼æ£€æµ‹çš„ malloc() å‡½æ•° */
-PCS_API void *pcs_mem_malloc(size_t size, const char *filename, int line);
-/* å¸¦æœ‰æ³„æ¼æ£€æµ‹çš„ malloc() å‡½æ•° */
-PCS_API void *pcs_mem_malloc_arg1(size_t sz);
-/* å¸¦æœ‰æ³„æ¼æ£€æµ‹çš„ free() å‡½æ•° */
-PCS_API void pcs_mem_free(void *p);
-/* æ‰“å°æ³„æ¼çš„å†…å­˜ */
+/* ´øÓĞĞ¹Â©¼ì²âµÄ malloc() º¯Êı */
+PCS_API void* pcs_mem_malloc(size_t size, const char* filename, int line);
+/* ´øÓĞĞ¹Â©¼ì²âµÄ malloc() º¯Êı */
+PCS_API void* pcs_mem_malloc_arg1(size_t sz);
+/* ´øÓĞĞ¹Â©¼ì²âµÄ free() º¯Êı */
+PCS_API void pcs_mem_free(void* p);
+/* ´òÓ¡Ğ¹Â©µÄÄÚ´æ */
 PCS_API void pcs_mem_print_leak();
 
 PCS_API void pcs_mem_set_print_func(pcs_mem_leak_print_fun print);
@@ -30,15 +30,15 @@ PCS_API void pcs_mem_set_print_func(pcs_mem_leak_print_fun print);
 
 #if defined(DEBUG) || defined(_DEBUG)
 
-#  define pcs_print_leak()			pcs_mem_print_leak()
-#  define pcs_malloc(size)			pcs_mem_malloc(size, __FILE__, __LINE__)
-#  define pcs_free(ptr)				pcs_mem_free(ptr)
+    #define pcs_print_leak()            pcs_mem_print_leak()
+    #define pcs_malloc(size)            pcs_mem_malloc(size, __FILE__, __LINE__)
+    #define pcs_free(ptr)               pcs_mem_free(ptr)
 
 #else
-#  include <stdlib.h>
-#  define pcs_print_leak()			while(0)
-#  define pcs_malloc(size)			malloc(size)
-#  define pcs_free(ptr)				free(ptr)
+    #include <stdlib.h>
+    #define pcs_print_leak()            while(0)
+    #define pcs_malloc(size)            malloc(size)
+    #define pcs_free(ptr)               free(ptr)
 #endif
 
 #endif

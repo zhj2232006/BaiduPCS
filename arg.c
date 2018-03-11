@@ -7,269 +7,309 @@
 #include "arg.h"
 
 #ifndef NULL
-#define NULL ((void *)0)
+    #define NULL ((void *)0)
 #endif
 
-/*æ‰¾åˆ°strç¬¬ä¸€æ¬¡å‡ºç°chçš„ä½ç½®*/
-static inline char *findchar(char *str, int ch)
+/*ÕÒµ½strµÚÒ»´Î³öÏÖchµÄÎ»ÖÃ*/
+static inline char* findchar(char* str, int ch)
 {
-	char *p = str;
-	while (*p && ((int)((unsigned int)(*p))) != ch) p++;
-	return p;
+    char* p = str;
+    while (*p && ((int)((unsigned int)(*p))) != ch) {
+        p++;
+    }
+    return p;
 }
 
-static inline char *arg_strdup(const char *str)
+static inline char* arg_strdup(const char* str)
 {
-	char *res = 0;
-	if (str) {
-		res = (char *)pcs_malloc(strlen(str) + 1);
-		if (!res)
-			return 0;
-		strcpy(res, str);
-	}
-	return res;
+    char* res = 0;
+    if (str) {
+        res = (char*)pcs_malloc(strlen(str) + 1);
+        if (!res) {
+            return 0;
+        }
+        strcpy(res, str);
+    }
+    return res;
 }
 
-/*ä»ç¨‹åºè·¯å¾„ä¸­æ‰¾åˆ°æ–‡ä»¶åå¼€å§‹çš„ä½ç½®ï¼Œè¿”å›å¼€å§‹ä½ç½®çš„æŒ‡é’ˆ*/
-static inline char *filename(char *path)
+/*´Ó³ÌĞòÂ·¾¶ÖĞÕÒµ½ÎÄ¼şÃû¿ªÊ¼µÄÎ»ÖÃ£¬·µ»Ø¿ªÊ¼Î»ÖÃµÄÖ¸Õë*/
+static inline char* filename(char* path)
 {
-	char *p;
-	p = path;
-	p += strlen(p);
-	while (p > path && *p != '/' && *p != '\\') p--;
-	if (*p == '/' || *p == '\\') p++;
-	return p;
+    char* p;
+    p = path;
+    p += strlen(p);
+    while (p > path && *p != '/' && *p != '\\') {
+        p--;
+    }
+    if (*p == '/' || *p == '\\') {
+        p++;
+    }
+    return p;
 }
 
-#pragma region è§£æå‚æ•°
+#pragma region ½âÎö²ÎÊı
 
-/*ç”¨äºé‡Šæ”¾struct argä¸­optså“ˆå¸Œè¡¨ä¸­çš„å€¼å­—æ®µ*/
-static void free_opt(void *p)
+/*ÓÃÓÚÊÍ·Åstruct argÖĞopts¹şÏ£±íÖĞµÄÖµ×Ö¶Î*/
+static void free_opt(void* p)
 {
-	if (p) pcs_free(p);
+    if (p) {
+        pcs_free(p);
+    }
 }
 
-/*è§£æå‚æ•°*/
-int parse_arg(struct args *arg, int argc, char *argv[], char *(*s2utf8)(const char *s))
+/*½âÎö²ÎÊı*/
+int parse_arg(struct args* arg, int argc, char* argv[], char* (*s2utf8)(const char* s))
 {
-	int i, j = 0;
-	char *p, *op, *val;
-	arg->name = filename(argv[0]);
-	for (i = 1; i < argc; ++i) {
-		p = argv[i];
-		if (*p == '-') {
-			arg->optc++;
-		}
-		else {
-			arg->argc++;
-		}
-	}
-	if (arg->argc > 0) arg->argc--;
-	if (arg->optc > 0) arg->opts = ht_create((int)((float)arg->optc * HASH_EXTEND_MULTIPLIER), 0, &free_opt);
-	if (arg->argc > 0) arg->argv = (char **)pcs_malloc(arg->argc * sizeof(char *));
-	for (i = 1; i < argc; ++i) {
-		p = argv[i];
-		if (*p == '-') {
-			p++;
-			if (*p == '-') {
-				p++;
-				val = findchar(p, '=');
-				if (ht_has(arg->opts, p, val - p)) return -1; /*é‡å¤æŒ‡å®šå‚æ•°*/
-				if (ht_add(arg->opts, p, val - p, (*val) == '=' ? (s2utf8 ? s2utf8(val + 1) : arg_strdup(val + 1)) : NULL))
-					return -1; /*æ·»åŠ åˆ°å“ˆå¸Œè¡¨ä¸­å¤±è´¥*/
-			}
-			else {
-				op = p;
-				while (*op) {
-					if (ht_has(arg->opts, op, 1)) return -1; /*é‡å¤æŒ‡å®šå‚æ•°*/
-					if (ht_add(arg->opts, op, 1, NULL))
-						return -1; /*æ·»åŠ åˆ°å“ˆå¸Œè¡¨ä¸­å¤±è´¥*/
-					op++;
-				}
-			}
-		}
-		else if (!arg->cmd) {
-			arg->cmd = p;
-		}
-		else {
-			arg->argv[j++] = s2utf8 ? s2utf8(p) : arg_strdup(p);
-		}
-	}
-	return 0;
+    int i, j = 0;
+    char* p, *op, *val;
+    arg->name = filename(argv[0]);
+    for (i = 1; i < argc; ++i) {
+        p = argv[i];
+        if (*p == '-') {
+            arg->optc++;
+        } else {
+            arg->argc++;
+        }
+    }
+    if (arg->argc > 0) {
+        arg->argc--;
+    }
+    if (arg->optc > 0) {
+        arg->opts = ht_create((int)((float)arg->optc * HASH_EXTEND_MULTIPLIER), 0, &free_opt);
+    }
+    if (arg->argc > 0) {
+        arg->argv = (char**)pcs_malloc(arg->argc * sizeof(char*));
+    }
+    for (i = 1; i < argc; ++i) {
+        p = argv[i];
+        if (*p == '-') {
+            p++;
+            if (*p == '-') {
+                p++;
+                val = findchar(p, '=');
+                if (ht_has(arg->opts, p, val - p)) {
+                    return -1;    /*ÖØ¸´Ö¸¶¨²ÎÊı*/
+                }
+                if (ht_add(arg->opts, p, val - p, (*val) == '=' ? (s2utf8 ? s2utf8(val + 1) : arg_strdup(val + 1)) : NULL)) {
+                    return -1;    /*Ìí¼Óµ½¹şÏ£±íÖĞÊ§°Ü*/
+                }
+            } else {
+                op = p;
+                while (*op) {
+                    if (ht_has(arg->opts, op, 1)) {
+                        return -1;    /*ÖØ¸´Ö¸¶¨²ÎÊı*/
+                    }
+                    if (ht_add(arg->opts, op, 1, NULL)) {
+                        return -1;    /*Ìí¼Óµ½¹şÏ£±íÖĞÊ§°Ü*/
+                    }
+                    op++;
+                }
+            }
+        } else if (!arg->cmd) {
+            arg->cmd = p;
+        } else {
+            arg->argv[j++] = s2utf8 ? s2utf8(p) : arg_strdup(p);
+        }
+    }
+    return 0;
 }
 
-void free_args(struct args *arg)
+void free_args(struct args* arg)
 {
-	if (arg->opts) ht_destroy(arg->opts);
-	if (arg->argv) {
-		int i;
-		for (i = 0; i < arg->argc; i++) {
-			char *p = arg->argv[i];
-			if (p) pcs_free(p);
-		}
-		pcs_free(arg->argv);
-	}
+    if (arg->opts) {
+        ht_destroy(arg->opts);
+    }
+    if (arg->argv) {
+        int i;
+        for (i = 0; i < arg->argc; i++) {
+            char* p = arg->argv[i];
+            if (p) {
+                pcs_free(p);
+            }
+        }
+        pcs_free(arg->argv);
+    }
 }
 
-/*åˆ¤æ–­æ˜¯å¦å­˜åœ¨opté€‰é¡¹
-å¦‚æœå­˜åœ¨çš„è¯ï¼Œè¿”å›1,å¦åˆ™è¿”å›0*/
-int has_opt(struct args *arg, const char *opt)
+/*ÅĞ¶ÏÊÇ·ñ´æÔÚoptÑ¡Ïî
+Èç¹û´æÔÚµÄ»°£¬·µ»Ø1,·ñÔò·µ»Ø0*/
+int has_opt(struct args* arg, const char* opt)
 {
-	if (arg->opts) {
-		return ht_has(arg->opts, opt, -1);
-	}
-	return 0;
+    if (arg->opts) {
+        return ht_has(arg->opts, opt, -1);
+    }
+    return 0;
 }
 
-/*åˆ¤æ–­æ˜¯å¦å­˜åœ¨opté€‰é¡¹ï¼Œå¦‚æœå­˜åœ¨çš„è¯ï¼ŒæŠŠå…¶å€¼å¡«å…¥ ï¼ˆ*pValueï¼‰ä¸­ï¼Œå¹¶è¿”å›1ï¼Œ
-å¦‚æœä¸å­˜åœ¨çš„è¯ï¼Œåˆ™è®¾ç½® (*pValue) = NULL, å¹¶è¿”å›0*/
-int has_optEx(struct args *arg, const char *opt, char **pValue)
+/*ÅĞ¶ÏÊÇ·ñ´æÔÚoptÑ¡Ïî£¬Èç¹û´æÔÚµÄ»°£¬°ÑÆäÖµÌîÈë £¨*pValue£©ÖĞ£¬²¢·µ»Ø1£¬
+Èç¹û²»´æÔÚµÄ»°£¬ÔòÉèÖÃ (*pValue) = NULL, ²¢·µ»Ø0*/
+int has_optEx(struct args* arg, const char* opt, char** pValue)
 {
-	if (arg->opts) {
-		HashtableNode *node = ht_get_node(arg->opts, opt, -1);
-		if (node) {
-			if (pValue) (*pValue) = node->value;
-			return 1;
-		}
-	}
-	if (pValue) (*pValue) = NULL;
-	return 0;
+    if (arg->opts) {
+        HashtableNode* node = ht_get_node(arg->opts, opt, -1);
+        if (node) {
+            if (pValue) {
+                (*pValue) = node->value;
+            }
+            return 1;
+        }
+    }
+    if (pValue) {
+        (*pValue) = NULL;
+    }
+    return 0;
 }
 
 /*
-æµ‹è¯•argä¸­å¯é€‰é¡¹æ˜¯å¦æ­£ç¡®ã€‚
+²âÊÔargÖĞ¿ÉÑ¡ÏîÊÇ·ñÕıÈ·¡£
   arg     -
-  ...     - æ”¯æŒçš„æ‰€æœ‰å¯é€‰é¡¹ï¼Œä»¥NULLç»“æŸ
-å¦‚æœæµ‹è¯•é€šè¿‡åˆ™è¿”å›0ï¼Œå¦åˆ™è¿”å›éé›¶å€¼
-ä¾‹ï¼š
+  ...     - Ö§³ÖµÄËùÓĞ¿ÉÑ¡Ïî£¬ÒÔNULL½áÊø
+Èç¹û²âÊÔÍ¨¹ıÔò·µ»Ø0£¬·ñÔò·µ»Ø·ÇÁãÖµ
+Àı£º
   if (test_arg(arg, 0, 1, "d", "e", "r", "config", NULL)) {
     printf("Wrong Arguments\n");
     return -1;
   }
 */
-int test_opts(struct args *arg, ...)
+int test_opts(struct args* arg, ...)
 {
-	int co = 0;
-	const char *opt;
-	va_list ap;
-	if (!arg->opts) return 0;
-	va_start(ap, arg);
-	while ((opt = va_arg(ap, const char *)) != NULL) {
-		if (ht_has(arg->opts, opt, -1))
-			co++;
-	}
-	va_end(ap);
-	return arg->opts->count - co;
+    int co = 0;
+    const char* opt;
+    va_list ap;
+    if (!arg->opts) {
+        return 0;
+    }
+    va_start(ap, arg);
+    while ((opt = va_arg(ap, const char*)) != NULL) {
+        if (ht_has(arg->opts, opt, -1)) {
+            co++;
+        }
+    }
+    va_end(ap);
+    return arg->opts->count - co;
 }
 
 /*
-åˆ é™¤ä¸€ä¸ªé€‰é¡¹ã€‚
-åˆ é™¤æˆåŠŸè¿”å›0ï¼Œå¦åˆ™è¿”å›é0å€¼ã€‚
-æ‰§è¡ŒæˆåŠŸï¼Œä¸” pValueä¸ä¸ºNULLï¼Œåˆ™æŠŠè¢«åˆ é™¤é¡¹çš„å€¼å†™å…¥ (*pValue)ã€‚æ³¨æ„å€¼éœ€è¦è°ƒç”¨pcs_free()
+É¾³ıÒ»¸öÑ¡Ïî¡£
+É¾³ı³É¹¦·µ»Ø0£¬·ñÔò·µ»Ø·Ç0Öµ¡£
+Ö´ĞĞ³É¹¦£¬ÇÒ pValue²»ÎªNULL£¬Ôò°Ñ±»É¾³ıÏîµÄÖµĞ´Èë (*pValue)¡£×¢ÒâÖµĞèÒªµ÷ÓÃpcs_free()
 */
-int remove_opt(struct args *arg, const char *opt, char **pValue)
+int remove_opt(struct args* arg, const char* opt, char** pValue)
 {
-	char *val = NULL;
-	if (!arg->opts) return -1;
-	int rc = ht_remove(arg->opts, opt, -1, (void *)(pValue ? pValue : &val));
-	if (rc == 0) {
-		if (val) pcs_free(val);
-		arg->optc--;
-	}
-	return rc;
+    char* val = NULL;
+    if (!arg->opts) {
+        return -1;
+    }
+    int rc = ht_remove(arg->opts, opt, -1, (void*)(pValue ? pValue : &val));
+    if (rc == 0) {
+        if (val) {
+            pcs_free(val);
+        }
+        arg->optc--;
+    }
+    return rc;
 }
 
 /*
-åˆ¤æ–­æ˜¯å¦å­˜åœ¨opté€‰é¡¹
-  ap - å¾…æŸ¥è¯¢çš„æ‰€æœ‰å¯é€‰é¡¹ï¼Œä»¥NULLç»“æŸ
-å¦‚æœå…¨éƒ¨ä¸å­˜åœ¨åˆ™è¿”å›0ï¼Œå¦åˆ™è¿”å›æœ‰å‡ ä¸ªå­˜åœ¨
-ä¾‹ï¼š
+ÅĞ¶ÏÊÇ·ñ´æÔÚoptÑ¡Ïî
+  ap - ´ı²éÑ¯µÄËùÓĞ¿ÉÑ¡Ïî£¬ÒÔNULL½áÊø
+Èç¹ûÈ«²¿²»´æÔÚÔò·µ»Ø0£¬·ñÔò·µ»ØÓĞ¼¸¸ö´æÔÚ
+Àı£º
   if (has_vopt(arg, "d", "e", "r", "config", NULL)) {
     printf("One of the options exists.\n");
   } else {
     printf("All of the options not exists.\n");
   }
 */
-int has_vopts(struct args *arg, va_list ap)
+int has_vopts(struct args* arg, va_list ap)
 {
-	int co = 0;
-	const char *opt;
-	if (!arg->opts) return 0;
-	while ((opt = va_arg(ap, const char *)) != NULL) {
-		if (ht_has(arg->opts, opt, -1))
-			co++;
-	}
-	return co;
+    int co = 0;
+    const char* opt;
+    if (!arg->opts) {
+        return 0;
+    }
+    while ((opt = va_arg(ap, const char*)) != NULL) {
+        if (ht_has(arg->opts, opt, -1)) {
+            co++;
+        }
+    }
+    return co;
 }
 
 /*
-åˆ¤æ–­æ˜¯å¦å­˜åœ¨opté€‰é¡¹
-  ap - å¾…æŸ¥è¯¢çš„æ‰€æœ‰å¯é€‰é¡¹ï¼Œä»¥NULLç»“æŸ
-å¦‚æœå…¨éƒ¨ä¸å­˜åœ¨åˆ™è¿”å›0ï¼Œå¦åˆ™è¿”å›æœ‰å‡ ä¸ªå­˜åœ¨
-ä¾‹ï¼š
+ÅĞ¶ÏÊÇ·ñ´æÔÚoptÑ¡Ïî
+  ap - ´ı²éÑ¯µÄËùÓĞ¿ÉÑ¡Ïî£¬ÒÔNULL½áÊø
+Èç¹ûÈ«²¿²»´æÔÚÔò·µ»Ø0£¬·ñÔò·µ»ØÓĞ¼¸¸ö´æÔÚ
+Àı£º
   if (has_vopt(arg, "d", "e", "r", "config", NULL)) {
     printf("One of the options exists.\n");
   } else {
     printf("All of the options not exists.\n");
   }
 */
-int has_opts(struct args *arg, ...)
+int has_opts(struct args* arg, ...)
 {
-	int rc = 0;
-	va_list ap;
-	va_start(ap, arg);
-	rc = has_vopts(arg, ap);
-	va_end(ap);
-	return rc;
+    int rc = 0;
+    va_list ap;
+    va_start(ap, arg);
+    rc = has_vopts(arg, ap);
+    va_end(ap);
+    return rc;
 }
 
 /*
-æµ‹è¯•argæ˜¯å¦æ­£ç¡®ã€‚
+²âÊÔargÊÇ·ñÕıÈ·¡£
 arg     -
-minArgc - å…è®¸çš„æœ€å°‘å‚æ•°
-maxArgc - å…è®¸çš„æœ€å¤šå‚æ•°
-ap      - æ”¯æŒçš„æ‰€æœ‰å¯é€‰é¡¹ï¼Œä»¥NULLç»“æŸ
-å¦‚æœæµ‹è¯•é€šè¿‡åˆ™è¿”å›0ï¼Œå¦åˆ™è¿”å›éé›¶å€¼
-ä¾‹ï¼š
+minArgc - ÔÊĞíµÄ×îÉÙ²ÎÊı
+maxArgc - ÔÊĞíµÄ×î¶à²ÎÊı
+ap      - Ö§³ÖµÄËùÓĞ¿ÉÑ¡Ïî£¬ÒÔNULL½áÊø
+Èç¹û²âÊÔÍ¨¹ıÔò·µ»Ø0£¬·ñÔò·µ»Ø·ÇÁãÖµ
+Àı£º
   if (test_arg(arg, 0, 1, "d", "e", "r", "config", NULL)) {
     printf("Wrong Arguments\n");
     return -1;
   }
 */
-int test_varg(struct args *arg, int minArgc, int maxArgc, va_list ap)
+int test_varg(struct args* arg, int minArgc, int maxArgc, va_list ap)
 {
-	int co = 0;
-	const char *opt;
-	if (arg->argc < minArgc || arg->argc > maxArgc) return -1;
-	if (!arg->opts) return 0;
-	while ((opt = va_arg(ap, const char *)) != NULL) {
-		if (ht_has(arg->opts, opt, -1))
-			co++;
-	}
-	return arg->opts->count - co;
+    int co = 0;
+    const char* opt;
+    if (arg->argc < minArgc || arg->argc > maxArgc) {
+        return -1;
+    }
+    if (!arg->opts) {
+        return 0;
+    }
+    while ((opt = va_arg(ap, const char*)) != NULL) {
+        if (ht_has(arg->opts, opt, -1)) {
+            co++;
+        }
+    }
+    return arg->opts->count - co;
 }
 
 /*
-æµ‹è¯•argæ˜¯å¦æ­£ç¡®ã€‚
+²âÊÔargÊÇ·ñÕıÈ·¡£
  arg     -
- minArgc - å…è®¸çš„æœ€å°‘å‚æ•°
- maxArgc - å…è®¸çš„æœ€å¤šå‚æ•°
- ...     - æ”¯æŒçš„æ‰€æœ‰å¯é€‰é¡¹ï¼Œä»¥NULLç»“æŸ
-å¦‚æœæµ‹è¯•é€šè¿‡åˆ™è¿”å›0ï¼Œå¦åˆ™è¿”å›éé›¶å€¼
-ä¾‹ï¼š
+ minArgc - ÔÊĞíµÄ×îÉÙ²ÎÊı
+ maxArgc - ÔÊĞíµÄ×î¶à²ÎÊı
+ ...     - Ö§³ÖµÄËùÓĞ¿ÉÑ¡Ïî£¬ÒÔNULL½áÊø
+Èç¹û²âÊÔÍ¨¹ıÔò·µ»Ø0£¬·ñÔò·µ»Ø·ÇÁãÖµ
+Àı£º
    if (test_arg(arg, 0, 1, "d", "e", "r", "config", NULL)) {
         printf("Wrong Arguments\n");
-		return -1;
+        return -1;
    }
 */
-int test_arg(struct args *arg, int minArgc, int maxArgc, ...)
+int test_arg(struct args* arg, int minArgc, int maxArgc, ...)
 {
-	int rc = 0;
-	va_list ap;
-	va_start(ap, maxArgc);
-	rc = test_varg(arg, minArgc, maxArgc, ap);
-	va_end(ap);
-	return rc;
+    int rc = 0;
+    va_list ap;
+    va_start(ap, maxArgc);
+    rc = test_varg(arg, minArgc, maxArgc, ap);
+    va_end(ap);
+    return rc;
 }
 
 #pragma endregion

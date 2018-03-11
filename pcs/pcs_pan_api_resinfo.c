@@ -1,68 +1,72 @@
 #include <string.h>
 #ifdef WIN32
-# include <malloc.h>
+    #include <malloc.h>
 #else
-# include <alloca.h>
+    #include <alloca.h>
 #endif
 
 #include "pcs_mem.h"
 #include "pcs_pan_api_resinfo.h"
 
-PCS_API const char *pcs_pan_api_res_info_errmsg(int error)
+PCS_API const char* pcs_pan_api_res_info_errmsg(int error)
 {
-	const char *errmsg = NULL;
-	switch (error) {
-	case 0: //å¤„ç†æˆåŠŸ
-		errmsg = "æˆåŠŸ";
-		break;
-	case -8: //æ–‡ä»¶å·²å­˜åœ¨äºŽç›®æ ‡æ–‡ä»¶å¤¹ä¸­
-		errmsg = "æ–‡ä»¶å·²å­˜åœ¨äºŽç›®æ ‡æ–‡ä»¶å¤¹ä¸­";
-		break;
-	case -9: //æ–‡ä»¶ä¸å­˜åœ¨
-		errmsg = "æ–‡ä»¶ä¸å­˜åœ¨";
-		break;
-	case -10: //å‰©ä½™ç©ºé—´ä¸è¶³
-		errmsg = "å‰©ä½™ç©ºé—´ä¸è¶³";
-		break;
-	default:
-		errmsg = "æœªçŸ¥é”™è¯¯";
-	}
-	return errmsg;
+    const char* errmsg = NULL;
+    switch (error) {
+    case 0: //´¦Àí³É¹¦
+        errmsg = "³É¹¦";
+        break;
+    case -8: //ÎÄ¼þÒÑ´æÔÚÓÚÄ¿±êÎÄ¼þ¼ÐÖÐ
+        errmsg = "ÎÄ¼þÒÑ´æÔÚÓÚÄ¿±êÎÄ¼þ¼ÐÖÐ";
+        break;
+    case -9: //ÎÄ¼þ²»´æÔÚ
+        errmsg = "ÎÄ¼þ²»´æÔÚ";
+        break;
+    case -10: //Ê£Óà¿Õ¼ä²»×ã
+        errmsg = "Ê£Óà¿Õ¼ä²»×ã";
+        break;
+    default:
+        errmsg = "Î´Öª´íÎó";
+    }
+    return errmsg;
 }
 
-PCS_API PcsPanApiRes *pcs_pan_api_res_create()
+PCS_API PcsPanApiRes* pcs_pan_api_res_create()
 {
-	PcsPanApiRes *res = (PcsPanApiRes *)pcs_malloc(sizeof(PcsPanApiRes));
-	if (res)
-		memset(res, 0, sizeof(PcsPanApiRes));
-	return res;
+    PcsPanApiRes* res = (PcsPanApiRes*)pcs_malloc(sizeof(PcsPanApiRes));
+    if (res) {
+        memset(res, 0, sizeof(PcsPanApiRes));
+    }
+    return res;
 }
 
-PCS_API void pcs_pan_api_res_destroy(PcsPanApiRes *res)
+PCS_API void pcs_pan_api_res_destroy(PcsPanApiRes* res)
 {
-	if (res->info_list)
-		pcs_pan_api_res_infolist_destroy(res->info_list);
-	pcs_free(res);
+    if (res->info_list) {
+        pcs_pan_api_res_infolist_destroy(res->info_list);
+    }
+    pcs_free(res);
 }
 
-PCS_API PcsPanApiResInfoList *pcs_pan_api_res_infolist_create()
+PCS_API PcsPanApiResInfoList* pcs_pan_api_res_infolist_create()
 {
-	PcsPanApiResInfoList *res = (PcsPanApiResInfoList *)pcs_malloc(sizeof(PcsPanApiResInfoList));
-	if (res)
-		memset(res, 0, sizeof(PcsPanApiResInfoList));
-	return res;
+    PcsPanApiResInfoList* res = (PcsPanApiResInfoList*)pcs_malloc(sizeof(PcsPanApiResInfoList));
+    if (res) {
+        memset(res, 0, sizeof(PcsPanApiResInfoList));
+    }
+    return res;
 }
 
-PCS_API void pcs_pan_api_res_infolist_destroy(PcsPanApiResInfoList *infolist)
+PCS_API void pcs_pan_api_res_infolist_destroy(PcsPanApiResInfoList* infolist)
 {
-	PcsPanApiResInfoList *p, *p2;
-	p = infolist;
-	while(p) {
-		p2 = p;
-		p = p->next;
-		if (p2->info.path)
-			pcs_free(p2->info.path);
-		pcs_free(p2);
-	}
+    PcsPanApiResInfoList* p, *p2;
+    p = infolist;
+    while (p) {
+        p2 = p;
+        p = p->next;
+        if (p2->info.path) {
+            pcs_free(p2->info.path);
+        }
+        pcs_free(p2);
+    }
 }
 

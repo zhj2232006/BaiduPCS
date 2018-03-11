@@ -4,73 +4,73 @@
 #include "pcs_defs.h"
 #include "pcs_slist.h"
 
-/* ç”¨äºå­˜å‚¨ç½‘ç›˜ä¸­æ–‡ä»¶çš„å…ƒæ•°æ® */
+/* ÓÃÓÚ´æ´¢ÍøÅÌÖĞÎÄ¼şµÄÔªÊı¾İ */
 typedef struct PcsFileInfo {
-	uint64_t		fs_id;
-	char		*path;
-	char		*server_filename;
-	time_t		server_ctime;
-	time_t		server_mtime;
-	time_t		local_ctime;
-	time_t		local_mtime;
-	int64_t		size;
-	int			category;
-	PcsBool		isdir;
-	PcsBool		dir_empty;
-	PcsBool		empty;
-	char		*md5;
-	char		*dlink;
-	char		**block_list; /*  æ–‡ä»¶æ‰€æœ‰åˆ†ç‰‡çš„md5æ•°ç»„jsonå­—ç¬¦ä¸², åªæœ‰ pcs_meta() è®¾ç½®è¯¥å€¼ */
-	PcsBool		ifhassubdir; /* æ˜¯å¦å«æœ‰å­ç›®å½•, åªæœ‰ pcs_meta() è®¾ç½®è¯¥å€¼  */
+    uint64_t        fs_id;
+    char*        path;
+    char*        server_filename;
+    time_t      server_ctime;
+    time_t      server_mtime;
+    time_t      local_ctime;
+    time_t      local_mtime;
+    int64_t     size;
+    int         category;
+    PcsBool     isdir;
+    PcsBool     dir_empty;
+    PcsBool     empty;
+    char*        md5;
+    char*        dlink;
+    char**        block_list; /*  ÎÄ¼şËùÓĞ·ÖÆ¬µÄmd5Êı×éjson×Ö·û´®, Ö»ÓĞ pcs_meta() ÉèÖÃ¸ÃÖµ */
+    PcsBool     ifhassubdir; /* ÊÇ·ñº¬ÓĞ×ÓÄ¿Â¼, Ö»ÓĞ pcs_meta() ÉèÖÃ¸ÃÖµ  */
 
-	int			user_flag;
+    int         user_flag;
 
-    PcsSList2   *thumbs;
+    PcsSList2*   thumbs;
 } PcsFileInfo;
 
-/*ç½‘ç›˜ä¸­æ–‡ä»¶å…ƒæ•°æ®é“¾è¡¨çš„å•ä¸ªèŠ‚ç‚¹*/
+/*ÍøÅÌÖĞÎÄ¼şÔªÊı¾İÁ´±íµÄµ¥¸ö½Úµã*/
 typedef struct PcsFileInfoListItem {
-	PcsFileInfo					*info;
-	struct PcsFileInfoListItem	*prev;
-	struct PcsFileInfoListItem	*next;
+    PcsFileInfo*                 info;
+    struct PcsFileInfoListItem*  prev;
+    struct PcsFileInfoListItem*  next;
 } PcsFileInfoListItem;
 
-/*ä»¥é“¾è¡¨å½¢å¼å­˜å‚¨çš„ç½‘ç›˜æ–‡ä»¶å…ƒæ•°æ®åˆ—è¡¨*/
+/*ÒÔÁ´±íĞÎÊ½´æ´¢µÄÍøÅÌÎÄ¼şÔªÊı¾İÁĞ±í*/
 typedef struct PcsFileInfoList {
-	int						count;
-	PcsFileInfoListItem		*link;
-	PcsFileInfoListItem		*link_tail;
+    int                     count;
+    PcsFileInfoListItem*     link;
+    PcsFileInfoListItem*     link_tail;
 } PcsFileInfoList;
 
-/*ç½‘ç›˜æ–‡ä»¶å…ƒæ•°æ®åˆ—è¡¨çš„è¿­ä»£å™¨*/
+/*ÍøÅÌÎÄ¼şÔªÊı¾İÁĞ±íµÄµü´úÆ÷*/
 typedef struct PcsFileInfoListIterater {
-	PcsBool				invert;
-	PcsFileInfoList		*list;
-	PcsFileInfoListItem	*cursor;
-	PcsFileInfo			*current;
+    PcsBool             invert;
+    PcsFileInfoList*     list;
+    PcsFileInfoListItem* cursor;
+    PcsFileInfo*         current;
 } PcsFileInfoListIterater;
 
-PCS_API PcsFileInfo *pcs_fileinfo_create();
-PCS_API void pcs_fileinfo_destroy(PcsFileInfo *fi);
-/*å¤åˆ¶ä¸€ä»½PcsFileInfoã€‚æ³¨æ„æ˜¯æ·±å…‹éš†ã€‚*/
-PCS_API PcsFileInfo *pcs_fileinfo_clone(PcsFileInfo *fi);
-/*æ·»åŠ ç¼©ç•¥å›¾åˆ° fi ä¸­*/
-PCS_API PcsSList2 *pcs_fileinfo_add_thumb(PcsFileInfo *fi, const char *name, const char *url);
+PCS_API PcsFileInfo* pcs_fileinfo_create();
+PCS_API void pcs_fileinfo_destroy(PcsFileInfo* fi);
+/*¸´ÖÆÒ»·İPcsFileInfo¡£×¢ÒâÊÇÉî¿ËÂ¡¡£*/
+PCS_API PcsFileInfo* pcs_fileinfo_clone(PcsFileInfo* fi);
+/*Ìí¼ÓËõÂÔÍ¼µ½ fi ÖĞ*/
+PCS_API PcsSList2* pcs_fileinfo_add_thumb(PcsFileInfo* fi, const char* name, const char* url);
 
-PCS_API PcsFileInfoListItem *pcs_filistitem_create();
-PCS_API void pcs_filistitem_destroy(PcsFileInfoListItem *item);
+PCS_API PcsFileInfoListItem* pcs_filistitem_create();
+PCS_API void pcs_filistitem_destroy(PcsFileInfoListItem* item);
 
-PCS_API PcsFileInfoList *pcs_filist_create();
-PCS_API void pcs_filist_destroy(PcsFileInfoList *list);
-PCS_API void pcs_filist_add(PcsFileInfoList *list, PcsFileInfoListItem *item);
-PCS_API void pcs_filist_remove(PcsFileInfoList *list, PcsFileInfoListItem *item, PcsFileInfoListIterater *iterater);
-PCS_API void pcs_filist_combin(PcsFileInfoList *list, PcsFileInfoList *src);
+PCS_API PcsFileInfoList* pcs_filist_create();
+PCS_API void pcs_filist_destroy(PcsFileInfoList* list);
+PCS_API void pcs_filist_add(PcsFileInfoList* list, PcsFileInfoListItem* item);
+PCS_API void pcs_filist_remove(PcsFileInfoList* list, PcsFileInfoListItem* item, PcsFileInfoListIterater* iterater);
+PCS_API void pcs_filist_combin(PcsFileInfoList* list, PcsFileInfoList* src);
 
 /*
- * invert - æ˜¯å¦ä»åå‘å‰è¿­ä»£
+ * invert - ÊÇ·ñ´ÓºóÏòÇ°µü´ú
  */
-PCS_API void pcs_filist_iterater_init(PcsFileInfoList *list, PcsFileInfoListIterater *iterater, PcsBool invert);
-PCS_API PcsBool pcs_filist_iterater_next(PcsFileInfoListIterater *iterater);
+PCS_API void pcs_filist_iterater_init(PcsFileInfoList* list, PcsFileInfoListIterater* iterater, PcsBool invert);
+PCS_API PcsBool pcs_filist_iterater_next(PcsFileInfoListIterater* iterater);
 
 
 #endif
